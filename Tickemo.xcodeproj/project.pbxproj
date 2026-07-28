@@ -7,16 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		056EFB780FCB6E6FBFBCD546 /* ICloudFallbackLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */; };
+		0E0C3FBACC56007B29311519 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533F2487C9C6F1664BADB87E /* PersistenceController.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		16A2485E8BBFB58BB581BDE3 /* LegacyStoreLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */; };
+		17AEE69D8EED63A63B3C738E /* LegacyStoreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */; };
+		3D68379DC1810320883F82F4 /* DataMigrationImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */; };
 		3E2CFD16F7258186E3F713D3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81D9B718DAFD8D51D108885 /* ContentView.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		55669622455D7387E7D09669 /* WidgetReloaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6333409566700D88792880 /* WidgetReloaderService.swift */; };
 		61C234461B213CC0A36ECE8C /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */; };
 		77E1B530265777E0D6E2B397 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFC27233C7B2540CCA957DB /* MusicKitService.swift */; };
+		C3D5A82856B58EA1471E206A /* UbiquitousItemDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */; };
+		CBA1C5DA9656929640860C22 /* Tickemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4C1E949528C9C50F19CDB523 /* Tickemo.xcdatamodeld */; };
+		D94F7FDF6A4A42DE8DE1F665 /* ImageMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */; };
 		E0962E8E2F853CAD00CE3EF6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */; };
 		E0962E902F853CAD00CE3EF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */; };
 		E0962E9F2F853CAE00CE3EF6 /* LiveWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E48F6C3505BACCF9FCA8E58C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0C381A2EBEB7D3FB62EA74E1 /* PrivacyInfo.xcprivacy */; };
+		F04553008EC9747425E10737 /* StringArrayTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,12 +54,21 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreLoading.swift; sourceTree = "<group>"; };
 		0C381A2EBEB7D3FB62EA74E1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Tickemo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Tickemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tickemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Tickemo/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Tickemo/Info.plist; sourceTree = "<group>"; };
 		291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
+		2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageMigrator.swift; sourceTree = "<group>"; };
+		2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ICloudFallbackLoader.swift; sourceTree = "<group>"; };
+		46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayTransformer.swift; sourceTree = "<group>"; };
 		4AFC27233C7B2540CCA957DB /* MusicKitService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MusicKitService.swift; sourceTree = "<group>"; };
+		533F2487C9C6F1664BADB87E /* PersistenceController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigrationImporter.swift; sourceTree = "<group>"; };
+		61E0598F65D7A285A738A3B2 /* Tickemo.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = Tickemo.xcdatamodel; sourceTree = "<group>"; };
+		665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UbiquitousItemDownloader.swift; sourceTree = "<group>"; };
+		8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModels.swift; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Tickemo/SplashScreen.storyboard; sourceTree = "<group>"; };
 		AE6333409566700D88792880 /* WidgetReloaderService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetReloaderService.swift; sourceTree = "<group>"; };
 		B81D9B718DAFD8D51D108885 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Tickemo/ContentView.swift; sourceTree = "<group>"; };
@@ -117,6 +135,8 @@
 				0C381A2EBEB7D3FB62EA74E1 /* PrivacyInfo.xcprivacy */,
 				B81D9B718DAFD8D51D108885 /* ContentView.swift */,
 				6A46DCAD550C8E7BD43687D0 /* Services */,
+				BBCBB813D70699394BFBF3BA /* Persistence */,
+				CF6004C0EDCDBB4324D06EBD /* Migration */,
 			);
 			name = Tickemo;
 			sourceTree = "<group>";
@@ -171,6 +191,31 @@
 				E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		BBCBB813D70699394BFBF3BA /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				4C1E949528C9C50F19CDB523 /* Tickemo.xcdatamodeld */,
+				533F2487C9C6F1664BADB87E /* PersistenceController.swift */,
+				46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */,
+			);
+			name = Persistence;
+			path = Tickemo/Persistence;
+			sourceTree = "<group>";
+		};
+		CF6004C0EDCDBB4324D06EBD /* Migration */ = {
+			isa = PBXGroup;
+			children = (
+				8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */,
+				0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */,
+				2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */,
+				665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */,
+				2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */,
+				5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */,
+			);
+			name = Migration;
+			path = Tickemo/Migration;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -284,6 +329,15 @@
 				77E1B530265777E0D6E2B397 /* MusicKitService.swift in Sources */,
 				61C234461B213CC0A36ECE8C /* AppleMusicService.swift in Sources */,
 				55669622455D7387E7D09669 /* WidgetReloaderService.swift in Sources */,
+				0E0C3FBACC56007B29311519 /* PersistenceController.swift in Sources */,
+				F04553008EC9747425E10737 /* StringArrayTransformer.swift in Sources */,
+				17AEE69D8EED63A63B3C738E /* LegacyStoreModels.swift in Sources */,
+				16A2485E8BBFB58BB581BDE3 /* LegacyStoreLoading.swift in Sources */,
+				056EFB780FCB6E6FBFBCD546 /* ICloudFallbackLoader.swift in Sources */,
+				C3D5A82856B58EA1471E206A /* UbiquitousItemDownloader.swift in Sources */,
+				D94F7FDF6A4A42DE8DE1F665 /* ImageMigrator.swift in Sources */,
+				3D68379DC1810320883F82F4 /* DataMigrationImporter.swift in Sources */,
+				CBA1C5DA9656929640860C22 /* Tickemo.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -651,6 +705,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		4C1E949528C9C50F19CDB523 /* Tickemo.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				61E0598F65D7A285A738A3B2 /* Tickemo.xcdatamodel */,
+			);
+			currentVersion = 61E0598F65D7A285A738A3B2 /* Tickemo.xcdatamodel */;
+			path = Tickemo.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }

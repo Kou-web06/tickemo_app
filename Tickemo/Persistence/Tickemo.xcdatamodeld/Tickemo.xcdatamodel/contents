@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23788" systemVersion="24A335" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CD_ChekiRecord" representedClassName="CD_ChekiRecord" syncable="YES" codeGenerationType="class">
+        <attribute name="artist" optional="YES" attributeType="String"/>
+        <attribute name="artistImageUrl" optional="YES" attributeType="String"/>
+        <attribute name="artistImageUrls" optional="YES" attributeType="Transformable" valueTransformerName="StringArrayTransformer" customClassName="NSArray"/>
+        <attribute name="artists" optional="YES" attributeType="Transformable" valueTransformerName="StringArrayTransformer" customClassName="NSArray"/>
+        <attribute name="createdAt" optional="YES" attributeType="String"/>
+        <attribute name="date" optional="YES" attributeType="String"/>
+        <attribute name="detail" optional="YES" attributeType="String"/>
+        <attribute name="endTime" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="imagePath" optional="YES" attributeType="String"/>
+        <attribute name="liveName" optional="YES" attributeType="String"/>
+        <attribute name="liveType" optional="YES" attributeType="String"/>
+        <attribute name="memo" optional="YES" attributeType="String"/>
+        <attribute name="qrCode" optional="YES" attributeType="String"/>
+        <attribute name="seat" optional="YES" attributeType="String"/>
+        <attribute name="startTime" optional="YES" attributeType="String"/>
+        <attribute name="ticketPrice" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="venue" optional="YES" attributeType="String"/>
+        <relationship name="images" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CD_LiveImage" inverseName="record" inverseEntity="CD_LiveImage"/>
+        <relationship name="setlistItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CD_SetlistItem" inverseName="record" inverseEntity="CD_SetlistItem"/>
+    </entity>
+    <entity name="CD_LiveImage" representedClassName="CD_LiveImage" syncable="YES" codeGenerationType="class">
+        <attribute name="assetIdentifier" optional="YES" attributeType="String"/>
+        <attribute name="data" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="legacyRelativePath" optional="YES" attributeType="String"/>
+        <attribute name="orderIndex" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="record" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CD_ChekiRecord" inverseName="images" inverseEntity="CD_ChekiRecord"/>
+    </entity>
+    <entity name="CD_SetlistItem" representedClassName="CD_SetlistItem" syncable="YES" codeGenerationType="class">
+        <attribute name="albumName" optional="YES" attributeType="String"/>
+        <attribute name="artistName" optional="YES" attributeType="String"/>
+        <attribute name="artworkUrl" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="kind" optional="YES" attributeType="String"/>
+        <attribute name="note" optional="YES" attributeType="String"/>
+        <attribute name="orderIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="songId" optional="YES" attributeType="String"/>
+        <attribute name="songName" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <relationship name="record" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CD_ChekiRecord" inverseName="setlistItems" inverseEntity="CD_ChekiRecord"/>
+    </entity>
+    <entity name="CD_UserProfile" representedClassName="CD_UserProfile" syncable="YES" codeGenerationType="class">
+        <attribute name="avatarImageData" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="joinedAt" optional="YES" attributeType="String"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="plusStartedAt" optional="YES" attributeType="String"/>
+        <attribute name="username" optional="YES" attributeType="String"/>
+    </entity>
+    <elements>
+        <element name="CD_ChekiRecord" positionX="-63" positionY="-18" width="128" height="329"/>
+        <element name="CD_LiveImage" positionX="-54" positionY="27" width="128" height="119"/>
+        <element name="CD_SetlistItem" positionX="-36" positionY="45" width="128" height="209"/>
+        <element name="CD_UserProfile" positionX="-18" positionY="63" width="128" height="119"/>
+    </elements>
+</model>
