@@ -12,23 +12,33 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		16A2485E8BBFB58BB581BDE3 /* LegacyStoreLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */; };
 		17AEE69D8EED63A63B3C738E /* LegacyStoreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */; };
+		1FF874666EB2D9903E52CE09 /* RecordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */; };
+		2EA5E6B32379972C9C75E2F8 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */; };
+		2ED127FE8B5D41D48E31A853 /* LiveType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB5B2FD867D3B5F862DB18E /* LiveType.swift */; };
 		3D68379DC1810320883F82F4 /* DataMigrationImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */; };
 		3E2CFD16F7258186E3F713D3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81D9B718DAFD8D51D108885 /* ContentView.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		4479BC3D12C54FCBEA653D8D /* RecordFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC4EE21C788953536CB9E74 /* RecordFormView.swift */; };
 		55669622455D7387E7D09669 /* WidgetReloaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6333409566700D88792880 /* WidgetReloaderService.swift */; };
 		61C234461B213CC0A36ECE8C /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */; };
 		653CB0056D0AB729EF2E89B6 /* LegacyStoreModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A497802B9D44B09DD368FD /* LegacyStoreModelsTests.swift */; };
+		704A58476B9133A1602AD7CC /* RecordListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 663D8AB87BB759FE96E9A35E /* RecordListView.swift */; };
+		70B74607031E17F0EAA94433 /* ChekiRecordImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8CDC7BB5BA0E8406C7CE99F /* ChekiRecordImages.swift */; };
 		77E1B530265777E0D6E2B397 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFC27233C7B2540CCA957DB /* MusicKitService.swift */; };
 		A4533220293DFD7F6EE2B932 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAC5966267FAE211BCBB815 /* Foundation.framework */; };
 		C3D5A82856B58EA1471E206A /* UbiquitousItemDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */; };
 		CBA1C5DA9656929640860C22 /* Tickemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4C1E949528C9C50F19CDB523 /* Tickemo.xcdatamodeld */; };
+		D66DB574454AC6C701CCA05E /* DebugToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */; };
 		D94F7FDF6A4A42DE8DE1F665 /* ImageMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */; };
 		E0962E8E2F853CAD00CE3EF6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */; };
 		E0962E902F853CAD00CE3EF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */; };
 		E0962E9F2F853CAE00CE3EF6 /* LiveWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E350B28E5DDDB949B33C927F /* ImageCropping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */; };
 		E48F6C3505BACCF9FCA8E58C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0C381A2EBEB7D3FB62EA74E1 /* PrivacyInfo.xcprivacy */; };
 		F04553008EC9747425E10737 /* StringArrayTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		FBF0FF3EE1217C8384FAF47D /* QRCodeImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D22356B3FEC0820B1BCDEA /* QRCodeImage.swift */; };
+		FF8FD5ACDE59B775B191833A /* RecordRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14C20B3287A528FE5B2D35B /* RecordRowView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +75,7 @@
 /* Begin PBXFileReference section */
 		0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreLoading.swift; sourceTree = "<group>"; };
 		0AAC5966267FAE211BCBB815 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		0BC4EE21C788953536CB9E74 /* RecordFormView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordFormView.swift; sourceTree = "<group>"; };
 		0C381A2EBEB7D3FB62EA74E1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Tickemo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Tickemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tickemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Tickemo/Images.xcassets; sourceTree = "<group>"; };
@@ -77,18 +88,27 @@
 		533F2487C9C6F1664BADB87E /* PersistenceController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigrationImporter.swift; sourceTree = "<group>"; };
 		61E0598F65D7A285A738A3B2 /* Tickemo.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = Tickemo.xcdatamodel; sourceTree = "<group>"; };
+		65D22356B3FEC0820B1BCDEA /* QRCodeImage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QRCodeImage.swift; sourceTree = "<group>"; };
+		663D8AB87BB759FE96E9A35E /* RecordListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordListView.swift; sourceTree = "<group>"; };
 		665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UbiquitousItemDownloader.swift; sourceTree = "<group>"; };
 		75A497802B9D44B09DD368FD /* LegacyStoreModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModelsTests.swift; sourceTree = "<group>"; };
 		8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModels.swift; sourceTree = "<group>"; };
+		A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Tickemo/SplashScreen.storyboard; sourceTree = "<group>"; };
 		AE6333409566700D88792880 /* WidgetReloaderService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetReloaderService.swift; sourceTree = "<group>"; };
 		B81D9B718DAFD8D51D108885 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Tickemo/ContentView.swift; sourceTree = "<group>"; };
+		CCB5B2FD867D3B5F862DB18E /* LiveType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveType.swift; sourceTree = "<group>"; };
+		D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugToolsView.swift; sourceTree = "<group>"; };
 		E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LiveWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		E0962EA52F85506700CE3EF6 /* LiveWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LiveWidgetExtension.entitlements; sourceTree = "<group>"; };
+		E8CDC7BB5BA0E8406C7CE99F /* ChekiRecordImages.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordImages.swift; sourceTree = "<group>"; };
+		EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageCropping.swift; sourceTree = "<group>"; };
+		EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordDetailView.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Tickemo/AppDelegate.swift; sourceTree = "<group>"; };
+		F14C20B3287A528FE5B2D35B /* RecordRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordRowView.swift; sourceTree = "<group>"; };
 		F595B7B33D7DFE62E92C001F /* TickemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TickemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -157,6 +177,9 @@
 				6A46DCAD550C8E7BD43687D0 /* Services */,
 				BBCBB813D70699394BFBF3BA /* Persistence */,
 				CF6004C0EDCDBB4324D06EBD /* Migration */,
+				E351373E211F52C4C1FE19B3 /* Screens */,
+				29D1925F8A2C0F0D177B7174 /* Components */,
+				EB6FDC9DBDE13BA8D0A9ECC6 /* Support */,
 			);
 			name = Tickemo;
 			sourceTree = "<group>";
@@ -168,6 +191,15 @@
 			);
 			name = TickemoTests;
 			path = TickemoTests;
+			sourceTree = "<group>";
+		};
+		29D1925F8A2C0F0D177B7174 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F14C20B3287A528FE5B2D35B /* RecordRowView.swift */,
+			);
+			name = Components;
+			path = Tickemo/Components;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -256,6 +288,31 @@
 			);
 			name = Migration;
 			path = Tickemo/Migration;
+			sourceTree = "<group>";
+		};
+		E351373E211F52C4C1FE19B3 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				663D8AB87BB759FE96E9A35E /* RecordListView.swift */,
+				EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */,
+				0BC4EE21C788953536CB9E74 /* RecordFormView.swift */,
+				D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */,
+			);
+			name = Screens;
+			path = Tickemo/Screens;
+			sourceTree = "<group>";
+		};
+		EB6FDC9DBDE13BA8D0A9ECC6 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */,
+				CCB5B2FD867D3B5F862DB18E /* LiveType.swift */,
+				65D22356B3FEC0820B1BCDEA /* QRCodeImage.swift */,
+				EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */,
+				E8CDC7BB5BA0E8406C7CE99F /* ChekiRecordImages.swift */,
+			);
+			name = Support;
+			path = Tickemo/Support;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -412,6 +469,16 @@
 				D94F7FDF6A4A42DE8DE1F665 /* ImageMigrator.swift in Sources */,
 				3D68379DC1810320883F82F4 /* DataMigrationImporter.swift in Sources */,
 				CBA1C5DA9656929640860C22 /* Tickemo.xcdatamodeld in Sources */,
+				704A58476B9133A1602AD7CC /* RecordListView.swift in Sources */,
+				1FF874666EB2D9903E52CE09 /* RecordDetailView.swift in Sources */,
+				4479BC3D12C54FCBEA653D8D /* RecordFormView.swift in Sources */,
+				D66DB574454AC6C701CCA05E /* DebugToolsView.swift in Sources */,
+				FF8FD5ACDE59B775B191833A /* RecordRowView.swift in Sources */,
+				2EA5E6B32379972C9C75E2F8 /* DateFormatting.swift in Sources */,
+				2ED127FE8B5D41D48E31A853 /* LiveType.swift in Sources */,
+				FBF0FF3EE1217C8384FAF47D /* QRCodeImage.swift in Sources */,
+				E350B28E5DDDB949B33C927F /* ImageCropping.swift in Sources */,
+				70B74607031E17F0EAA94433 /* ChekiRecordImages.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
