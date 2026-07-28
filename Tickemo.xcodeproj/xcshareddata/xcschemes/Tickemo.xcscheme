@@ -20,6 +20,20 @@
                ReferencedContainer = "container:Tickemo.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "39AC6A76431F6CD571CAC3B1"
+               BuildableName = "TickemoTests.xctest"
+               BlueprintName = "TickemoTests"
+               ReferencedContainer = "container:Tickemo.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -32,7 +46,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "00E356ED1AD99517003FC87E"
+               BlueprintIdentifier = "39AC6A76431F6CD571CAC3B1"
                BuildableName = "TickemoTests.xctest"
                BlueprintName = "TickemoTests"
                ReferencedContainer = "container:Tickemo.xcodeproj">
