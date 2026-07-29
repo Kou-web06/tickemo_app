@@ -20,6 +20,9 @@ enum RecordViewMode {
   case grid
 }
 
+/// Matches CollectionScreen.tsx's FREE_TICKET_LIMIT.
+private let freeTicketLimit = 3
+
 struct RecordListView: View {
   @Environment(\.managedObjectContext) private var viewContext
 
@@ -33,9 +36,22 @@ struct RecordListView: View {
   @State private var filter: RecordFilter = .all
   @State private var viewMode: RecordViewMode = .list
   @State private var showingCreateSheet = false
+  @State private var showingPaywall = false
   #if DEBUG
   @State private var showingDebugSheet = false
   #endif
+
+  private var isOverFreeTicketLimit: Bool {
+    !PurchasesService.shared.isPremium && records.count >= freeTicketLimit
+  }
+
+  private func requestAddTicket() {
+    if isOverFreeTicketLimit {
+      showingPaywall = true
+    } else {
+      showingCreateSheet = true
+    }
+  }
 
   private let gridColumns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible())]
 
@@ -145,7 +161,7 @@ struct RecordListView: View {
       }
       ToolbarItem(placement: .primaryAction) {
         Button {
-          showingCreateSheet = true
+          requestAddTicket()
         } label: {
           Image(systemName: "plus")
         }
@@ -153,6 +169,9 @@ struct RecordListView: View {
     }
     .sheet(isPresented: $showingCreateSheet) {
       RecordFormView(record: nil)
+    }
+    .sheet(isPresented: $showingPaywall) {
+      PaywallView()
     }
     #if DEBUG
     .sheet(isPresented: $showingDebugSheet) {
@@ -169,7 +188,7 @@ struct RecordListView: View {
       } description: {
         Text("Add your first live ticket to get started.")
       } actions: {
-        Button("Add Ticket") { showingCreateSheet = true }
+        Button("Add Ticket") { requestAddTicket() }
       }
     } else {
       ContentUnavailableView(

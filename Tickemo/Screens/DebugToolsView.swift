@@ -10,6 +10,9 @@ struct DebugToolsView: View {
   @State private var migrationSummaryText: String?
   @State private var isMigrating = false
 
+  @State private var purchasesSummaryText: String?
+  @State private var isCheckingPurchases = false
+
   var body: some View {
     NavigationStack {
       VStack(spacing: 16) {
@@ -40,6 +43,26 @@ struct DebugToolsView: View {
           .frame(maxHeight: 200)
           .padding(.horizontal)
         }
+
+        Divider()
+        Button("Check RevenueCat (Debug)") {
+          runPurchasesCheck()
+        }
+        .disabled(isCheckingPurchases)
+
+        if isCheckingPurchases {
+          ProgressView()
+        }
+
+        if let purchasesSummaryText {
+          ScrollView {
+            Text(purchasesSummaryText)
+              .font(.system(.footnote, design: .monospaced))
+              .frame(maxWidth: .infinity, alignment: .leading)
+          }
+          .frame(maxHeight: 200)
+          .padding(.horizontal)
+        }
       }
       .padding()
       .navigationTitle("Debug Tools")
@@ -63,6 +86,24 @@ struct DebugToolsView: View {
       error: \(summary.error ?? "none")
       """
       isMigrating = false
+    }
+  }
+
+  private func runPurchasesCheck() {
+    isCheckingPurchases = true
+    purchasesSummaryText = nil
+    Task {
+      await PurchasesService.shared.configure()
+      let offerings = try? await PurchasesService.shared.fetchOfferings()
+      let packageCount = offerings?.current?.availablePackages.count ?? 0
+      purchasesSummaryText = """
+      configured: \(PurchasesService.shared.isConfigured)
+      isPremium: \(PurchasesService.shared.isPremium)
+      membershipType: \(PurchasesService.shared.membershipType.rawValue)
+      activeEntitlementIds: \(PurchasesService.shared.activeEntitlementIds)
+      current offering packages: \(packageCount)
+      """
+      isCheckingPurchases = false
     }
   }
 }
