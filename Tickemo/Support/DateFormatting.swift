@@ -61,4 +61,14 @@ enum DateFormatting {
   static func isoNow() -> String {
     isoFormatter.string(from: Date())
   }
+
+  /// Parses a `createdAt`/`joinedAt`/`plusStartedAt`-style ISO8601 string
+  /// (with fractional seconds, as produced by `isoNow()`). A bare
+  /// `ISO8601DateFormatter()` with default options fails to parse these
+  /// because it doesn't enable `.withFractionalSeconds` — use this instead
+  /// of constructing a formatter ad hoc at each call site.
+  static func isoDate(from string: String?) -> Date? {
+    guard let string, !string.isEmpty else { return nil }
+    return isoFormatter.date(from: string)
+  }
 }

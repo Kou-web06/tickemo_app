@@ -37,6 +37,7 @@ struct RecordListView: View {
   @State private var viewMode: RecordViewMode = .list
   @State private var showingCreateSheet = false
   @State private var showingPaywall = false
+  @State private var showingSettings = false
   #if DEBUG
   @State private var showingDebugSheet = false
   #endif
@@ -166,12 +167,22 @@ struct RecordListView: View {
           Image(systemName: "plus")
         }
       }
+      ToolbarItem(placement: .topBarLeading) {
+        Button {
+          showingSettings = true
+        } label: {
+          Image(systemName: "gearshape")
+        }
+      }
     }
     .sheet(isPresented: $showingCreateSheet) {
       RecordFormView(record: nil)
     }
     .sheet(isPresented: $showingPaywall) {
       PaywallView()
+    }
+    .sheet(isPresented: $showingSettings) {
+      SettingsView()
     }
     #if DEBUG
     .sheet(isPresented: $showingDebugSheet) {
