@@ -15,6 +15,11 @@ enum RecordFilter: String, CaseIterable {
   }
 }
 
+enum RecordViewMode {
+  case list
+  case grid
+}
+
 struct RecordListView: View {
   @Environment(\.managedObjectContext) private var viewContext
 
@@ -26,10 +31,17 @@ struct RecordListView: View {
   ) private var records: FetchedResults<CD_ChekiRecord>
 
   @State private var filter: RecordFilter = .all
+  @State private var viewMode: RecordViewMode = .list
   @State private var showingCreateSheet = false
   #if DEBUG
   @State private var showingDebugSheet = false
   #endif
+
+  private let gridColumns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible())]
+
+  private var artistTiles: [ArtistGrouping.Tile] {
+    ArtistGrouping.tiles(from: filteredRecords)
+  }
 
   private var filteredRecords: [CD_ChekiRecord] {
     guard filter != .all else { return Array(records) }
@@ -52,26 +64,49 @@ struct RecordListView: View {
 
   var body: some View {
     Group {
-      if filteredRecords.isEmpty {
-        emptyState
-      } else {
-        List {
-          ForEach(filteredRecords, id: \.objectID) { record in
-            NavigationLink(value: record) {
-              RecordRowView(record: record)
-            }
-            .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-            .swipeActions(edge: .trailing) {
-              Button(role: .destructive) {
-                delete(record)
-              } label: {
-                Label("Delete", systemImage: "trash")
+      switch viewMode {
+      case .list:
+        if filteredRecords.isEmpty {
+          emptyState
+        } else {
+          List {
+            ForEach(filteredRecords, id: \.objectID) { record in
+              NavigationLink(value: record) {
+                RecordRowView(record: record)
+              }
+              .listRowSeparator(.hidden)
+              .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+              .swipeActions(edge: .trailing) {
+                Button(role: .destructive) {
+                  delete(record)
+                } label: {
+                  Label("Delete", systemImage: "trash")
+                }
               }
             }
           }
+          .listStyle(.plain)
         }
-        .listStyle(.plain)
+      case .grid:
+        if artistTiles.isEmpty {
+          ContentUnavailableView(
+            "No Artists Yet",
+            systemImage: "person.2",
+            description: Text("Tickets with an artist name will show up here.")
+          )
+        } else {
+          ScrollView {
+            LazyVGrid(columns: gridColumns, spacing: 16) {
+              ForEach(artistTiles) { tile in
+                NavigationLink(value: ArtistRoute(name: tile.name)) {
+                  ArtistGridItemView(tile: tile)
+                }
+                .buttonStyle(.plain)
+              }
+            }
+            .padding(16)
+          }
+        }
       }
     }
     .safeAreaInset(edge: .top) {
@@ -88,6 +123,9 @@ struct RecordListView: View {
     .navigationDestination(for: CD_ChekiRecord.self) { record in
       RecordDetailView(record: record)
     }
+    .navigationDestination(for: ArtistRoute.self) { route in
+      ArtistDetailView(artistName: route.name)
+    }
     .toolbar {
       #if DEBUG
       ToolbarItem(placement: .topBarLeading) {
@@ -98,6 +136,13 @@ struct RecordListView: View {
         }
       }
       #endif
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          viewMode = (viewMode == .list) ? .grid : .list
+        } label: {
+          Image(systemName: viewMode == .list ? "square.grid.2x2" : "list.bullet")
+        }
+      }
       ToolbarItem(placement: .primaryAction) {
         Button {
           showingCreateSheet = true

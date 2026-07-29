@@ -2,10 +2,12 @@ import SwiftUI
 
 /// Ports components/TicketDetail.tsx's layout and styling (colors, type
 /// scale, section structure) to SwiftUI. Explicitly out of scope, same as
-/// the rest of Phase 2: the `#set list` section (no CD_SetlistItem UI yet),
-/// share-image generation, and the custom bottom-sheet slide-up
-/// presentation (a plain NavigationStack push + system back button replaces
-/// RN's floating circular close button).
+/// the rest of Phase 2: share-image generation, and the custom bottom-sheet
+/// slide-up presentation (a plain NavigationStack push + system back button
+/// replaces RN's floating circular close button). The `#set list` section
+/// is read-only here plus tap-to-play (RN never had in-app playback, only
+/// external Spotify/Apple Music deep links) — editing happens in
+/// SetlistEditorView.
 struct RecordDetailView: View {
   @ObservedObject var record: CD_ChekiRecord
 
@@ -14,6 +16,11 @@ struct RecordDetailView: View {
 
   @State private var showingEditSheet = false
   @State private var showingDeleteConfirmation = false
+  @State private var showingSetlistEditor = false
+
+  private let appleMusicService = AppleMusicService()
+  @State private var nowPlayingSongId: String?
+  @State private var loadingSongId: String?
 
   private var liveType: LiveType { LiveType.normalized(record.liveType) }
 
@@ -34,6 +41,9 @@ struct RecordDetailView: View {
           dateTimeGrid
             .padding(.top, 28)
 
+          setlistSection
+            .padding(.top, 60)
+
           if let memo = record.memo, !memo.isEmpty {
             memoSection(memo)
               .padding(.top, 60)
@@ -53,6 +63,9 @@ struct RecordDetailView: View {
     .navigationBarTitleDisplayMode(.inline)
     .sheet(isPresented: $showingEditSheet) {
       RecordFormView(record: record)
+    }
+    .sheet(isPresented: $showingSetlistEditor) {
+      SetlistEditorView(record: record)
     }
     .alert("Delete this ticket?", isPresented: $showingDeleteConfirmation) {
       Button("Delete", role: .destructive) { deleteRecord() }
@@ -208,6 +221,116 @@ struct RecordDetailView: View {
     guard let date = DateFormatting.date(from: record.date) else { return "" }
     let weekday = Self.utcCalendar.component(.weekday, from: date) // 1 = Sunday
     return Self.weekdayAbbreviations[weekday - 1]
+  }
+
+  // MARK: - Setlist
+
+  private var setlistSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      HStack {
+        Text("#set list")
+          .font(.system(size: 18, weight: .black))
+          .foregroundStyle(Color(red: 0.180, green: 0.180, blue: 0.196))
+        Spacer()
+        Button(record.sortedSetlistItems.isEmpty ? "Add Setlist" : "Edit") {
+          showingSetlistEditor = true
+        }
+        .font(.system(size: 14, weight: .semibold))
+      }
+
+      if !record.sortedSetlistItems.isEmpty {
+        VStack(spacing: 8) {
+          ForEach(Array(record.sortedSetlistItems.enumerated()), id: \.element.objectID) { index, item in
+            setlistRow(item, songNumber: songNumber(for: item))
+          }
+        }
+        .padding(12)
+        .background(Color(white: 0.929))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+      }
+    }
+  }
+
+  private func songNumber(for item: CD_SetlistItem) -> Int? {
+    guard item.kind == "song" else { return nil }
+    let songs = record.sortedSetlistItems.filter { $0.kind == "song" }
+    guard let index = songs.firstIndex(of: item) else { return nil }
+    return index + 1
+  }
+
+  @ViewBuilder
+  private func setlistRow(_ item: CD_SetlistItem, songNumber: Int?) -> some View {
+    switch item.kind {
+    case "encore":
+      SetlistMarkerDivider(text: item.title ?? "ENCORE")
+    case "mc":
+      SetlistMarkerDivider(text: item.title?.isEmpty == false ? item.title! : "MC")
+    default:
+      songRow(item, songNumber: songNumber ?? 0)
+    }
+  }
+
+  private func songRow(_ item: CD_SetlistItem, songNumber: Int) -> some View {
+    HStack(spacing: 10) {
+      Text(String(format: "%02d", songNumber))
+        .font(.system(size: 13, weight: .bold))
+        .foregroundStyle(Color(white: 0.545))
+        .frame(width: 28, alignment: .leading)
+
+      Text(item.songName ?? "-")
+        .font(.system(size: 15, weight: .bold))
+        .lineLimit(1)
+
+      Spacer(minLength: 8)
+
+      if let songId = item.songId, !songId.isEmpty {
+        playButton(songId: songId)
+      }
+    }
+    .padding(.vertical, 8)
+    .padding(.horizontal, 10)
+    .background(Color.white)
+    .clipShape(RoundedRectangle(cornerRadius: 8))
+  }
+
+  @ViewBuilder
+  private func playButton(songId: String) -> some View {
+    if loadingSongId == songId {
+      ProgressView()
+        .frame(width: 26, height: 26)
+    } else {
+      Button {
+        togglePlay(songId: songId)
+      } label: {
+        Image(systemName: nowPlayingSongId == songId ? "pause.circle.fill" : "play.circle.fill")
+          .font(.system(size: 22))
+          .foregroundStyle(nowPlayingSongId == songId ? Color.accentColor : Color(white: 0.6))
+      }
+    }
+  }
+
+  private func togglePlay(songId: String) {
+    if nowPlayingSongId == songId {
+      appleMusicService.pause()
+      nowPlayingSongId = nil
+      return
+    }
+
+    Task {
+      loadingSongId = songId
+      defer { loadingSongId = nil }
+
+      if !appleMusicService.isAuthorized() {
+        guard await appleMusicService.authorize() else { return }
+      }
+
+      do {
+        try await appleMusicService.play(songId: songId)
+        nowPlayingSongId = songId
+      } catch {
+        nowPlayingSongId = nil
+      }
+    }
   }
 
   // MARK: - Memo

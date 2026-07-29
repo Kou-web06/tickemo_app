@@ -12,6 +12,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		16A2485E8BBFB58BB581BDE3 /* LegacyStoreLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */; };
 		17AEE69D8EED63A63B3C738E /* LegacyStoreModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */; };
+		1FBF026431BD8FEAA1568620 /* ArtistGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */; };
 		1FF874666EB2D9903E52CE09 /* RecordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */; };
 		2EA5E6B32379972C9C75E2F8 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */; };
 		2ED127FE8B5D41D48E31A853 /* LiveType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB5B2FD867D3B5F862DB18E /* LiveType.swift */; };
@@ -20,14 +21,18 @@
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		4479BC3D12C54FCBEA653D8D /* RecordFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC4EE21C788953536CB9E74 /* RecordFormView.swift */; };
 		55669622455D7387E7D09669 /* WidgetReloaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6333409566700D88792880 /* WidgetReloaderService.swift */; };
+		584C6CCF1CA4897D2660CACB /* ChekiRecordSetlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE32B53EF806DB6BDB8FBCE /* ChekiRecordSetlist.swift */; };
 		61C234461B213CC0A36ECE8C /* AppleMusicService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */; };
 		620E8E4877E1D9C997090810 /* TicketStubShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C810B48EA3C3D5F868D2A9 /* TicketStubShape.swift */; };
 		653CB0056D0AB729EF2E89B6 /* LegacyStoreModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A497802B9D44B09DD368FD /* LegacyStoreModelsTests.swift */; };
 		704A58476B9133A1602AD7CC /* RecordListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 663D8AB87BB759FE96E9A35E /* RecordListView.swift */; };
 		70B74607031E17F0EAA94433 /* ChekiRecordImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8CDC7BB5BA0E8406C7CE99F /* ChekiRecordImages.swift */; };
 		77E1B530265777E0D6E2B397 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFC27233C7B2540CCA957DB /* MusicKitService.swift */; };
+		93249DF0B93FCAF195A31762 /* ArtistGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062157A9D3F648E065E34101 /* ArtistGrouping.swift */; };
+		9802BBD5926A5998BACD8A10 /* ArtistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B543535289EADF7BBEDE3E3 /* ArtistDetailView.swift */; };
 		9890961637FB9FBBAC971ECB /* ArtistDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79EFA474502FB4D79CA516C5 /* ArtistDisplay.swift */; };
 		A4533220293DFD7F6EE2B932 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAC5966267FAE211BCBB815 /* Foundation.framework */; };
+		B917A2D7FAED036581A125D1 /* SetlistMarkerDivider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D96D1819AAF5E25C61CBDF /* SetlistMarkerDivider.swift */; };
 		C3D5A82856B58EA1471E206A /* UbiquitousItemDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */; };
 		CBA1C5DA9656929640860C22 /* Tickemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4C1E949528C9C50F19CDB523 /* Tickemo.xcdatamodeld */; };
 		D66DB574454AC6C701CCA05E /* DebugToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */; };
@@ -36,10 +41,12 @@
 		E0962E902F853CAD00CE3EF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */; };
 		E0962E9F2F853CAE00CE3EF6 /* LiveWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E350B28E5DDDB949B33C927F /* ImageCropping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */; };
+		E3FA2835D57DD6FA064C5853 /* SetlistEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8C29472BB0AB4450819C528 /* SetlistEditorView.swift */; };
 		E48F6C3505BACCF9FCA8E58C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0C381A2EBEB7D3FB62EA74E1 /* PrivacyInfo.xcprivacy */; };
 		EABA1B92E4FAEF958730470E /* ChekiRecordArtists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A3A7CC25C17955E6806FC /* ChekiRecordArtists.swift */; };
 		F04553008EC9747425E10737 /* StringArrayTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		F91AEFA058FF8449AA6F7656 /* ArtistGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6C3CEF28C0BADA509B18 /* ArtistGridItemView.swift */; };
 		FBF0FF3EE1217C8384FAF47D /* QRCodeImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D22356B3FEC0820B1BCDEA /* QRCodeImage.swift */; };
 		FF8FD5ACDE59B775B191833A /* RecordRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14C20B3287A528FE5B2D35B /* RecordRowView.swift */; };
 /* End PBXBuildFile section */
@@ -76,8 +83,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		062157A9D3F648E065E34101 /* ArtistGrouping.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGrouping.swift; sourceTree = "<group>"; };
 		0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreLoading.swift; sourceTree = "<group>"; };
 		0AAC5966267FAE211BCBB815 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		0B543535289EADF7BBEDE3E3 /* ArtistDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistDetailView.swift; sourceTree = "<group>"; };
 		0BC4EE21C788953536CB9E74 /* RecordFormView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordFormView.swift; sourceTree = "<group>"; };
 		0C381A2EBEB7D3FB62EA74E1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Tickemo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Tickemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tickemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,10 +107,13 @@
 		75A497802B9D44B09DD368FD /* LegacyStoreModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModelsTests.swift; sourceTree = "<group>"; };
 		79EFA474502FB4D79CA516C5 /* ArtistDisplay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistDisplay.swift; sourceTree = "<group>"; };
 		8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModels.swift; sourceTree = "<group>"; };
+		91D96D1819AAF5E25C61CBDF /* SetlistMarkerDivider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistMarkerDivider.swift; sourceTree = "<group>"; };
 		A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		A2C810B48EA3C3D5F868D2A9 /* TicketStubShape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TicketStubShape.swift; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Tickemo/SplashScreen.storyboard; sourceTree = "<group>"; };
+		ABE32B53EF806DB6BDB8FBCE /* ChekiRecordSetlist.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordSetlist.swift; sourceTree = "<group>"; };
 		AE6333409566700D88792880 /* WidgetReloaderService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetReloaderService.swift; sourceTree = "<group>"; };
+		B50F6C3CEF28C0BADA509B18 /* ArtistGridItemView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGridItemView.swift; sourceTree = "<group>"; };
 		B81D9B718DAFD8D51D108885 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Tickemo/ContentView.swift; sourceTree = "<group>"; };
 		CCB5B2FD867D3B5F862DB18E /* LiveType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveType.swift; sourceTree = "<group>"; };
 		D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugToolsView.swift; sourceTree = "<group>"; };
@@ -109,6 +121,7 @@
 		E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		E0962EA52F85506700CE3EF6 /* LiveWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LiveWidgetExtension.entitlements; sourceTree = "<group>"; };
+		E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGroupingTests.swift; sourceTree = "<group>"; };
 		E8CDC7BB5BA0E8406C7CE99F /* ChekiRecordImages.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordImages.swift; sourceTree = "<group>"; };
 		EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageCropping.swift; sourceTree = "<group>"; };
 		EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordDetailView.swift; sourceTree = "<group>"; };
@@ -116,6 +129,7 @@
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Tickemo/AppDelegate.swift; sourceTree = "<group>"; };
 		F14C20B3287A528FE5B2D35B /* RecordRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordRowView.swift; sourceTree = "<group>"; };
 		F595B7B33D7DFE62E92C001F /* TickemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TickemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F8C29472BB0AB4450819C528 /* SetlistEditorView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistEditorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -194,6 +208,7 @@
 			isa = PBXGroup;
 			children = (
 				75A497802B9D44B09DD368FD /* LegacyStoreModelsTests.swift */,
+				E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */,
 			);
 			name = TickemoTests;
 			path = TickemoTests;
@@ -204,6 +219,8 @@
 			children = (
 				F14C20B3287A528FE5B2D35B /* RecordRowView.swift */,
 				A2C810B48EA3C3D5F868D2A9 /* TicketStubShape.swift */,
+				91D96D1819AAF5E25C61CBDF /* SetlistMarkerDivider.swift */,
+				B50F6C3CEF28C0BADA509B18 /* ArtistGridItemView.swift */,
 			);
 			name = Components;
 			path = Tickemo/Components;
@@ -304,6 +321,8 @@
 				EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */,
 				0BC4EE21C788953536CB9E74 /* RecordFormView.swift */,
 				D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */,
+				F8C29472BB0AB4450819C528 /* SetlistEditorView.swift */,
+				0B543535289EADF7BBEDE3E3 /* ArtistDetailView.swift */,
 			);
 			name = Screens;
 			path = Tickemo/Screens;
@@ -319,6 +338,8 @@
 				E8CDC7BB5BA0E8406C7CE99F /* ChekiRecordImages.swift */,
 				79EFA474502FB4D79CA516C5 /* ArtistDisplay.swift */,
 				472A3A7CC25C17955E6806FC /* ChekiRecordArtists.swift */,
+				ABE32B53EF806DB6BDB8FBCE /* ChekiRecordSetlist.swift */,
+				062157A9D3F648E065E34101 /* ArtistGrouping.swift */,
 			);
 			name = Support;
 			path = Tickemo/Support;
@@ -457,6 +478,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				653CB0056D0AB729EF2E89B6 /* LegacyStoreModelsTests.swift in Sources */,
+				1FBF026431BD8FEAA1568620 /* ArtistGroupingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,6 +513,12 @@
 				620E8E4877E1D9C997090810 /* TicketStubShape.swift in Sources */,
 				9890961637FB9FBBAC971ECB /* ArtistDisplay.swift in Sources */,
 				EABA1B92E4FAEF958730470E /* ChekiRecordArtists.swift in Sources */,
+				E3FA2835D57DD6FA064C5853 /* SetlistEditorView.swift in Sources */,
+				B917A2D7FAED036581A125D1 /* SetlistMarkerDivider.swift in Sources */,
+				584C6CCF1CA4897D2660CACB /* ChekiRecordSetlist.swift in Sources */,
+				9802BBD5926A5998BACD8A10 /* ArtistDetailView.swift in Sources */,
+				F91AEFA058FF8449AA6F7656 /* ArtistGridItemView.swift in Sources */,
+				93249DF0B93FCAF195A31762 /* ArtistGrouping.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -3,11 +3,6 @@ import Foundation
 
 final class AppleMusicService {
   private var musicPlayer = ApplicationMusicPlayer.shared
-  private var developerToken: String?
-
-  func configure(token: String) {
-    developerToken = token
-  }
 
   func authorize() async -> Bool {
     let status = await MusicAuthorization.request()
@@ -15,11 +10,6 @@ final class AppleMusicService {
   }
 
   func play(songId: String) async throws {
-    guard developerToken != nil else {
-      throw NSError(domain: "AppleMusicService", code: -1,
-        userInfo: [NSLocalizedDescriptionKey: "Developer token not set"])
-    }
-
     let request = MusicCatalogResourceRequest<Song>(
       matching: \.id,
       equalTo: MusicItemID(songId)
@@ -66,6 +56,36 @@ final class AppleMusicService {
     return response.artists.map { artist in
       let imageUrl = artist.artwork?.url(width: 300, height: 300)?.absoluteString ?? ""
       return ArtistResult(id: artist.id.rawValue, name: artist.name, imageUrl: imageUrl)
+    }
+  }
+
+  struct SongResult {
+    let id: String
+    let title: String
+    let artistName: String
+    let albumName: String
+    let artworkUrl: String
+  }
+
+  func searchSongs(term: String) async throws -> [SongResult] {
+    guard !term.isEmpty else {
+      return []
+    }
+
+    var request = MusicCatalogSearchRequest(term: term, types: [Song.self])
+    request.limit = 10
+
+    let response = try await request.response()
+
+    return response.songs.map { song in
+      let imageUrl = song.artwork?.url(width: 300, height: 300)?.absoluteString ?? ""
+      return SongResult(
+        id: song.id.rawValue,
+        title: song.title,
+        artistName: song.artistName,
+        albumName: song.albumTitle ?? "",
+        artworkUrl: imageUrl
+      )
     }
   }
 }
