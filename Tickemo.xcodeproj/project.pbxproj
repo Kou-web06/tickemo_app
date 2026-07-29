@@ -36,10 +36,14 @@
 		70B74607031E17F0EAA94433 /* ChekiRecordImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8CDC7BB5BA0E8406C7CE99F /* ChekiRecordImages.swift */; };
 		77E1B530265777E0D6E2B397 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFC27233C7B2540CCA957DB /* MusicKitService.swift */; };
 		7901BF40FB3DF96C71D46422 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F2C15210F8E73A8598F6DA /* SettingsView.swift */; };
+		8514CB5212174CA3D1FB565B /* ArtistArchiveCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BB2E69E9939626941256BFF /* ArtistArchiveCardView.swift */; };
 		93249DF0B93FCAF195A31762 /* ArtistGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062157A9D3F648E065E34101 /* ArtistGrouping.swift */; };
 		9802BBD5926A5998BACD8A10 /* ArtistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B543535289EADF7BBEDE3E3 /* ArtistDetailView.swift */; };
 		9890961637FB9FBBAC971ECB /* ArtistDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79EFA474502FB4D79CA516C5 /* ArtistDisplay.swift */; };
+		9EDB014EB4555F2D362F4A98 /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A44EAD7E3182AEE71372C12 /* StatisticsView.swift */; };
+		A2E7E1B441BF17659EBCAE95 /* StatisticsRankingRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0B69313B8AB4D706F1A74A7 /* StatisticsRankingRowView.swift */; };
 		A4533220293DFD7F6EE2B932 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAC5966267FAE211BCBB815 /* Foundation.framework */; };
+		B008A585215BC3F9FC2711A7 /* StatisticsDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39439CEC1EFFEE9667ADA243 /* StatisticsDataTests.swift */; };
 		B917A2D7FAED036581A125D1 /* SetlistMarkerDivider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D96D1819AAF5E25C61CBDF /* SetlistMarkerDivider.swift */; };
 		BBA44572EF915D6CFA98D39B /* CalendarEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F986A976F914A696837702 /* CalendarEventsTests.swift */; };
 		BEE817BE6ACC130361BEE53A /* UserProfileFetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CFF0E3AA54C736CBE34C4B2 /* UserProfileFetching.swift */; };
@@ -48,6 +52,7 @@
 		CBA1C5DA9656929640860C22 /* Tickemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4C1E949528C9C50F19CDB523 /* Tickemo.xcdatamodeld */; };
 		D66DB574454AC6C701CCA05E /* DebugToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */; };
 		D94F7FDF6A4A42DE8DE1F665 /* ImageMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */; };
+		DC8A3EBD510E47D88561F454 /* StatisticsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0D55C5C1F41BD095CB31A2 /* StatisticsData.swift */; };
 		DCC4E1C2CB72401B93B0A171 /* CalendarDayEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72645012E927C7402CB88893 /* CalendarDayEventsView.swift */; };
 		E0962E8E2F853CAD00CE3EF6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */; };
 		E0962E902F853CAD00CE3EF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */; };
@@ -108,9 +113,12 @@
 		26FD9F153931A7B6B67A5D6F /* EarlyOfferService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EarlyOfferService.swift; sourceTree = "<group>"; };
 		291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
 		2A3984D275EFEC4030F2FFC1 /* CalendarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		2C0D55C5C1F41BD095CB31A2 /* StatisticsData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsData.swift; sourceTree = "<group>"; };
 		2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageMigrator.swift; sourceTree = "<group>"; };
 		2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ICloudFallbackLoader.swift; sourceTree = "<group>"; };
 		35F986A976F914A696837702 /* CalendarEventsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarEventsTests.swift; sourceTree = "<group>"; };
+		39439CEC1EFFEE9667ADA243 /* StatisticsDataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsDataTests.swift; sourceTree = "<group>"; };
+		3BB2E69E9939626941256BFF /* ArtistArchiveCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistArchiveCardView.swift; sourceTree = "<group>"; };
 		46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayTransformer.swift; sourceTree = "<group>"; };
 		472A3A7CC25C17955E6806FC /* ChekiRecordArtists.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordArtists.swift; sourceTree = "<group>"; };
 		4A46977CD287EA4809AF52CF /* CalendarEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarEvents.swift; sourceTree = "<group>"; };
@@ -129,6 +137,7 @@
 		84F2C15210F8E73A8598F6DA /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModels.swift; sourceTree = "<group>"; };
 		91D96D1819AAF5E25C61CBDF /* SetlistMarkerDivider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistMarkerDivider.swift; sourceTree = "<group>"; };
+		9A44EAD7E3182AEE71372C12 /* StatisticsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 		A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		A2C810B48EA3C3D5F868D2A9 /* TicketStubShape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TicketStubShape.swift; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Tickemo/SplashScreen.storyboard; sourceTree = "<group>"; };
@@ -137,6 +146,7 @@
 		B50F6C3CEF28C0BADA509B18 /* ArtistGridItemView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGridItemView.swift; sourceTree = "<group>"; };
 		B81D9B718DAFD8D51D108885 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Tickemo/ContentView.swift; sourceTree = "<group>"; };
 		CCB5B2FD867D3B5F862DB18E /* LiveType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveType.swift; sourceTree = "<group>"; };
+		D0B69313B8AB4D706F1A74A7 /* StatisticsRankingRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsRankingRowView.swift; sourceTree = "<group>"; };
 		D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugToolsView.swift; sourceTree = "<group>"; };
 		DDC8097D167570A73C9B4DE5 /* PurchasesService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PurchasesService.swift; sourceTree = "<group>"; };
 		DEC38A042A5BFB1CD699F666 /* CalendarMonthTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarMonthTests.swift; sourceTree = "<group>"; };
@@ -237,6 +247,7 @@
 				E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */,
 				DEC38A042A5BFB1CD699F666 /* CalendarMonthTests.swift */,
 				35F986A976F914A696837702 /* CalendarEventsTests.swift */,
+				39439CEC1EFFEE9667ADA243 /* StatisticsDataTests.swift */,
 			);
 			name = TickemoTests;
 			path = TickemoTests;
@@ -358,6 +369,9 @@
 				ED9AE9C35C5B074506951858 /* ProfileEditView.swift */,
 				2A3984D275EFEC4030F2FFC1 /* CalendarView.swift */,
 				72645012E927C7402CB88893 /* CalendarDayEventsView.swift */,
+				9A44EAD7E3182AEE71372C12 /* StatisticsView.swift */,
+				D0B69313B8AB4D706F1A74A7 /* StatisticsRankingRowView.swift */,
+				3BB2E69E9939626941256BFF /* ArtistArchiveCardView.swift */,
 			);
 			name = Screens;
 			path = Tickemo/Screens;
@@ -378,6 +392,7 @@
 				5CFF0E3AA54C736CBE34C4B2 /* UserProfileFetching.swift */,
 				5FEDEC93481A9822F3289DA5 /* CalendarMonth.swift */,
 				4A46977CD287EA4809AF52CF /* CalendarEvents.swift */,
+				2C0D55C5C1F41BD095CB31A2 /* StatisticsData.swift */,
 			);
 			name = Support;
 			path = Tickemo/Support;
@@ -525,6 +540,7 @@
 				1FBF026431BD8FEAA1568620 /* ArtistGroupingTests.swift in Sources */,
 				0C8BB93A1F456B2717A9886B /* CalendarMonthTests.swift in Sources */,
 				BBA44572EF915D6CFA98D39B /* CalendarEventsTests.swift in Sources */,
+				B008A585215BC3F9FC2711A7 /* StatisticsDataTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -575,6 +591,10 @@
 				DCC4E1C2CB72401B93B0A171 /* CalendarDayEventsView.swift in Sources */,
 				CB343E91A83A26DAC5822C0F /* CalendarMonth.swift in Sources */,
 				06103D883AE95BBC14312886 /* CalendarEvents.swift in Sources */,
+				9EDB014EB4555F2D362F4A98 /* StatisticsView.swift in Sources */,
+				A2E7E1B441BF17659EBCAE95 /* StatisticsRankingRowView.swift in Sources */,
+				8514CB5212174CA3D1FB565B /* ArtistArchiveCardView.swift in Sources */,
+				DC8A3EBD510E47D88561F454 /* StatisticsData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -39,6 +39,7 @@ struct RecordListView: View {
   @State private var showingPaywall = false
   @State private var showingSettings = false
   @State private var showingCalendar = false
+  @State private var showingStatistics = false
   #if DEBUG
   @State private var showingDebugSheet = false
   #endif
@@ -182,6 +183,13 @@ struct RecordListView: View {
           Image(systemName: "calendar")
         }
       }
+      ToolbarItem(placement: .topBarLeading) {
+        Button {
+          showingStatistics = true
+        } label: {
+          Image(systemName: "chart.bar.xaxis")
+        }
+      }
     }
     .sheet(isPresented: $showingCreateSheet) {
       RecordFormView(record: nil)
@@ -191,6 +199,9 @@ struct RecordListView: View {
     }
     .sheet(isPresented: $showingCalendar) {
       CalendarView()
+    }
+    .sheet(isPresented: $showingStatistics) {
+      StatisticsView()
     }
     .sheet(isPresented: $showingSettings) {
       SettingsView()
