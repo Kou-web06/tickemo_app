@@ -1,5 +1,11 @@
 import SwiftUI
 
+/// Ports components/TicketDetail.tsx's layout and styling (colors, type
+/// scale, section structure) to SwiftUI. Explicitly out of scope, same as
+/// the rest of Phase 2: the `#set list` section (no CD_SetlistItem UI yet),
+/// share-image generation, and the custom bottom-sheet slide-up
+/// presentation (a plain NavigationStack push + system back button replaces
+/// RN's floating circular close button).
 struct RecordDetailView: View {
   @ObservedObject var record: CD_ChekiRecord
 
@@ -13,75 +19,38 @@ struct RecordDetailView: View {
 
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 16) {
+      VStack(alignment: .leading, spacing: 0) {
         header
 
-        Text(record.liveName ?? "")
-          .font(.title2.bold())
+        VStack(alignment: .leading, spacing: 0) {
+          Text(record.liveName ?? "-")
+            .font(.system(size: 26, weight: .black))
+            .foregroundStyle(Color(red: 0.169, green: 0.169, blue: 0.180))
+            .padding(.top, 26)
 
-        if let artist = record.artist, !artist.isEmpty {
-          Text(artist)
-            .font(.headline)
-            .foregroundStyle(.secondary)
-        }
+          artistPriceRow
+            .padding(.top, 10)
 
-        Label(liveType.label, systemImage: liveType.systemImage)
-          .font(.subheadline)
-          .foregroundStyle(.secondary)
+          dateTimeGrid
+            .padding(.top, 28)
 
-        Divider()
-
-        VStack(alignment: .leading, spacing: 10) {
-          detailRow(icon: "yensign.circle", label: "Price", value: priceText)
-          detailRow(icon: "calendar", label: "Date", value: dateText)
-          detailRow(icon: "clock", label: "Time", value: timeText)
-          detailRow(icon: "mappin.and.ellipse", label: "Venue", value: record.venue)
-          if let seat = record.seat, !seat.isEmpty {
-            detailRow(icon: "chair", label: "Seat", value: seat)
+          if let memo = record.memo, !memo.isEmpty {
+            memoSection(memo)
+              .padding(.top, 60)
           }
         }
-
-        if let memo = record.memo, !memo.isEmpty {
-          Divider()
-          VStack(alignment: .leading, spacing: 4) {
-            Text("Memo").font(.caption).foregroundStyle(.secondary)
-            Text(memo)
-          }
-        }
-
-        if let qrCode = record.qrCode, !qrCode.isEmpty {
-          Divider()
-          VStack(alignment: .leading, spacing: 4) {
-            Text("URL").font(.caption).foregroundStyle(.secondary)
-            if let url = URL(string: qrCode), let scheme = url.scheme, scheme.hasPrefix("http") {
-              Link(qrCode, destination: url)
-            } else {
-              Text(qrCode)
-                .textSelection(.enabled)
-            }
-          }
-        }
+        .padding(.horizontal, 22)
+        .padding(.bottom, 110)
       }
-      .padding()
     }
-    .navigationTitle(record.liveName ?? "Ticket")
+    .background(Color(red: 0.976, green: 0.976, blue: 0.976))
+    .ignoresSafeArea(edges: .top)
+    .overlay(alignment: .bottomTrailing) {
+      footerTab
+        .padding(.trailing, 12)
+        .padding(.bottom, 28)
+    }
     .navigationBarTitleDisplayMode(.inline)
-    .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        Button {
-          showingEditSheet = true
-        } label: {
-          Image(systemName: "pencil")
-        }
-      }
-      ToolbarItem(placement: .destructiveAction) {
-        Button(role: .destructive) {
-          showingDeleteConfirmation = true
-        } label: {
-          Image(systemName: "trash")
-        }
-      }
-    }
     .sheet(isPresented: $showingEditSheet) {
       RecordFormView(record: record)
     }
@@ -93,56 +62,201 @@ struct RecordDetailView: View {
     }
   }
 
+  // MARK: - Header
+
   private var header: some View {
-    HStack(alignment: .top, spacing: 12) {
+    ZStack(alignment: .bottomTrailing) {
       Group {
         if let data = record.coverImageData, let uiImage = UIImage(data: data) {
           Image(uiImage: uiImage)
             .resizable()
             .scaledToFill()
         } else {
-          Image(systemName: "photo")
-            .resizable()
-            .scaledToFit()
-            .padding(24)
-            .foregroundStyle(.tertiary)
-            .background(Color(.tertiarySystemBackground))
+          ZStack {
+            Color(red: 0.839, green: 0.839, blue: 0.839)
+            Text("NO IMAGE")
+              .font(.system(size: 16, weight: .bold))
+              .foregroundStyle(Color(white: 0.5))
+              .tracking(0.6)
+          }
         }
       }
-      .frame(width: 140, height: 140)
-      .clipShape(RoundedRectangle(cornerRadius: 12))
+      .aspectRatio(1.11, contentMode: .fill)
+      .frame(maxWidth: .infinity)
+      .clipped()
 
       QRCodeView(value: record.qrCode)
-        .frame(width: 100, height: 100)
+        .frame(width: 56, height: 56)
+        .padding(8)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 7))
+        .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
+        .padding(.trailing, 12)
+        .padding(.bottom, 14)
     }
-    .frame(maxWidth: .infinity)
+  }
+
+  // MARK: - Artist / price row
+
+  private var artistPriceRow: some View {
+    HStack(alignment: .top, spacing: 12) {
+      VStack(alignment: .leading, spacing: 6) {
+        Text(displayArtistsText)
+          .font(.system(size: 17, weight: .semibold))
+          .foregroundStyle(Color(white: 0.557))
+          .lineLimit(2)
+
+        Label(liveType.label, systemImage: liveType.systemImage)
+          .font(.system(size: 12, weight: .bold))
+          .foregroundStyle(Color(white: 0.486))
+      }
+
+      Spacer(minLength: 0)
+
+      HStack(spacing: 7) {
+        Image(systemName: "wallet.pass")
+          .foregroundStyle(Color(white: 0.616))
+        Text(priceText)
+          .font(.system(size: 17, weight: .heavy))
+          .foregroundStyle(Color(white: 0.541))
+      }
+    }
+  }
+
+  private var displayArtistsText: String {
+    let names = record.artistsArray?.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+    let unique = (names?.isEmpty == false ? names! : [record.artist ?? "-"])
+    var seen = Set<String>()
+    let deduped = unique.filter { seen.insert($0.lowercased()).inserted }
+    return deduped.isEmpty ? "-" : deduped.joined(separator: " / ")
   }
 
   private var priceText: String {
     record.ticketPrice.formatted(.currency(code: "JPY").precision(.fractionLength(0)))
   }
 
-  private var dateText: String {
-    guard let date = DateFormatting.date(from: record.date) else { return record.date ?? "-" }
-    return date.formatted(date: .long, time: .omitted) + " (" + date.formatted(.dateTime.weekday(.wide)) + ")"
+  // MARK: - Date / time grid
+
+  private var dateTimeGrid: some View {
+    HStack(alignment: .top, spacing: 16) {
+      VStack(alignment: .leading, spacing: 2) {
+        Text(yearText)
+          .font(.system(size: 14, weight: .bold))
+          .foregroundStyle(Color(white: 0.561))
+          .tracking(1.2)
+        HStack(alignment: .top, spacing: 8) {
+          Text(monthDayText)
+            .font(.system(size: 52, weight: .bold))
+            .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
+          if !weekdayText.isEmpty {
+            Text(weekdayText)
+              .font(.system(size: 12, weight: .bold))
+              .foregroundStyle(Color(white: 0.557))
+              .padding(.top, 10)
+              .tracking(1.1)
+          }
+        }
+        Text(record.venue?.isEmpty == false ? record.venue! : "-")
+          .font(.system(size: 16, weight: .heavy))
+          .foregroundStyle(Color(red: 0.184, green: 0.184, blue: 0.204))
+      }
+
+      VStack(alignment: .leading, spacing: 16) {
+        timeLine(label: "OPEN", value: record.startTime)
+        timeLine(label: "START", value: record.endTime)
+      }
+      .padding(.top, 10)
+      .frame(minWidth: 100)
+    }
   }
 
-  private var timeText: String {
-    let start = record.startTime ?? "-"
-    let end = record.endTime ?? "-"
-    return "\(start) - \(end)"
-  }
-
-  private func detailRow(icon: String, label: String, value: String?) -> some View {
-    HStack(alignment: .firstTextBaseline, spacing: 8) {
-      Image(systemName: icon)
-        .foregroundStyle(.secondary)
-        .frame(width: 20)
+  private func timeLine(label: String, value: String?) -> some View {
+    HStack(alignment: .lastTextBaseline, spacing: 14) {
       Text(label)
-        .font(.caption)
-        .foregroundStyle(.secondary)
-        .frame(width: 50, alignment: .leading)
-      Text(value?.isEmpty == false ? value! : "-")
+        .font(.system(size: 14, weight: .heavy))
+        .foregroundStyle(Color(white: 0.557))
+        .tracking(1)
+      Text(value?.isEmpty == false ? value! : "--:--")
+        .font(.system(size: 22, weight: .bold))
+        .foregroundStyle(Color(red: 0.180, green: 0.180, blue: 0.200))
+    }
+  }
+
+  // Fixed English weekday abbreviations, independent of device locale —
+  // matches TicketDetail.tsx's own hardcoded WEEKDAYS array rather than
+  // relying on locale-sensitive date formatting.
+  private static let weekdayAbbreviations = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+  private static var utcCalendar: Calendar {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = TimeZone(identifier: "UTC")!
+    return calendar
+  }
+
+  private var yearText: String {
+    guard let date = DateFormatting.date(from: record.date) else { return "----" }
+    let year = Self.utcCalendar.component(.year, from: date)
+    return String(year)
+  }
+
+  private var monthDayText: String {
+    guard let date = DateFormatting.date(from: record.date) else { return "--.--" }
+    let comps = Self.utcCalendar.dateComponents([.month, .day], from: date)
+    return "\(comps.month ?? 0).\(comps.day ?? 0)"
+  }
+
+  private var weekdayText: String {
+    guard let date = DateFormatting.date(from: record.date) else { return "" }
+    let weekday = Self.utcCalendar.component(.weekday, from: date) // 1 = Sunday
+    return Self.weekdayAbbreviations[weekday - 1]
+  }
+
+  // MARK: - Memo
+
+  private func memoSection(_ memo: String) -> some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("#memo")
+        .font(.system(size: 18, weight: .black))
+        .foregroundStyle(Color(red: 0.180, green: 0.180, blue: 0.196))
+
+      HStack(alignment: .top, spacing: 8) {
+        Image(systemName: "quote.opening")
+          .foregroundStyle(Color(white: 0.608))
+        Text(memo)
+          .font(.system(size: 16, weight: .medium))
+          .foregroundStyle(Color(red: 0.235, green: 0.235, blue: 0.251))
+          .lineSpacing(6)
+      }
+    }
+  }
+
+  // MARK: - Footer
+
+  private var footerTab: some View {
+    HStack(spacing: 8) {
+      footerButton(systemImage: "pencil", color: Color(white: 0.365)) {
+        showingEditSheet = true
+      }
+      footerButton(systemImage: "trash", color: Color(red: 0.961, green: 0.337, blue: 0.196)) {
+        showingDeleteConfirmation = true
+      }
+    }
+    .padding(.horizontal, 10)
+    .frame(height: 56)
+    .background(.white.opacity(0.88))
+    .clipShape(RoundedRectangle(cornerRadius: 28))
+    .overlay(
+      RoundedRectangle(cornerRadius: 28)
+        .stroke(Color(white: 0.541).opacity(0.25), lineWidth: 1)
+    )
+    .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 2)
+  }
+
+  private func footerButton(systemImage: String, color: Color, action: @escaping () -> Void) -> some View {
+    Button(action: action) {
+      Image(systemName: systemImage)
+        .font(.system(size: 18, weight: .medium))
+        .foregroundStyle(color)
+        .frame(width: 44, height: 44)
     }
   }
 
