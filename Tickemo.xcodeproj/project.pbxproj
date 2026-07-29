@@ -8,8 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		056EFB780FCB6E6FBFBCD546 /* ICloudFallbackLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */; };
+		06103D883AE95BBC14312886 /* CalendarEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A46977CD287EA4809AF52CF /* CalendarEvents.swift */; };
 		0B05F35A0911333F8B607931 /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9AE9C35C5B074506951858 /* ProfileEditView.swift */; };
 		0B351B3E542B62E4389EFF54 /* PurchasesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC8097D167570A73C9B4DE5 /* PurchasesService.swift */; };
+		0C8BB93A1F456B2717A9886B /* CalendarMonthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC38A042A5BFB1CD699F666 /* CalendarMonthTests.swift */; };
 		0E0C3FBACC56007B29311519 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533F2487C9C6F1664BADB87E /* PersistenceController.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		16A2485E8BBFB58BB581BDE3 /* LegacyStoreLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */; };
@@ -39,11 +41,14 @@
 		9890961637FB9FBBAC971ECB /* ArtistDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79EFA474502FB4D79CA516C5 /* ArtistDisplay.swift */; };
 		A4533220293DFD7F6EE2B932 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0AAC5966267FAE211BCBB815 /* Foundation.framework */; };
 		B917A2D7FAED036581A125D1 /* SetlistMarkerDivider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D96D1819AAF5E25C61CBDF /* SetlistMarkerDivider.swift */; };
+		BBA44572EF915D6CFA98D39B /* CalendarEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F986A976F914A696837702 /* CalendarEventsTests.swift */; };
 		BEE817BE6ACC130361BEE53A /* UserProfileFetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CFF0E3AA54C736CBE34C4B2 /* UserProfileFetching.swift */; };
 		C3D5A82856B58EA1471E206A /* UbiquitousItemDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */; };
+		CB343E91A83A26DAC5822C0F /* CalendarMonth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEDEC93481A9822F3289DA5 /* CalendarMonth.swift */; };
 		CBA1C5DA9656929640860C22 /* Tickemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4C1E949528C9C50F19CDB523 /* Tickemo.xcdatamodeld */; };
 		D66DB574454AC6C701CCA05E /* DebugToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */; };
 		D94F7FDF6A4A42DE8DE1F665 /* ImageMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */; };
+		DCC4E1C2CB72401B93B0A171 /* CalendarDayEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72645012E927C7402CB88893 /* CalendarDayEventsView.swift */; };
 		E0962E8E2F853CAD00CE3EF6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */; };
 		E0962E902F853CAD00CE3EF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */; };
 		E0962E9F2F853CAE00CE3EF6 /* LiveWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -55,6 +60,7 @@
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 		F91AEFA058FF8449AA6F7656 /* ArtistGridItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50F6C3CEF28C0BADA509B18 /* ArtistGridItemView.swift */; };
 		FBF0FF3EE1217C8384FAF47D /* QRCodeImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65D22356B3FEC0820B1BCDEA /* QRCodeImage.swift */; };
+		FC5A00852FE69092E8AFF124 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3984D275EFEC4030F2FFC1 /* CalendarView.swift */; };
 		FF8FD5ACDE59B775B191833A /* RecordRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F14C20B3287A528FE5B2D35B /* RecordRowView.swift */; };
 /* End PBXBuildFile section */
 
@@ -101,18 +107,23 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Tickemo/Info.plist; sourceTree = "<group>"; };
 		26FD9F153931A7B6B67A5D6F /* EarlyOfferService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EarlyOfferService.swift; sourceTree = "<group>"; };
 		291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
+		2A3984D275EFEC4030F2FFC1 /* CalendarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageMigrator.swift; sourceTree = "<group>"; };
 		2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ICloudFallbackLoader.swift; sourceTree = "<group>"; };
+		35F986A976F914A696837702 /* CalendarEventsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarEventsTests.swift; sourceTree = "<group>"; };
 		46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayTransformer.swift; sourceTree = "<group>"; };
 		472A3A7CC25C17955E6806FC /* ChekiRecordArtists.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordArtists.swift; sourceTree = "<group>"; };
+		4A46977CD287EA4809AF52CF /* CalendarEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarEvents.swift; sourceTree = "<group>"; };
 		4AFC27233C7B2540CCA957DB /* MusicKitService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MusicKitService.swift; sourceTree = "<group>"; };
 		533F2487C9C6F1664BADB87E /* PersistenceController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
 		5CFF0E3AA54C736CBE34C4B2 /* UserProfileFetching.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserProfileFetching.swift; sourceTree = "<group>"; };
 		5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigrationImporter.swift; sourceTree = "<group>"; };
+		5FEDEC93481A9822F3289DA5 /* CalendarMonth.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarMonth.swift; sourceTree = "<group>"; };
 		61E0598F65D7A285A738A3B2 /* Tickemo.xcdatamodel */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = wrapper.xcdatamodel; path = Tickemo.xcdatamodel; sourceTree = "<group>"; };
 		65D22356B3FEC0820B1BCDEA /* QRCodeImage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = QRCodeImage.swift; sourceTree = "<group>"; };
 		663D8AB87BB759FE96E9A35E /* RecordListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordListView.swift; sourceTree = "<group>"; };
 		665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UbiquitousItemDownloader.swift; sourceTree = "<group>"; };
+		72645012E927C7402CB88893 /* CalendarDayEventsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarDayEventsView.swift; sourceTree = "<group>"; };
 		75A497802B9D44B09DD368FD /* LegacyStoreModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModelsTests.swift; sourceTree = "<group>"; };
 		79EFA474502FB4D79CA516C5 /* ArtistDisplay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistDisplay.swift; sourceTree = "<group>"; };
 		84F2C15210F8E73A8598F6DA /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -128,6 +139,7 @@
 		CCB5B2FD867D3B5F862DB18E /* LiveType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveType.swift; sourceTree = "<group>"; };
 		D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugToolsView.swift; sourceTree = "<group>"; };
 		DDC8097D167570A73C9B4DE5 /* PurchasesService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PurchasesService.swift; sourceTree = "<group>"; };
+		DEC38A042A5BFB1CD699F666 /* CalendarMonthTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarMonthTests.swift; sourceTree = "<group>"; };
 		E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LiveWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -223,6 +235,8 @@
 			children = (
 				75A497802B9D44B09DD368FD /* LegacyStoreModelsTests.swift */,
 				E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */,
+				DEC38A042A5BFB1CD699F666 /* CalendarMonthTests.swift */,
+				35F986A976F914A696837702 /* CalendarEventsTests.swift */,
 			);
 			name = TickemoTests;
 			path = TickemoTests;
@@ -342,6 +356,8 @@
 				FA3B340E7E4AFF0BA3EF673F /* PaywallView.swift */,
 				84F2C15210F8E73A8598F6DA /* SettingsView.swift */,
 				ED9AE9C35C5B074506951858 /* ProfileEditView.swift */,
+				2A3984D275EFEC4030F2FFC1 /* CalendarView.swift */,
+				72645012E927C7402CB88893 /* CalendarDayEventsView.swift */,
 			);
 			name = Screens;
 			path = Tickemo/Screens;
@@ -360,6 +376,8 @@
 				ABE32B53EF806DB6BDB8FBCE /* ChekiRecordSetlist.swift */,
 				062157A9D3F648E065E34101 /* ArtistGrouping.swift */,
 				5CFF0E3AA54C736CBE34C4B2 /* UserProfileFetching.swift */,
+				5FEDEC93481A9822F3289DA5 /* CalendarMonth.swift */,
+				4A46977CD287EA4809AF52CF /* CalendarEvents.swift */,
 			);
 			name = Support;
 			path = Tickemo/Support;
@@ -505,6 +523,8 @@
 			files = (
 				653CB0056D0AB729EF2E89B6 /* LegacyStoreModelsTests.swift in Sources */,
 				1FBF026431BD8FEAA1568620 /* ArtistGroupingTests.swift in Sources */,
+				0C8BB93A1F456B2717A9886B /* CalendarMonthTests.swift in Sources */,
+				BBA44572EF915D6CFA98D39B /* CalendarEventsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -551,6 +571,10 @@
 				7901BF40FB3DF96C71D46422 /* SettingsView.swift in Sources */,
 				0B05F35A0911333F8B607931 /* ProfileEditView.swift in Sources */,
 				BEE817BE6ACC130361BEE53A /* UserProfileFetching.swift in Sources */,
+				FC5A00852FE69092E8AFF124 /* CalendarView.swift in Sources */,
+				DCC4E1C2CB72401B93B0A171 /* CalendarDayEventsView.swift in Sources */,
+				CB343E91A83A26DAC5822C0F /* CalendarMonth.swift in Sources */,
+				06103D883AE95BBC14312886 /* CalendarEvents.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

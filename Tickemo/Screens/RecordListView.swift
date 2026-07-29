@@ -38,6 +38,7 @@ struct RecordListView: View {
   @State private var showingCreateSheet = false
   @State private var showingPaywall = false
   @State private var showingSettings = false
+  @State private var showingCalendar = false
   #if DEBUG
   @State private var showingDebugSheet = false
   #endif
@@ -174,12 +175,22 @@ struct RecordListView: View {
           Image(systemName: "gearshape")
         }
       }
+      ToolbarItem(placement: .topBarLeading) {
+        Button {
+          showingCalendar = true
+        } label: {
+          Image(systemName: "calendar")
+        }
+      }
     }
     .sheet(isPresented: $showingCreateSheet) {
       RecordFormView(record: nil)
     }
     .sheet(isPresented: $showingPaywall) {
       PaywallView()
+    }
+    .sheet(isPresented: $showingCalendar) {
+      CalendarView()
     }
     .sheet(isPresented: $showingSettings) {
       SettingsView()

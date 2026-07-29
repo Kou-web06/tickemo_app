@@ -71,4 +71,16 @@ enum DateFormatting {
     guard let string, !string.isEmpty else { return nil }
     return isoFormatter.date(from: string)
   }
+
+  /// Shared UTC-anchored calendar for extracting components (year/month/
+  /// day/weekday) from dates parsed via `date(from:)`, matching the
+  /// convention already used ad hoc in ArtistGrouping/RecordDetailView/
+  /// RecordListView — `Calendar.current` must never be used for this, since
+  /// it would reintroduce the local-timezone-vs-UTC-string mismatch bugs
+  /// this migration already found and fixed twice.
+  static var utcCalendar: Calendar {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = timeZone
+    return calendar
+  }
 }
