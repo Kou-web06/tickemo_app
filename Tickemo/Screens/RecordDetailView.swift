@@ -1,12 +1,17 @@
 import SwiftUI
+import UIKit
 
 /// Ports components/TicketDetail.tsx's layout and styling (colors, type
 /// scale, section structure) to SwiftUI. Explicitly out of scope, same as
 /// the rest of Phase 2: share-image generation, and the custom bottom-sheet
 /// slide-up presentation (a plain NavigationStack push + system back button
 /// replaces RN's floating circular close button). The `#set list` section
-/// is read-only here plus tap-to-play (RN never had in-app playback, only
-/// external Spotify/Apple Music deep links) — editing happens in
+/// is read-only here plus tap-to-play: try real in-app playback first
+/// (RN never had this, only external Spotify/Apple Music deep links), and
+/// fall back to those same external links — ported from
+/// TicketDetail.tsx's `handleOpenSongWithProvider`/`openSpotifySearch` —
+/// when in-app playback isn't available (no Apple Music subscription,
+/// unauthorized, song not in the catalog, etc). Editing happens in
 /// SetlistEditorView.
 struct RecordDetailView: View {
   @ObservedObject var record: CD_ChekiRecord
@@ -17,6 +22,7 @@ struct RecordDetailView: View {
   @State private var showingEditSheet = false
   @State private var showingDeleteConfirmation = false
   @State private var showingSetlistEditor = false
+  @State private var fallbackItem: CD_SetlistItem?
 
   private let appleMusicService = AppleMusicService()
   @State private var nowPlayingSongId: String?
@@ -72,6 +78,17 @@ struct RecordDetailView: View {
       Button("Cancel", role: .cancel) {}
     } message: {
       Text("This cannot be undone.")
+    }
+    .confirmationDialog(
+      "Couldn't play in the app",
+      isPresented: Binding(get: { fallbackItem != nil }, set: { if !$0 { fallbackItem = nil } }),
+      presenting: fallbackItem
+    ) { item in
+      Button("Open in Spotify") { openInSpotify(item) }
+      Button("Open in Apple Music") { openInAppleMusic(item) }
+      Button("Cancel", role: .cancel) {}
+    } message: { item in
+      Text(item.songName ?? "This song")
     }
   }
 
@@ -284,7 +301,7 @@ struct RecordDetailView: View {
       Spacer(minLength: 8)
 
       if let songId = item.songId, !songId.isEmpty {
-        playButton(songId: songId)
+        playButton(item)
       }
     }
     .padding(.vertical, 8)
@@ -294,13 +311,14 @@ struct RecordDetailView: View {
   }
 
   @ViewBuilder
-  private func playButton(songId: String) -> some View {
+  private func playButton(_ item: CD_SetlistItem) -> some View {
+    let songId = item.songId ?? ""
     if loadingSongId == songId {
       ProgressView()
         .frame(width: 26, height: 26)
     } else {
       Button {
-        togglePlay(songId: songId)
+        togglePlay(item)
       } label: {
         Image(systemName: nowPlayingSongId == songId ? "pause.circle.fill" : "play.circle.fill")
           .font(.system(size: 22))
@@ -309,7 +327,12 @@ struct RecordDetailView: View {
     }
   }
 
-  private func togglePlay(songId: String) {
+  /// Tries real in-app playback first; falls back to the same external
+  /// Spotify/Apple Music links TicketDetail.tsx always used when playback
+  /// isn't possible (no subscription, unauthorized, song not found, etc.).
+  private func togglePlay(_ item: CD_SetlistItem) {
+    guard let songId = item.songId, !songId.isEmpty else { return }
+
     if nowPlayingSongId == songId {
       appleMusicService.pause()
       nowPlayingSongId = nil
@@ -321,7 +344,10 @@ struct RecordDetailView: View {
       defer { loadingSongId = nil }
 
       if !appleMusicService.isAuthorized() {
-        guard await appleMusicService.authorize() else { return }
+        guard await appleMusicService.authorize() else {
+          fallbackItem = item
+          return
+        }
       }
 
       do {
@@ -329,8 +355,36 @@ struct RecordDetailView: View {
         nowPlayingSongId = songId
       } catch {
         nowPlayingSongId = nil
+        fallbackItem = item
       }
     }
+  }
+
+  // MARK: - External fallback (ports TicketDetail.tsx's openSpotifySearch /
+  // Apple Music web-search fallback)
+
+  private func searchQuery(for item: CD_SetlistItem) -> String {
+    "\(item.songName ?? "") \(item.artistName ?? "")".trimmingCharacters(in: .whitespaces)
+  }
+
+  private func openInSpotify(_ item: CD_SetlistItem) {
+    let query = searchQuery(for: item)
+    guard !query.isEmpty, let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
+
+    if let deepLink = URL(string: "spotify:search:\(encoded)"), UIApplication.shared.canOpenURL(deepLink) {
+      UIApplication.shared.open(deepLink)
+    } else if let webURL = URL(string: "https://open.spotify.com/search/\(encoded)") {
+      UIApplication.shared.open(webURL)
+    }
+  }
+
+  private func openInAppleMusic(_ item: CD_SetlistItem) {
+    let query = searchQuery(for: item)
+    guard !query.isEmpty,
+          let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+          let url = URL(string: "https://music.apple.com/search?term=\(encoded)")
+    else { return }
+    UIApplication.shared.open(url)
   }
 
   // MARK: - Memo
