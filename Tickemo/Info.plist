@@ -40,6 +40,8 @@
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>spotify</string>
+		<string>instagram-stories</string>
+		<string>instagram</string>
 	</array>
 	<key>LSMinimumSystemVersion</key>
 	<string>12.0</string>

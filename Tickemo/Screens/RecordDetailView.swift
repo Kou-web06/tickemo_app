@@ -3,9 +3,11 @@ import UIKit
 
 /// Ports components/TicketDetail.tsx's layout and styling (colors, type
 /// scale, section structure) to SwiftUI. Explicitly out of scope, same as
-/// the rest of Phase 2: share-image generation, and the custom bottom-sheet
-/// slide-up presentation (a plain NavigationStack push + system back button
-/// replaces RN's floating circular close button). The `#set list` section
+/// the rest of Phase 2: the custom bottom-sheet slide-up presentation (a
+/// plain NavigationStack push + system back button replaces RN's floating
+/// circular close button). Share-image generation (Ticket/CD/Receipt
+/// cards) is implemented in ShareSheetView, presented from the footer's
+/// share button. The `#set list` section
 /// is read-only here plus tap-to-play: try real in-app playback first
 /// (RN never had this, only external Spotify/Apple Music deep links), and
 /// fall back to those same external links — ported from
@@ -22,6 +24,7 @@ struct RecordDetailView: View {
   @State private var showingEditSheet = false
   @State private var showingDeleteConfirmation = false
   @State private var showingSetlistEditor = false
+  @State private var showingShareSheet = false
   @State private var fallbackItem: CD_SetlistItem?
 
   private let appleMusicService = AppleMusicService()
@@ -72,6 +75,9 @@ struct RecordDetailView: View {
     }
     .sheet(isPresented: $showingSetlistEditor) {
       SetlistEditorView(record: record)
+    }
+    .sheet(isPresented: $showingShareSheet) {
+      ShareSheetView(record: record)
     }
     .alert("Delete this ticket?", isPresented: $showingDeleteConfirmation) {
       Button("Delete", role: .destructive) { deleteRecord() }
@@ -410,6 +416,9 @@ struct RecordDetailView: View {
 
   private var footerTab: some View {
     HStack(spacing: 8) {
+      footerButton(systemImage: "square.and.arrow.up", color: Color(white: 0.365)) {
+        showingShareSheet = true
+      }
       footerButton(systemImage: "pencil", color: Color(white: 0.365)) {
         showingEditSheet = true
       }
