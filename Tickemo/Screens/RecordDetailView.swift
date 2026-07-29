@@ -188,7 +188,7 @@ struct RecordDetailView: View {
   private static let weekdayAbbreviations = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
   private static var utcCalendar: Calendar {
     var calendar = Calendar(identifier: .gregorian)
-    calendar.timeZone = TimeZone(identifier: "UTC")!
+    calendar.timeZone = DateFormatting.timeZone
     return calendar
   }
 

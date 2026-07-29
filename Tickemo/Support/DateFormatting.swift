@@ -9,10 +9,19 @@ enum DateFormatting {
   static let dateFormat = "yyyy-MM-dd"
   static let timeFormat = "HH:mm"
 
+  /// The single fixed timezone all date/time string conversions use.
+  /// SwiftUI views that let the user pick a `date`/`startTime`/`endTime`
+  /// value (e.g. RecordFormView's DatePickers) must inject this via
+  /// `.environment(\.timeZone, DateFormatting.timeZone)` so what's shown on
+  /// screen and what gets parsed/formatted here stay in sync — otherwise
+  /// DatePicker interprets/produces Date values in the device's local
+  /// timezone, which can shift the stored calendar day by one.
+  static let timeZone = TimeZone(identifier: "UTC")!
+
   private static let dateFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(identifier: "UTC")
+    formatter.timeZone = timeZone
     formatter.dateFormat = dateFormat
     return formatter
   }()
@@ -20,7 +29,7 @@ enum DateFormatting {
   private static let timeFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(identifier: "UTC")
+    formatter.timeZone = timeZone
     formatter.dateFormat = timeFormat
     return formatter
   }()

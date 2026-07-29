@@ -131,6 +131,16 @@ struct RecordFormView: View {
         }
       }
     }
+    // CD_ChekiRecord.date/startTime/endTime are wall-clock strings formatted
+    // in UTC (see DateFormatting), not real timezone-aware instants. Without
+    // this, DatePicker interprets/produces its Date value using the device's
+    // local timezone: picking "Aug 15" in any timezone ahead of UTC (e.g.
+    // JST, UTC+9) yields a Date whose UTC calendar day is still Aug 14,
+    // which DateFormatting.string(from:) would then save as "2026-08-14" —
+    // one day off from what was actually picked. Pinning the whole form's
+    // timezone to UTC keeps what's shown on screen and what gets stored in
+    // sync regardless of the device's timezone.
+    .environment(\.timeZone, DateFormatting.timeZone)
   }
 
   @ViewBuilder

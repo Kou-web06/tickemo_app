@@ -33,7 +33,13 @@ struct RecordListView: View {
 
   private var filteredRecords: [CD_ChekiRecord] {
     guard filter != .all else { return Array(records) }
-    let today = Calendar.current.startOfDay(for: Date())
+    // record.date is parsed as a UTC calendar day (see DateFormatting), so
+    // "today" must be computed the same way — using the device's local
+    // calendar here would shift the upcoming/past boundary by the device's
+    // UTC offset.
+    var utcCalendar = Calendar(identifier: .gregorian)
+    utcCalendar.timeZone = DateFormatting.timeZone
+    let today = utcCalendar.startOfDay(for: Date())
     return records.filter { record in
       guard let date = DateFormatting.date(from: record.date) else { return filter == .all }
       switch filter {
