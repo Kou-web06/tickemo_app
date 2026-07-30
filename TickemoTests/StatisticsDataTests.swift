@@ -15,6 +15,7 @@ final class StatisticsDataTests: XCTestCase {
   @discardableResult
   private func makeRecord(
     artist: String? = nil,
+    artistImageUrl: String? = nil,
     date: String,
     startTime: String? = nil,
     venue: String? = nil,
@@ -24,6 +25,7 @@ final class StatisticsDataTests: XCTestCase {
     let record = CD_ChekiRecord(context: context)
     record.id = UUID()
     record.artist = artist
+    record.artistImageUrl = artistImageUrl
     record.date = date
     record.startTime = startTime
     record.venue = venue
@@ -194,16 +196,29 @@ final class StatisticsDataTests: XCTestCase {
   // MARK: - All artists ordering and image selection
 
   func testAllArtistsSortsByLastLiveDescendingAndImageFollowsLatestRecord() {
-    let oldest = makeRecord(artist: "Artist", date: "2020-01-01", withCoverImage: true)
-    let middle = makeRecord(artist: "Artist", date: "2020-06-01", withCoverImage: false)
-    let newest = makeRecord(artist: "Artist", date: "2020-12-01", withCoverImage: false)
-    let other = makeRecord(artist: "Other Artist", date: "2020-03-01", withCoverImage: false)
+    let oldest = makeRecord(artist: "Artist", artistImageUrl: "oldest-url", date: "2020-01-01")
+    let middle = makeRecord(artist: "Artist", date: "2020-06-01")
+    let newest = makeRecord(artist: "Artist", date: "2020-12-01")
+    let other = makeRecord(artist: "Other Artist", date: "2020-03-01")
     try? context.save()
 
     let entries = StatisticsData.allArtists([oldest, middle, newest, other])
 
     XCTAssertEqual(entries.map(\.name), ["Artist", "Other Artist"])
-    XCTAssertNotNil(entries.first?.coverImageData, "no image on the newest record falls back to the oldest record's cover")
+    XCTAssertEqual(entries.first?.artistImageUrl, "oldest-url", "no image on the newest record falls back to the oldest record's artist photo")
+  }
+
+  // MARK: - Top artists image selection
+
+  func testTopArtistsArtistImageUrlPicksFirstNonNilAcrossRecords() {
+    var records: [CD_ChekiRecord] = []
+    records.append(makeRecord(artist: "Artist", date: "2020-01-01"))
+    records.append(makeRecord(artist: "Artist", artistImageUrl: "official-url", date: "2020-06-01"))
+    try? context.save()
+
+    let ranked = StatisticsData.topArtists(records)
+
+    XCTAssertEqual(ranked.first?.artistImageUrl, "official-url")
   }
 
   // MARK: - Rank helper

@@ -55,18 +55,32 @@ struct ArtistDetailView: View {
 
   // MARK: - Hero
 
-  private var heroImageData: Data? {
-    records.first(where: { $0.coverImageData != nil })?.coverImageData
+  // RN's ArtistDetailScreen hero falls straight through to a flat
+  // placeholder color when no official artist photo is found — it never
+  // falls back to the user's own ticket cover photo here, unlike the
+  // Collection artist grid. `entries(for:)` already resolves the
+  // per-record, per-index artistImageUrl (or single-artist fallback), so
+  // this just takes the first non-nil match across this artist's records.
+  private var heroImageUrl: String? {
+    let target = artistName.trimmingCharacters(in: .whitespaces).lowercased()
+    for record in records {
+      if let url = ArtistGrouping.entries(for: record).first(where: { $0.name.lowercased() == target })?.imageUrl {
+        return url
+      }
+    }
+    return nil
   }
 
   @ViewBuilder
   private var hero: some View {
     ZStack(alignment: .bottomLeading) {
       Group {
-        if let data = heroImageData, let uiImage = UIImage(data: data) {
-          Image(uiImage: uiImage)
-            .resizable()
-            .scaledToFill()
+        if let urlString = heroImageUrl, let url = URL(string: urlString) {
+          AsyncImage(url: url) { image in
+            image.resizable().scaledToFill()
+          } placeholder: {
+            Color(red: 0.839, green: 0.839, blue: 0.839)
+          }
         } else {
           Color(red: 0.839, green: 0.839, blue: 0.839)
         }

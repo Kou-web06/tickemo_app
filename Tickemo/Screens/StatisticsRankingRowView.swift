@@ -27,24 +27,32 @@ struct RankBadge: View {
   }
 }
 
-/// How a StatisticsRankingRow shows artwork: TOP ARTISTS uses a locally
-/// stored cover image, TOP SONGS uses a remote setlist artwork URL, and TOP
-/// VENUES shows no image at all (matching RN, which never renders an image
-/// slot for venues) rather than a placeholder box.
+/// How a StatisticsRankingRow shows artwork: TOP ARTISTS and TOP SONGS both
+/// show a remote artwork URL (an official MusicKit artist photo or a
+/// setlist song's artwork — RN never falls back to the user's own ticket
+/// cover photo in either ranking), and TOP VENUES shows no image at all
+/// (matching RN, which never renders an image slot for venues) rather than
+/// a placeholder box.
 enum StatisticsRowThumbnail {
-  case coverImage(Data?)
   case artworkUrl(String?)
   case none
 }
 
 /// Shared row layout reused by TOP ARTISTS / TOP VENUES / TOP SONGS: a
 /// RankBadge, an optional thumbnail, a name, and a trailing detail string
-/// (e.g. "12 lives" / "5 plays").
+/// (e.g. "12 lives" / "5 plays"). `imageShape` matches RN's `RankingItem`
+/// prop of the same name — TOP ARTISTS passes `.circle` (artist portraits),
+/// everything else defaults to `.square` (album/venue-style artwork).
 struct StatisticsRankingRow: View {
+  enum ImageShape {
+    case circle, square
+  }
+
   let rank: Int
   let name: String
   let detail: String
   let thumbnail: StatisticsRowThumbnail
+  var imageShape: ImageShape = .square
 
   var body: some View {
     HStack(spacing: 12) {
@@ -63,16 +71,6 @@ struct StatisticsRankingRow: View {
   @ViewBuilder
   private var thumbnailView: some View {
     switch thumbnail {
-    case .coverImage(let data):
-      if let data, let uiImage = UIImage(data: data) {
-        Image(uiImage: uiImage)
-          .resizable()
-          .scaledToFill()
-          .frame(width: 36, height: 36)
-          .clipShape(RoundedRectangle(cornerRadius: 8))
-      } else {
-        placeholder
-      }
     case .artworkUrl(let urlString):
       AsyncImage(url: URL(string: urlString ?? "")) { image in
         image.resizable().scaledToFill()
@@ -80,15 +78,16 @@ struct StatisticsRankingRow: View {
         Color(.tertiarySystemBackground)
       }
       .frame(width: 36, height: 36)
-      .clipShape(RoundedRectangle(cornerRadius: 8))
+      .clipShape(clipShape)
     case .none:
       EmptyView()
     }
   }
 
-  private var placeholder: some View {
-    RoundedRectangle(cornerRadius: 8)
-      .fill(Color(.tertiarySystemBackground))
-      .frame(width: 36, height: 36)
+  private var clipShape: AnyShape {
+    switch imageShape {
+    case .circle: AnyShape(Circle())
+    case .square: AnyShape(RoundedRectangle(cornerRadius: 8))
+    }
   }
 }

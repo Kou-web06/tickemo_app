@@ -9,11 +9,25 @@ import Foundation
 /// research concluded looks like an RN-side inconsistency, not a deliberate
 /// design choice worth replicating.
 enum ArtistGrouping {
+  /// One (name, officialImageUrl) pair per non-empty artist on `record`,
+  /// index-aligned with `artistsArray`/`artist` the same way RN's
+  /// `getRecordArtistEntries` aligns `artists[]` with `artistImageUrls[]` —
+  /// `artistImageUrls[index]`, falling back to the single `artistImageUrl`
+  /// only for index 0 (the single-artist-field case).
+  static func entries(for record: CD_ChekiRecord) -> [(name: String, imageUrl: String?)] {
+    let rawNames = (record.artistsArray?.isEmpty == false) ? record.artistsArray! : [record.artist ?? ""]
+    let urls = record.artistImageUrls as? [String] ?? []
+    return rawNames.enumerated().compactMap { index, rawName in
+      let name = rawName.trimmingCharacters(in: .whitespaces)
+      guard !name.isEmpty else { return nil }
+      let rawUrl = index < urls.count ? urls[index] : (index == 0 ? record.artistImageUrl : nil)
+      let trimmedUrl = rawUrl?.trimmingCharacters(in: .whitespaces)
+      return (name, (trimmedUrl?.isEmpty == false) ? trimmedUrl : nil)
+    }
+  }
+
   static func names(for record: CD_ChekiRecord) -> [String] {
-    let raw = (record.artistsArray?.isEmpty == false) ? record.artistsArray! : [record.artist ?? ""]
-    return raw
-      .map { $0.trimmingCharacters(in: .whitespaces) }
-      .filter { !$0.isEmpty }
+    entries(for: record).map(\.name)
   }
 
   static func matches(_ record: CD_ChekiRecord, artistName: String) -> Bool {
@@ -27,6 +41,7 @@ enum ArtistGrouping {
     let showCount: Int
     let latestPastDateText: String // "-" if no past show
     let coverImageData: Data?
+    let artistImageUrl: String?
   }
 
   /// Groups `records` by artist name (case-insensitive/trimmed), sorted by
@@ -34,16 +49,19 @@ enum ArtistGrouping {
   /// deterministic order (RN only sorts by count, leaving ties unspecified).
   static func tiles(from records: [CD_ChekiRecord]) -> [Tile] {
     var order: [String] = []
-    var buckets: [String: (name: String, records: [CD_ChekiRecord])] = [:]
+    var buckets: [String: (name: String, records: [CD_ChekiRecord], imageUrl: String?)] = [:]
 
     for record in records {
-      for name in names(for: record) {
-        let key = name.lowercased()
+      for entry in entries(for: record) {
+        let key = entry.name.lowercased()
         if buckets[key] == nil {
-          buckets[key] = (name, [])
+          buckets[key] = (entry.name, [], nil)
           order.append(key)
         }
         buckets[key]!.records.append(record)
+        if buckets[key]!.imageUrl == nil, let url = entry.imageUrl {
+          buckets[key]!.imageUrl = url
+        }
       }
     }
 
@@ -55,7 +73,8 @@ enum ArtistGrouping {
           name: bucket.name,
           showCount: bucket.records.count,
           latestPastDateText: latestPastDate(in: bucket.records),
-          coverImageData: bucket.records.first(where: { $0.coverImageData != nil })?.coverImageData
+          coverImageData: bucket.records.first(where: { $0.coverImageData != nil })?.coverImageData,
+          artistImageUrl: bucket.imageUrl
         )
       }
       .sorted {

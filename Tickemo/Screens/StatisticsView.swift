@@ -18,6 +18,14 @@ struct StatisticsView: View {
   @State private var selectedYear: Int?
   @State private var priceHidden = false
 
+  // Non-persisted, in-memory cache of live-searched artist photos for
+  // records saved without one (e.g. typed before ArtistSearchField existed,
+  // or picked with no MusicKit match). Matches RN's own `artistImages`
+  // React state exactly: keyed by lowercased name, top-1-result search,
+  // never written back to the record.
+  @State private var artistImageBackfill: [String: String] = [:]
+  private let appleMusicService = AppleMusicService()
+
   private var attendedRecords: [CD_ChekiRecord] {
     StatisticsData.attendedRecords(Array(records), now: Date())
   }
@@ -118,6 +126,7 @@ struct StatisticsView: View {
 
   private var topArtistsSection: some View {
     let items = StatisticsData.topArtists(filteredRecords)
+    let missingNames = items.filter { $0.artistImageUrl == nil }.map(\.name)
     return sectionContainer(title: "TOP ARTISTS") {
       if items.isEmpty {
         emptyRow
@@ -128,16 +137,21 @@ struct StatisticsView: View {
               rank: item.rank,
               name: item.name,
               detail: "\(item.count) lives",
-              thumbnail: .coverImage(item.coverImageData)
+              thumbnail: .artworkUrl(item.artistImageUrl ?? artistImageBackfill[item.name.lowercased()]),
+              imageShape: .circle
             )
           }
         }
       }
     }
+    .task(id: missingNames) {
+      await backfillArtistImages(names: missingNames)
+    }
   }
 
   private var allArtistsSection: some View {
     let items = StatisticsData.allArtists(filteredRecords)
+    let missingNames = items.filter { $0.artistImageUrl == nil }.map(\.name)
     return sectionContainer(title: "ALL ARTISTS") {
       if items.isEmpty {
         emptyRow
@@ -146,13 +160,37 @@ struct StatisticsView: View {
           HStack(spacing: 12) {
             ForEach(items) { entry in
               NavigationLink(value: ArtistRoute(name: entry.name)) {
-                ArtistArchiveCardView(entry: entry)
+                ArtistArchiveCardView(entry: resolved(entry))
               }
               .buttonStyle(.plain)
             }
           }
         }
       }
+    }
+    .task(id: missingNames) {
+      await backfillArtistImages(names: missingNames)
+    }
+  }
+
+  private func resolved(_ entry: ArtistArchiveEntry) -> ArtistArchiveEntry {
+    guard entry.artistImageUrl == nil, let backfilled = artistImageBackfill[entry.name.lowercased()] else {
+      return entry
+    }
+    return ArtistArchiveEntry(id: entry.id, name: entry.name, lastLiveDateText: entry.lastLiveDateText, artistImageUrl: backfilled)
+  }
+
+  /// Mirrors RN's per-name live-search backfill effects for TOP ARTISTS/ALL
+  /// ARTISTS (the only two sections that do this): a top-1 MusicKit search
+  /// per missing name, cached in `artistImageBackfill` so it only ever runs
+  /// once per name per app session, never persisted back to the record.
+  private func backfillArtistImages(names: [String]) async {
+    for name in names {
+      let key = name.lowercased()
+      if artistImageBackfill[key] != nil { continue }
+      guard let result = try? await appleMusicService.searchArtists(term: name).first,
+            !result.imageUrl.isEmpty else { continue }
+      artistImageBackfill[key] = result.imageUrl
     }
   }
 

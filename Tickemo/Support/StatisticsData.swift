@@ -11,14 +11,14 @@ struct RankedArtist: Identifiable {
   let rank: Int
   let name: String
   let count: Int
-  let coverImageData: Data?
+  let artistImageUrl: String?
 }
 
 struct ArtistArchiveEntry: Identifiable {
   let id: String
   let name: String
   let lastLiveDateText: String
-  let coverImageData: Data?
+  let artistImageUrl: String?
 }
 
 struct MonthlyBucket: Identifiable {
@@ -129,7 +129,7 @@ enum StatisticsData {
         rank: rank(for: tile.showCount, among: keptCounts),
         name: tile.name,
         count: tile.showCount,
-        coverImageData: tile.coverImageData
+        artistImageUrl: tile.artistImageUrl
       )
     }
   }
@@ -138,20 +138,20 @@ enum StatisticsData {
 
   static func allArtists(_ records: [CD_ChekiRecord]) -> [ArtistArchiveEntry] {
     var order: [String] = []
-    var latest: [String: (name: String, instant: Date, coverImageData: Data?)] = [:]
+    var latest: [String: (name: String, instant: Date, artistImageUrl: String?)] = [:]
 
     for record in records {
       guard let instant = recordInstant(record) else { continue }
-      for name in ArtistGrouping.names(for: record) {
-        let key = name.lowercased()
+      for entry in ArtistGrouping.entries(for: record) {
+        let key = entry.name.lowercased()
         if let existing = latest[key] {
           if instant > existing.instant {
-            latest[key] = (existing.name, instant, record.coverImageData ?? existing.coverImageData)
-          } else if existing.coverImageData == nil, let cover = record.coverImageData {
-            latest[key] = (existing.name, existing.instant, cover)
+            latest[key] = (existing.name, instant, entry.imageUrl ?? existing.artistImageUrl)
+          } else if existing.artistImageUrl == nil, let url = entry.imageUrl {
+            latest[key] = (existing.name, existing.instant, url)
           }
         } else {
-          latest[key] = (name, instant, record.coverImageData)
+          latest[key] = (entry.name, instant, entry.imageUrl)
           order.append(key)
         }
       }
@@ -171,7 +171,7 @@ enum StatisticsData {
           lastLiveDateText: value.instant.formatted(
             .dateTime.month(.abbreviated).day().year().locale(Locale(identifier: "en_US"))
           ),
-          coverImageData: value.coverImageData
+          artistImageUrl: value.artistImageUrl
         )
         return (entry, value.instant)
       }

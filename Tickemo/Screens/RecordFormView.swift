@@ -18,6 +18,7 @@ struct RecordFormView: View {
   @State private var startTime: Date
   @State private var endTime: Date
   @State private var artistName: String
+  @State private var artistImageUrl: String?
   @State private var memo: String
   @State private var qrCode: String
 
@@ -35,6 +36,7 @@ struct RecordFormView: View {
     _startTime = State(initialValue: DateFormatting.time(from: record?.startTime) ?? Date())
     _endTime = State(initialValue: DateFormatting.time(from: record?.endTime) ?? Date())
     _artistName = State(initialValue: record?.artist ?? "")
+    _artistImageUrl = State(initialValue: record?.artistImageUrl)
     _memo = State(initialValue: record?.memo ?? "")
     _qrCode = State(initialValue: record?.qrCode ?? "")
     _coverImageData = State(initialValue: record?.coverImageData)
@@ -90,7 +92,7 @@ struct RecordFormView: View {
         }
 
         Section("Artist") {
-          TextField("Artist name", text: $artistName)
+          ArtistSearchField(name: $artistName, imageUrl: $artistImageUrl)
         }
 
         Section("Cover Image") {
@@ -173,6 +175,7 @@ struct RecordFormView: View {
     let trimmedArtist = artistName.trimmingCharacters(in: .whitespaces)
     target.artist = trimmedArtist.isEmpty ? nil : trimmedArtist
     target.artists = trimmedArtist.isEmpty ? nil : NSArray(array: [trimmedArtist])
+    target.artistImageUrl = trimmedArtist.isEmpty ? nil : artistImageUrl
 
     target.memo = memo.isEmpty ? nil : memo
     target.qrCode = qrCode.isEmpty ? nil : qrCode

@@ -15,6 +15,8 @@ final class ArtistGroupingTests: XCTestCase {
   private func makeRecord(
     artist: String? = nil,
     artists: [String]? = nil,
+    artistImageUrl: String? = nil,
+    artistImageUrls: [String]? = nil,
     date: String,
     ticketPrice: Double = 0,
     withCoverImage: Bool = false
@@ -23,6 +25,8 @@ final class ArtistGroupingTests: XCTestCase {
     record.id = UUID()
     record.artist = artist
     record.artists = artists.map { NSArray(array: $0) }
+    record.artistImageUrl = artistImageUrl
+    record.artistImageUrls = artistImageUrls.map { NSArray(array: $0) }
     record.date = date
     record.ticketPrice = ticketPrice
     record.liveName = "Test Live"
@@ -89,6 +93,57 @@ final class ArtistGroupingTests: XCTestCase {
     let tiles = ArtistGrouping.tiles(from: [withoutImage, withImage])
 
     XCTAssertNotNil(tiles.first?.coverImageData)
+  }
+
+  // MARK: - Artist photo entries (RN's resolveArtistThumbUrl/getRecordArtistEntries)
+
+  func testEntriesAlignsImageUrlsByIndexWithArtistsArray() {
+    let record = makeRecord(artists: ["Artist One", "Artist Two"], artistImageUrls: ["urlA", "urlB"], date: "2020-01-01")
+    try? context.save()
+
+    let entries = ArtistGrouping.entries(for: record)
+
+    XCTAssertEqual(entries.map(\.name), ["Artist One", "Artist Two"])
+    XCTAssertEqual(entries.map(\.imageUrl), ["urlA", "urlB"])
+  }
+
+  func testEntriesFallsBackToSingleArtistImageUrlAtIndexZeroOnly() {
+    let record = makeRecord(artist: "Solo Artist", artistImageUrl: "solo-url", date: "2020-01-01")
+    try? context.save()
+
+    let entries = ArtistGrouping.entries(for: record)
+
+    XCTAssertEqual(entries.map(\.name), ["Solo Artist"])
+    XCTAssertEqual(entries.map(\.imageUrl), ["solo-url"])
+  }
+
+  func testEntriesDoesNotFallBackToSingleArtistImageUrlForLaterIndices() {
+    // artistImageUrls is shorter than artists — index 1 ("Artist Two") has
+    // no entry in the array, and must NOT fall back to the unrelated
+    // single-artist artistImageUrl field (that fallback only applies to
+    // index 0, matching RN's `index === 0 ? record.artistImageUrl : ''`).
+    let record = makeRecord(
+      artists: ["Artist One", "Artist Two"],
+      artistImageUrl: "stale-single-artist-url",
+      artistImageUrls: ["urlA"],
+      date: "2020-01-01"
+    )
+    try? context.save()
+
+    let entries = ArtistGrouping.entries(for: record)
+
+    XCTAssertEqual(entries.first(where: { $0.name == "Artist One" })?.imageUrl, "urlA")
+    XCTAssertNil(entries.first(where: { $0.name == "Artist Two" })?.imageUrl)
+  }
+
+  func testTileArtistImageUrlPicksFirstNonNilAcrossRecords() {
+    let withoutUrl = makeRecord(artist: "Artist", date: "2020-01-01")
+    let withUrl = makeRecord(artist: "Artist", artistImageUrl: "official-url", date: "2020-06-01")
+    try? context.save()
+
+    let tiles = ArtistGrouping.tiles(from: [withoutUrl, withUrl])
+
+    XCTAssertEqual(tiles.first?.artistImageUrl, "official-url")
   }
 
   func testSortedSetlistItemsOrdersByOrderIndexRegardlessOfInsertionOrder() {

@@ -39,8 +39,27 @@ struct ArtistGridItemView: View {
     .shadow(color: .black.opacity(0.14), radius: 18, x: 0, y: 6)
   }
 
+  // Matches CollectionScreen.tsx's artist grid fallback chain: official
+  // artist photo, else the artist's own most recent ticket cover photo,
+  // else a generic placeholder icon. AsyncImage's placeholder closure
+  // covers both "still loading" and "failed to load" (its default 2-closure
+  // initializer treats both phases the same), so a broken artist photo URL
+  // correctly falls through to the cover photo rather than showing nothing.
   @ViewBuilder
   private var photo: some View {
+    if let urlString = tile.artistImageUrl, let url = URL(string: urlString) {
+      AsyncImage(url: url) { image in
+        image.resizable().scaledToFill()
+      } placeholder: {
+        coverOrPlaceholder
+      }
+    } else {
+      coverOrPlaceholder
+    }
+  }
+
+  @ViewBuilder
+  private var coverOrPlaceholder: some View {
     if let data = tile.coverImageData, let uiImage = UIImage(data: data) {
       Image(uiImage: uiImage)
         .resizable()

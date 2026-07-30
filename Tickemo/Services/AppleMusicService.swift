@@ -10,6 +10,7 @@ final class AppleMusicService {
   }
 
   func play(songId: String) async throws {
+    await ensureAuthorized()
     let request = MusicCatalogResourceRequest<Song>(
       matching: \.id,
       equalTo: MusicItemID(songId)
@@ -37,6 +38,17 @@ final class AppleMusicService {
     MusicAuthorization.currentStatus == .authorized
   }
 
+  // MusicCatalogSearchRequest silently throws MusicDataRequest.Error
+  // .permissionDenied when the app hasn't been granted Apple Music access
+  // yet — .notDetermined never auto-prompts on its own. Every catalog
+  // search call site needs this, so it's centralized here rather than
+  // pushed onto each caller (RecordFormView's ArtistSearchField,
+  // StatisticsView's live backfill, SetlistEditorView's song search).
+  private func ensureAuthorized() async {
+    guard MusicAuthorization.currentStatus != .authorized else { return }
+    _ = await MusicAuthorization.request()
+  }
+
   struct ArtistResult {
     let id: String
     let name: String
@@ -47,6 +59,7 @@ final class AppleMusicService {
     guard !term.isEmpty else {
       return []
     }
+    await ensureAuthorized()
 
     var request = MusicCatalogSearchRequest(term: term, types: [Artist.self])
     request.limit = 10
@@ -54,7 +67,11 @@ final class AppleMusicService {
     let response = try await request.response()
 
     return response.artists.map { artist in
-      let imageUrl = artist.artwork?.url(width: 300, height: 300)?.absoluteString ?? ""
+      // 1200x1200 comfortably clears the requested 800x800 floor; a single
+      // high-resolution URL is stored (see ArtistSearchField/ArtistGrouping)
+      // rather than RN's template-URL-resolved-per-call-site approach, since
+      // MusicKit's Artwork.url(width:height:) already returns a fixed URL.
+      let imageUrl = artist.artwork?.url(width: 1200, height: 1200)?.absoluteString ?? ""
       return ArtistResult(id: artist.id.rawValue, name: artist.name, imageUrl: imageUrl)
     }
   }
@@ -71,6 +88,7 @@ final class AppleMusicService {
     guard !term.isEmpty else {
       return []
     }
+    await ensureAuthorized()
 
     var request = MusicCatalogSearchRequest(term: term, types: [Song.self])
     request.limit = 10

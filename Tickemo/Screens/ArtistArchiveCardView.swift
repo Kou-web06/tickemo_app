@@ -1,64 +1,64 @@
 import SwiftUI
 
-/// Ports StatisticsScreen.tsx's ALL ARTISTS card (`ArtistArchiveCard`) as a
-/// plain rounded-rect card instead of RN's hand-drawn SVG scalloped-bottom
-/// clip path — same simplification precedent as Calendar's future-event dot
-/// replacing RN's scribble decoration. Shares ArtistGridItemView's visual
-/// language (cover photo or person-icon placeholder, bottom gradient, white
-/// heavy name) at a smaller size, with a single "last live" date line
-/// instead of ArtistGridItemView's two count/date badges.
+/// Exact port of StatisticsScreen.tsx's ALL ARTISTS card (`ArtistArchiveCard`):
+/// the artist's official MusicKit photo, full-bleed clipped to the scalloped
+/// `ArtistArchiveShape`, with a flat `black.opacity(0.2)` scrim (not a
+/// gradient — RN fills the same clip path with `rgba(0,0,0,0.2)`) and the
+/// name/date overlay on top. RN never falls back to the user's own ticket
+/// cover photo here — only the artist's official photo or a generic
+/// placeholder — so `entry.artistImageUrl` is the only photo source.
 struct ArtistArchiveCardView: View {
   let entry: ArtistArchiveEntry
 
   private let cardWidth: CGFloat = 118
-  private let cardHeight: CGFloat = 148
+  private let cardHeight: CGFloat = 121
 
   var body: some View {
     ZStack(alignment: .bottomLeading) {
       photo
+        .clipShape(ArtistArchiveShape())
 
-      LinearGradient(
-        colors: [Color.black.opacity(0.85), Color.black.opacity(0)],
-        startPoint: .bottom,
-        endPoint: .top
-      )
-      .frame(height: cardHeight * 0.62)
-      .frame(maxHeight: .infinity, alignment: .bottom)
+      ArtistArchiveShape()
+        .fill(Color.black.opacity(0.2))
 
-      VStack(alignment: .leading, spacing: 3) {
+      VStack(alignment: .leading, spacing: 2) {
         Text(entry.name)
-          .font(.system(size: 13, weight: .heavy))
+          .font(.system(size: 15, weight: .black))
           .foregroundStyle(.white)
-          .lineLimit(1)
+          .lineLimit(2)
         Text(entry.lastLiveDateText)
-          .font(.system(size: 11, weight: .medium))
-          .foregroundStyle(.white.opacity(0.8))
+          .font(.system(size: 10, weight: .bold))
+          .foregroundStyle(.white.opacity(0.95))
       }
-      .padding(10)
+      .padding(.horizontal, 10)
+      .padding(.bottom, 12)
     }
     .frame(width: cardWidth, height: cardHeight)
-    .clipShape(RoundedRectangle(cornerRadius: 16))
-    .shadow(color: .black.opacity(0.12), radius: 10, x: 0, y: 4)
   }
 
   @ViewBuilder
   private var photo: some View {
-    if let data = entry.coverImageData, let uiImage = UIImage(data: data) {
-      Image(uiImage: uiImage)
-        .resizable()
-        .scaledToFill()
-        .frame(width: cardWidth, height: cardHeight)
-        .clipped()
-    } else {
-      ZStack {
-        Color(.tertiarySystemBackground)
-        Image(systemName: "person.fill")
-          .resizable()
-          .scaledToFit()
-          .frame(width: 32, height: 32)
-          .foregroundStyle(Color(white: 0.77))
+    if let urlString = entry.artistImageUrl, let url = URL(string: urlString) {
+      AsyncImage(url: url) { image in
+        image.resizable().scaledToFill()
+      } placeholder: {
+        placeholder
       }
       .frame(width: cardWidth, height: cardHeight)
+    } else {
+      placeholder
     }
+  }
+
+  private var placeholder: some View {
+    ZStack {
+      Color(.tertiarySystemBackground)
+      Image(systemName: "person.fill")
+        .resizable()
+        .scaledToFit()
+        .frame(width: 32, height: 32)
+        .foregroundStyle(Color(white: 0.77))
+    }
+    .frame(width: cardWidth, height: cardHeight)
   }
 }
