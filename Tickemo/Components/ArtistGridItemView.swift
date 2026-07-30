@@ -6,6 +6,16 @@ import SwiftUI
 struct ArtistGridItemView: View {
   let tile: ArtistGrouping.Tile
 
+  // Live MusicKit lookup for tiles saved without an official photo (e.g.
+  // tickets created before ArtistSearchField existed) — a top-1 search by
+  // artist name, cached in-memory only, never persisted onto the record.
+  @State private var backfillImageUrl: String?
+  private let appleMusicService = AppleMusicService()
+
+  private var resolvedArtistImageUrl: String? {
+    tile.artistImageUrl ?? backfillImageUrl
+  }
+
   var body: some View {
     GeometryReader { proxy in
       ZStack(alignment: .bottomLeading) {
@@ -37,17 +47,25 @@ struct ArtistGridItemView: View {
     .aspectRatio(1, contentMode: .fit)
     .clipShape(RoundedRectangle(cornerRadius: 24))
     .shadow(color: .black.opacity(0.14), radius: 18, x: 0, y: 6)
+    .task(id: tile.id) {
+      guard tile.artistImageUrl == nil, backfillImageUrl == nil else { return }
+      guard let result = try? await appleMusicService.searchArtists(term: tile.name).first,
+            !result.imageUrl.isEmpty else { return }
+      backfillImageUrl = result.imageUrl
+    }
   }
 
-  // Matches CollectionScreen.tsx's artist grid fallback chain: official
-  // artist photo, else the artist's own most recent ticket cover photo,
-  // else a generic placeholder icon. AsyncImage's placeholder closure
-  // covers both "still loading" and "failed to load" (its default 2-closure
-  // initializer treats both phases the same), so a broken artist photo URL
-  // correctly falls through to the cover photo rather than showing nothing.
+  // Fallback chain: saved official artist photo, else a live MusicKit
+  // backfill search (see .task above, for tickets saved before
+  // ArtistSearchField existed), else the artist's own most recent ticket
+  // cover photo, else a generic placeholder icon. AsyncImage's placeholder
+  // closure covers both "still loading" and "failed to load" (its default
+  // 2-closure initializer treats both phases the same), so a broken artist
+  // photo URL correctly falls through to the cover photo rather than
+  // showing nothing.
   @ViewBuilder
   private var photo: some View {
-    if let urlString = tile.artistImageUrl, let url = URL(string: urlString) {
+    if let urlString = resolvedArtistImageUrl, let url = URL(string: urlString) {
       AsyncImage(url: url) { image in
         image.resizable().scaledToFill()
       } placeholder: {

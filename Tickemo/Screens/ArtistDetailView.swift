@@ -9,6 +9,11 @@ import SwiftUI
 struct ArtistDetailView: View {
   let artistName: String
 
+  // Live MusicKit lookup when none of this artist's records have a saved
+  // photo — a top-1 search by name, cached in-memory only, never persisted.
+  @State private var backfillImageUrl: String?
+  private let appleMusicService = AppleMusicService()
+
   @FetchRequest(
     sortDescriptors: [
       NSSortDescriptor(keyPath: \CD_ChekiRecord.date, ascending: false),
@@ -51,16 +56,22 @@ struct ArtistDetailView: View {
     }
     .navigationTitle(artistName)
     .navigationBarTitleDisplayMode(.inline)
+    .task(id: artistName) {
+      guard heroImageUrl == nil, backfillImageUrl == nil else { return }
+      guard let result = try? await appleMusicService.searchArtists(term: artistName).first,
+            !result.imageUrl.isEmpty else { return }
+      backfillImageUrl = result.imageUrl
+    }
   }
 
   // MARK: - Hero
 
-  // RN's ArtistDetailScreen hero falls straight through to a flat
-  // placeholder color when no official artist photo is found — it never
-  // falls back to the user's own ticket cover photo here, unlike the
-  // Collection artist grid. `entries(for:)` already resolves the
-  // per-record, per-index artistImageUrl (or single-artist fallback), so
-  // this just takes the first non-nil match across this artist's records.
+  // A saved photo (from ArtistSearchField) takes priority; if none of this
+  // artist's records have one, `backfillImageUrl`'s live MusicKit search
+  // (see .task above) fills the gap — never the user's own ticket cover
+  // photo, unlike the Collection artist grid. `entries(for:)` already
+  // resolves the per-record, per-index artistImageUrl (or single-artist
+  // fallback), so this just takes the first non-nil match across records.
   private var heroImageUrl: String? {
     let target = artistName.trimmingCharacters(in: .whitespaces).lowercased()
     for record in records {
@@ -71,11 +82,15 @@ struct ArtistDetailView: View {
     return nil
   }
 
+  private var resolvedHeroImageUrl: String? {
+    heroImageUrl ?? backfillImageUrl
+  }
+
   @ViewBuilder
   private var hero: some View {
     ZStack(alignment: .bottomLeading) {
       Group {
-        if let urlString = heroImageUrl, let url = URL(string: urlString) {
+        if let urlString = resolvedHeroImageUrl, let url = URL(string: urlString) {
           AsyncImage(url: url) { image in
             image.resizable().scaledToFill()
           } placeholder: {
