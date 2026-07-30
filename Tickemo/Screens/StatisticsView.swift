@@ -1,5 +1,7 @@
 import SwiftUI
 import Charts
+import MusicKit
+import UIKit
 
 private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 
@@ -24,6 +26,13 @@ struct StatisticsView: View {
   // React state exactly: keyed by lowercased name, top-1-result search,
   // never written back to the record.
   @State private var artistImageBackfill: [String: String] = [:]
+  // Refreshed after every backfill attempt (see backfillArtistImages) so a
+  // denied/restricted Apple Music permission — which otherwise makes every
+  // backfill search silently return nothing — is visible here too. Someone
+  // who never opens RecordFormView's ArtistSearchField (where this same
+  // check also lives) would otherwise have no way to learn why TOP/ALL
+  // ARTISTS never show photos.
+  @State private var musicAuthorizationStatus = MusicAuthorization.currentStatus
   private let appleMusicService = AppleMusicService()
 
   private var attendedRecords: [CD_ChekiRecord] {
@@ -43,6 +52,7 @@ struct StatisticsView: View {
       ScrollView {
         VStack(alignment: .leading, spacing: 28) {
           yearChips
+          authorizationWarning
           summarySection
           topArtistsSection
           allArtistsSection
@@ -81,6 +91,34 @@ struct StatisticsView: View {
           yearChip(title: "\(year)", isActive: selectedYear == year) { selectedYear = year }
         }
       }
+    }
+  }
+
+  @ViewBuilder
+  private var authorizationWarning: some View {
+    if musicAuthorizationStatus == .denied || musicAuthorizationStatus == .restricted {
+      HStack(spacing: 8) {
+        Image(systemName: "exclamationmark.triangle.fill")
+          .foregroundStyle(.orange)
+        VStack(alignment: .leading, spacing: 2) {
+          Text("Apple Music access is off")
+            .font(.system(size: 13, weight: .semibold))
+          Text("Turn it on in Settings to show official artist photos.")
+            .font(.system(size: 12))
+            .foregroundStyle(.secondary)
+        }
+        Spacer(minLength: 8)
+        Button("Settings") {
+          guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+          UIApplication.shared.open(url)
+        }
+        .font(.system(size: 13, weight: .semibold))
+        .buttonStyle(.plain)
+        .foregroundStyle(.blue)
+      }
+      .padding(12)
+      .background(Color(.secondarySystemBackground))
+      .clipShape(RoundedRectangle(cornerRadius: 12))
     }
   }
 
@@ -192,6 +230,7 @@ struct StatisticsView: View {
             !result.imageUrl.isEmpty else { continue }
       artistImageBackfill[key] = result.imageUrl
     }
+    musicAuthorizationStatus = MusicAuthorization.currentStatus
   }
 
   private var monthlyChartSection: some View {
