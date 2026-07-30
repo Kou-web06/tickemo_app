@@ -16,14 +16,32 @@ enum ArtistGrouping {
   /// only for index 0 (the single-artist-field case).
   static func entries(for record: CD_ChekiRecord) -> [(name: String, imageUrl: String?)] {
     let rawNames = (record.artistsArray?.isEmpty == false) ? record.artistsArray! : [record.artist ?? ""]
-    let urls = record.artistImageUrls as? [String] ?? []
+    // artistImageUrls is stored as NSArray (via StringArrayTransformer); mirror
+    // artistsArray's two-step cast to handle both the native-Swift and
+    // NSSecureUnarchiveFromData runtime representations.
+    let urls = (record.artistImageUrls as? [String])
+      ?? record.artistImageUrls?.compactMap { $0 as? String }
+      ?? []
     return rawNames.enumerated().compactMap { index, rawName in
       let name = rawName.trimmingCharacters(in: .whitespaces)
       guard !name.isEmpty else { return nil }
       let rawUrl = index < urls.count ? urls[index] : (index == 0 ? record.artistImageUrl : nil)
       let trimmedUrl = rawUrl?.trimmingCharacters(in: .whitespaces)
-      return (name, (trimmedUrl?.isEmpty == false) ? trimmedUrl : nil)
+      guard let trimmedUrl, !trimmedUrl.isEmpty else { return (name, nil) }
+      // RN stored MusicKit artwork as template URLs (e.g. …/{w}x{h}bb.jpg).
+      // Resolve them so AsyncImage can load them; the native app always writes
+      // resolved URLs, so non-template URLs pass through unchanged.
+      return (name, resolveArtworkTemplate(trimmedUrl))
     }
+  }
+
+  /// Replaces MusicKit JS template placeholders `{w}` / `{h}` with a
+  /// concrete resolution. Returns the URL unchanged if it contains neither.
+  private static func resolveArtworkTemplate(_ url: String, size: Int = 800) -> String {
+    guard url.contains("{w}") || url.contains("{h}") else { return url }
+    return url
+      .replacingOccurrences(of: "{w}", with: "\(size)")
+      .replacingOccurrences(of: "{h}", with: "\(size)")
   }
 
   static func names(for record: CD_ChekiRecord) -> [String] {
