@@ -5,12 +5,21 @@ import SwiftUI
 /// silhouette used by the shareable Ticket card. This is a distinct shape
 /// from `TicketStubShape` (viewBox `322 118`, used by the list-row ticket
 /// card): different proportions, different perforation-column position.
-/// Built in the original 352x148 coordinate space, then uniformly scaled
-/// to fill `rect`, same technique as `TicketStubShape`. The 8 perforation
-/// dots are each drawn as 4 cubic Beziers in the original SVG (a
-/// rounded-square approximation of a circle); as with `TicketStubShape`,
-/// simplified here to plain circles via `addEllipse`, which is visually
-/// identical at this size.
+/// Built in the original 352x148 coordinate space, then scaled to fit
+/// `rect` — uniformly, preserving the 352:148 aspect ratio and centering
+/// the result (letterboxed if `rect` isn't that same ratio), matching the
+/// RN source's `<Svg width height viewBox="0 0 352 148">`, whose default
+/// `preserveAspectRatio` is `"xMidYMid meet"` (uniform scale + center,
+/// never a non-uniform stretch). The ticket card's own canvas
+/// (`ShareCapture.ticketCanvasSize`, 1480x1200) is a taller "story-sized"
+/// aspect ratio than the ticket shape itself (352:148 is much wider), so
+/// naively stretching scaleX/scaleY independently — which is safe in
+/// `TicketStubShape` only because *its* callers always pass a rect with
+/// exactly that shape's own aspect ratio — would visibly distort this
+/// shape here. The 8 perforation dots are each drawn as 4 cubic Beziers
+/// in the original SVG (a rounded-square approximation of a circle); as
+/// with `TicketStubShape`, simplified here to plain circles via
+/// `addEllipse`, which is visually identical at this size.
 struct ShareTicketShape: Shape {
   static let baseSize = CGSize(width: 352, height: 148)
 
@@ -22,11 +31,14 @@ struct ShareTicketShape: Shape {
       path.addEllipse(in: CGRect(x: 130 - 4, y: centerY - 4, width: 8, height: 8))
     }
 
-    let scaleX = rect.width / Self.baseSize.width
-    let scaleY = rect.height / Self.baseSize.height
+    let scale = min(rect.width / Self.baseSize.width, rect.height / Self.baseSize.height)
+    let scaledSize = CGSize(width: Self.baseSize.width * scale, height: Self.baseSize.height * scale)
+    let offsetX = rect.minX + (rect.width - scaledSize.width) / 2
+    let offsetY = rect.minY + (rect.height - scaledSize.height) / 2
+
     return path
-      .applying(CGAffineTransform(scaleX: scaleX, y: scaleY))
-      .offsetBy(dx: rect.minX, dy: rect.minY)
+      .applying(CGAffineTransform(scaleX: scale, y: scale))
+      .offsetBy(dx: offsetX, dy: offsetY)
   }
 
   private func addOutline(to path: inout Path) {
