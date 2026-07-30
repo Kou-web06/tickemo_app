@@ -1,4 +1,6 @@
 import SwiftUI
+import MusicKit
+import UIKit
 
 /// Ports components/ArtistInput.tsx: the RecordFormView artist field is the
 /// canonical capture point for an artist's official MusicKit photo — once a
@@ -15,6 +17,12 @@ struct ArtistSearchField: View {
   @State private var suggestions: [AppleMusicService.ArtistResult] = []
   @State private var isSearching = false
   @State private var searchTask: Task<Void, Never>?
+  // Re-read after every search attempt (see scheduleSearch) since
+  // AppleMusicService.searchArtists silently swallows the specific
+  // .permissionDenied error — without this, a denied/restricted Apple
+  // Music permission looks identical to "no matching artists" and the
+  // user has no way to tell why photos never show up.
+  @State private var authorizationStatus = MusicAuthorization.currentStatus
 
   private let service = AppleMusicService()
 
@@ -25,12 +33,47 @@ struct ArtistSearchField: View {
       } else {
         VStack(alignment: .leading, spacing: 8) {
           searchBar
+          if authorizationStatus == .denied || authorizationStatus == .restricted {
+            authorizationWarning
+          }
           if !suggestions.isEmpty {
             dropdown
           }
         }
       }
     }
+    .task {
+      // Request access as soon as the field appears, rather than waiting
+      // for the user's first keystroke to discover (mid-typing) that a
+      // system permission sheet is about to interrupt them.
+      if authorizationStatus == .notDetermined {
+        _ = await service.authorize()
+      }
+      authorizationStatus = MusicAuthorization.currentStatus
+    }
+  }
+
+  private var authorizationWarning: some View {
+    HStack(spacing: 8) {
+      Image(systemName: "exclamationmark.triangle.fill")
+        .foregroundStyle(.orange)
+      VStack(alignment: .leading, spacing: 2) {
+        Text("Apple Music access is off")
+          .font(.system(size: 13, weight: .semibold))
+        Text("Turn it on in Settings to search for artist photos.")
+          .font(.system(size: 12))
+          .foregroundStyle(.secondary)
+      }
+      Spacer(minLength: 8)
+      Button("Settings") {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+      }
+      .font(.system(size: 13, weight: .semibold))
+      .buttonStyle(.plain)
+      .foregroundStyle(.blue)
+    }
+    .padding(.vertical, 4)
   }
 
   private var selectedChip: some View {
@@ -140,6 +183,7 @@ struct ArtistSearchField: View {
       guard !Task.isCancelled else { return }
       suggestions = results
       isSearching = false
+      authorizationStatus = MusicAuthorization.currentStatus
     }
   }
 
