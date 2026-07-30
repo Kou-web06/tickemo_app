@@ -23,8 +23,20 @@ enum RecordViewMode {
 /// Matches CollectionScreen.tsx's FREE_TICKET_LIMIT.
 private let freeTicketLimit = 3
 
+/// Ports screens/CollectionScreen.tsx. Navigation chrome (toolbar
+/// icons/FAB) intentionally stays this app's existing NavigationStack +
+/// toolbar convention rather than RN's separate App.tsx-level floating
+/// pill toolbar/bottom tab bar — that's a full-app navigation-architecture
+/// difference decided once for the whole migration, not something to
+/// revisit per-screen. RN's own All/Upcoming/Past filter dropdown is kept
+/// too, but as this screen's existing working segmented Picker: migration
+/// research found RN's real filter dropdown UI has no reachable way to
+/// open it (dead code), so its filtering logic exists in RN but is never
+/// actually usable — replacing a working control with an unreachable one
+/// would be a pure regression for zero fidelity benefit.
 struct RecordListView: View {
   @Environment(\.managedObjectContext) private var viewContext
+  @Environment(\.colorScheme) private var systemColorScheme
 
   @FetchRequest(
     sortDescriptors: [
@@ -43,6 +55,12 @@ struct RecordListView: View {
   #if DEBUG
   @State private var showingDebugSheet = false
   #endif
+
+  private var isDarkMode: Bool {
+    ThemePreferenceService.shared.effectiveIsDark(systemIsDark: systemColorScheme == .dark)
+  }
+
+  private var palette: CollectionPalette { CollectionPalette(isDarkMode: isDarkMode) }
 
   private var isOverFreeTicketLimit: Bool {
     !PurchasesService.shared.isPremium && records.count >= freeTicketLimit
@@ -64,13 +82,7 @@ struct RecordListView: View {
 
   private var filteredRecords: [CD_ChekiRecord] {
     guard filter != .all else { return Array(records) }
-    // record.date is parsed as a UTC calendar day (see DateFormatting), so
-    // "today" must be computed the same way — using the device's local
-    // calendar here would shift the upcoming/past boundary by the device's
-    // UTC offset.
-    var utcCalendar = Calendar(identifier: .gregorian)
-    utcCalendar.timeZone = DateFormatting.timeZone
-    let today = utcCalendar.startOfDay(for: Date())
+    let today = DateFormatting.utcCalendar.startOfDay(for: Date())
     return records.filter { record in
       guard let date = DateFormatting.date(from: record.date) else { return filter == .all }
       switch filter {
@@ -81,6 +93,36 @@ struct RecordListView: View {
     }
   }
 
+  // Ports RN's `nextLiveRecord` — always derived from ALL records, not the
+  // current filter selection, so the card keeps showing the true next/last
+  // live regardless of which segment is picked. Hidden entirely in Grid
+  // mode, matching RN's `!isGridLayout`.
+  private var nextLiveRecord: CD_ChekiRecord? {
+    guard viewMode == .list else { return nil }
+    return NextLiveCardData.nextLiveRecord(from: Array(records))
+  }
+
+  // RN's `firstSectionLabelRecordIds`: since `filteredRecords` is already
+  // sorted farthest-future-first (matching the FetchRequest's descending
+  // date sort), the first record satisfying each condition marks the
+  // *start* of that segment in the combined list — not literally "the
+  // next show" — matching RN's one-time section-divider semantics.
+  private var firstUpNextRecordID: NSManagedObjectID? {
+    let today = DateFormatting.utcCalendar.startOfDay(for: Date())
+    return filteredRecords.first { record in
+      guard let date = DateFormatting.date(from: record.date) else { return false }
+      return date >= today
+    }?.objectID
+  }
+
+  private var firstPastEventsRecordID: NSManagedObjectID? {
+    let today = DateFormatting.utcCalendar.startOfDay(for: Date())
+    return filteredRecords.first { record in
+      guard let date = DateFormatting.date(from: record.date) else { return false }
+      return date < today
+    }?.objectID
+  }
+
   var body: some View {
     Group {
       switch viewMode {
@@ -88,23 +130,7 @@ struct RecordListView: View {
         if filteredRecords.isEmpty {
           emptyState
         } else {
-          List {
-            ForEach(filteredRecords, id: \.objectID) { record in
-              NavigationLink(value: record) {
-                RecordRowView(record: record)
-              }
-              .listRowSeparator(.hidden)
-              .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-              .swipeActions(edge: .trailing) {
-                Button(role: .destructive) {
-                  delete(record)
-                } label: {
-                  Label("Delete", systemImage: "trash")
-                }
-              }
-            }
-          }
-          .listStyle(.plain)
+          listContent
         }
       case .grid:
         if artistTiles.isEmpty {
@@ -211,25 +237,109 @@ struct RecordListView: View {
       DebugToolsView()
     }
     #endif
+    .background(palette.screenBackground)
   }
 
+  // MARK: - List mode
+
+  private var listContent: some View {
+    List {
+      if let nextLiveRecord {
+        NextLiveCardView(record: nextLiveRecord)
+          .listRowInsets(EdgeInsets())
+          .listRowSeparator(.hidden)
+          .listRowBackground(Color.clear)
+
+        if !PurchasesService.shared.isPremium {
+          PaywallBannerView()
+            .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 12, trailing: 20))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+        }
+      }
+
+      ForEach(filteredRecords, id: \.objectID) { record in
+        VStack(alignment: .leading, spacing: 8) {
+          if record.objectID == firstUpNextRecordID {
+            sectionLeadLabel("Up Next")
+          } else if record.objectID == firstPastEventsRecordID {
+            sectionLeadLabel("Past Events")
+          }
+          NavigationLink(value: record) {
+            RecordRowView(record: record)
+          }
+        }
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+        .listRowBackground(Color.clear)
+        .swipeActions(edge: .trailing) {
+          Button(role: .destructive) {
+            delete(record)
+          } label: {
+            Label("Delete", systemImage: "trash")
+          }
+        }
+      }
+    }
+    .listStyle(.plain)
+    .scrollContentBackground(.hidden)
+  }
+
+  private func sectionLeadLabel(_ text: String) -> some View {
+    Text(text)
+      .font(.system(size: 14, weight: .heavy))
+      .tracking(0.4)
+      .foregroundStyle(palette.primaryText)
+  }
+
+  // MARK: - Empty state
+
+  // RN's renderEmptyState shows this exact same copy/image/button whenever
+  // filteredRecords is empty — there's no separate "no results for this
+  // filter" variant, unlike this view's earlier (pre-parity) behavior.
   @ViewBuilder
   private var emptyState: some View {
-    if records.isEmpty {
-      ContentUnavailableView {
-        Label("No Tickets Yet", systemImage: "ticket")
-      } description: {
-        Text("Add your first live ticket to get started.")
-      } actions: {
-        Button("Add Ticket") { requestAddTicket() }
+    VStack(spacing: 0) {
+      Image("TicketEmpty")
+        .resizable()
+        .scaledToFit()
+        .frame(width: 120, height: 120)
+        .padding(.bottom, 24)
+
+      // RN hardcodes this text to a fixed light-mode color even in dark
+      // mode (buildCollectionPalette defines an adaptive `emptyText` key
+      // that the empty-state JSX never actually references) — judged an
+      // oversight rather than a deliberate design choice, so this uses the
+      // adaptive palette colors instead of replicating the miss.
+      Text("Your collection\nis empty")
+        .font(.system(size: 22, weight: .heavy))
+        .foregroundStyle(palette.primaryText)
+        .multilineTextAlignment(.center)
+        .padding(.bottom, 10)
+
+      Text("Add from the button above")
+        .font(.system(size: 15))
+        .foregroundStyle(palette.emptyText)
+        .multilineTextAlignment(.center)
+        .padding(.bottom, 24)
+
+      Button {
+        requestAddTicket()
+      } label: {
+        Text("Add your first live")
+          .font(.system(size: 14, weight: .bold))
+          .foregroundStyle(.white)
+          .padding(.vertical, 14)
+          .padding(.horizontal, 24)
+          .frame(minWidth: 172)
+          .background(Color(hex: "#A328DD"))
+          .clipShape(Capsule())
       }
-    } else {
-      ContentUnavailableView(
-        "No \(filter.label) Tickets",
-        systemImage: "ticket",
-        description: Text("No tickets match this filter.")
-      )
+      .buttonStyle(.plain)
     }
+    .padding(.horizontal, 32)
+    .padding(.bottom, 120)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
   private func delete(_ record: CD_ChekiRecord) {

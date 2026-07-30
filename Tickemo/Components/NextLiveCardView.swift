@@ -1,0 +1,340 @@
+import SwiftUI
+import UIKit
+
+/// Ports screens/CollectionScreen.tsx's inline "Next Live" card (the block
+/// inside `ListHeaderComponent`, not just the small `NextLiveCountdown`
+/// text component) — a flip card showing the soonest upcoming (or most
+/// recent past) ticket, with a live countdown on the front and a
+/// MusicKit-driven "song of the day" for that artist on the back.
+struct NextLiveCardView: View {
+  @ObservedObject var record: CD_ChekiRecord
+
+  @State private var now = Date()
+  @State private var isFlipped = false
+  @State private var todaySong: TodaySongResult?
+  @State private var showingProviderDialog = false
+  @State private var showingInvalidQrAlert = false
+
+  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+  private static let cardHeight: CGFloat = 180
+  // Same cubic-out curve as CustomToggleSwitch — matches RN's
+  // `Easing.out(Easing.cubic)`; RN's own flip duration is 180ms.
+  private static let flipAnimation = Animation.timingCurve(0.215, 0.61, 0.355, 1, duration: 0.18)
+
+  private var isPast: Bool { NextLiveCardData.isPast(record, now: now) }
+  private var countdown: (text: String, isMessage: Bool) { NextLiveCardData.countdownText(for: record, now: now) }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text(isPast ? "LAST LIVE" : "NEXT LIVE")
+        .font(.system(size: 15, weight: .heavy))
+        .padding(.horizontal, 30)
+
+      GeometryReader { proxy in
+        ZStack {
+          backgroundImage
+            .frame(width: proxy.size.width, height: proxy.size.height)
+
+          frontFace
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .opacity(isFlipped ? 0 : 1)
+            .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
+            .allowsHitTesting(!isFlipped)
+          backFace
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            .opacity(isFlipped ? 1 : 0)
+            .rotation3DEffect(.degrees(isFlipped ? 0 : -180), axis: (x: 0, y: 1, z: 0))
+            .allowsHitTesting(isFlipped)
+
+          flipButton
+            .frame(width: proxy.size.width, height: proxy.size.height)
+        }
+        .frame(width: proxy.size.width, height: proxy.size.height)
+      }
+      .frame(height: Self.cardHeight)
+      .clipShape(RoundedRectangle(cornerRadius: 16))
+      .padding(.horizontal, 20)
+    }
+    .onReceive(timer) { now = $0 }
+    .task(id: record.objectID) {
+      isFlipped = false
+      todaySong = nil
+      let artistName = record.artist?.trimmingCharacters(in: .whitespaces) ?? ""
+      guard !artistName.isEmpty else { return }
+      todaySong = await TodaySongCache.fetchTodaySong(for: artistName)
+    }
+    .alert("Unable to open", isPresented: $showingInvalidQrAlert) {
+      Button("OK", role: .cancel) {}
+    } message: {
+      Text("QR code URL is invalid.")
+    }
+  }
+
+  // MARK: - Shared background
+
+  // `.clipped()` is required here: without it, a `scaledToFill()` image's
+  // deliberately-oversized (unclipped) intrinsic bounds can throw off how
+  // the surrounding ZStack proposes size to its *sibling* views (frontFace/
+  // backFace), silently shrinking their content above/behind the visible
+  // frame — confirmed by bisecting this view down to a minimal repro.
+  @ViewBuilder
+  private var backgroundImage: some View {
+    if let data = record.coverImageData, let uiImage = UIImage(data: data) {
+      Image(uiImage: uiImage).resizable().scaledToFill().clipped()
+    } else {
+      Image("TicketEmpty").resizable().scaledToFill().clipped()
+    }
+  }
+
+  // MARK: - Flip button (floats above both faces, never itself flips)
+
+  private var flipButton: some View {
+    VStack {
+      HStack {
+        Spacer()
+        Button {
+          withAnimation(Self.flipAnimation) {
+            isFlipped.toggle()
+          }
+        } label: {
+          Image(systemName: "arrow.triangle.2.circlepath")
+            .font(.system(size: 16, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 34, height: 34)
+        }
+        .buttonStyle(.plain)
+      }
+      Spacer()
+    }
+    .padding(12)
+  }
+
+  // MARK: - Front face
+
+  private var frontFace: some View {
+    ZStack(alignment: .topLeading) {
+      Color.black.opacity(0.5)
+
+      VStack(alignment: .leading, spacing: 0) {
+        Text(record.liveName?.isEmpty == false ? record.liveName! : "LIVE TITLE")
+          .font(.system(size: 22, weight: .heavy))
+          .foregroundStyle(.white)
+          .lineLimit(1)
+        Text(record.artist?.isEmpty == false ? record.artist! : "-")
+          .font(.system(size: 13))
+          .foregroundStyle(.white)
+          .lineLimit(1)
+          .padding(.top, 4)
+        Text(metaText)
+          .font(.system(size: 13, weight: .bold))
+          .foregroundStyle(.white)
+          .padding(.top, 10)
+        Text(countdown.text)
+          .font(.system(size: countdown.isMessage ? 28 : 34, weight: .bold))
+          .foregroundStyle(.white)
+          .padding(.top, 2)
+      }
+      .padding(18)
+    }
+    .overlay(alignment: .bottomTrailing) {
+      qrButton.padding(16)
+    }
+  }
+
+  private var metaText: String {
+    let dateText = record.date?.isEmpty == false ? record.date! : "-"
+    let startTimeSuffix = record.startTime?.isEmpty == false ? "  \(record.startTime!)" : ""
+    let venueText = record.venue?.isEmpty == false ? record.venue! : "-"
+    return "DATE    \(dateText)\(startTimeSuffix)\nVENUE    \(venueText)"
+  }
+
+  private var qrButton: some View {
+    Button {
+      openQrLink()
+    } label: {
+      ZStack {
+        Color.white
+        if let qr = record.qrCode, !qr.isEmpty, let uiImage = QRCodeImage.image(for: qr, scale: 8) {
+          Image(uiImage: uiImage)
+            .interpolation(.none)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 32, height: 32)
+        } else {
+          Image(systemName: "qrcode")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 32, height: 32)
+            .foregroundStyle(Color(white: 0.173))
+        }
+      }
+      .frame(width: 48, height: 48)
+      .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+    .buttonStyle(.plain)
+    .disabled(record.qrCode?.isEmpty != false)
+  }
+
+  private func openQrLink() {
+    guard let qrCode = record.qrCode, !qrCode.isEmpty, let url = URL(string: qrCode),
+          UIApplication.shared.canOpenURL(url)
+    else {
+      showingInvalidQrAlert = true
+      return
+    }
+    UIApplication.shared.open(url)
+  }
+
+  // MARK: - Back face ("TODAY'S SONG")
+
+  private var backFace: some View {
+    ZStack(alignment: .topLeading) {
+      Color(white: 16 / 255).opacity(0.66)
+
+      VStack(alignment: .leading, spacing: 0) {
+        Text("TODAY'S SONG")
+          .font(.system(size: 14, weight: .bold))
+          .foregroundStyle(.white)
+          .tracking(0.4)
+          .padding(.bottom, 12)
+
+        HStack(spacing: 12) {
+          todaySongArtwork
+          VStack(alignment: .leading, spacing: 4) {
+            Text(todaySong?.title ?? "No song data")
+              .font(.system(size: 18, weight: .heavy))
+              .foregroundStyle(.white)
+              .lineLimit(1)
+            Text(todaySong?.artist ?? (record.artist?.isEmpty == false ? record.artist! : "-"))
+              .font(.system(size: 13))
+              .foregroundStyle(Color(white: 0.898))
+              .lineLimit(1)
+          }
+        }
+
+        metaGrid
+          .padding(.top, 12)
+      }
+      .padding(18)
+    }
+    .overlay(alignment: .bottomTrailing) {
+      providerButton.padding(14)
+    }
+  }
+
+  @ViewBuilder
+  private var todaySongArtwork: some View {
+    if let urlString = todaySong?.artworkUrl, let url = URL(string: urlString) {
+      AsyncImage(url: url) { image in
+        image.resizable().scaledToFill()
+      } placeholder: {
+        todaySongArtworkFallback
+      }
+      .frame(width: 52, height: 52)
+      .clipShape(RoundedRectangle(cornerRadius: 8))
+    } else {
+      todaySongArtworkFallback
+    }
+  }
+
+  private var todaySongArtworkFallback: some View {
+    ZStack {
+      Color(hex: "#ECECEC")
+      Image(systemName: "music.note")
+        .foregroundStyle(Color(hex: "#A0A0A0"))
+    }
+    .frame(width: 52, height: 52)
+    .clipShape(RoundedRectangle(cornerRadius: 8))
+  }
+
+  private var metaGrid: some View {
+    VStack(alignment: .leading, spacing: 6) {
+      HStack(spacing: 14) {
+        metaItem(label: "ALBUM", value: todaySong?.album ?? "-")
+        metaItem(label: "TIME", value: durationText)
+      }
+      HStack(spacing: 14) {
+        metaItem(label: "GENRE", value: todaySong?.genre ?? "-")
+        metaItem(label: "REL", value: releaseDateText)
+      }
+    }
+    .padding(.trailing, 108) // reserves space for the provider pill, matching RN's paddingRight:108
+  }
+
+  private func metaItem(label: String, value: String) -> some View {
+    VStack(alignment: .leading, spacing: 2) {
+      Text(label)
+        .font(.system(size: 6, weight: .bold))
+        .tracking(0.7)
+        .foregroundStyle(.white.opacity(0.7))
+      Text(value)
+        .font(.system(size: 9))
+        .foregroundStyle(.white.opacity(0.86))
+        .lineLimit(1)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+
+  private var durationText: String {
+    guard let seconds = todaySong?.durationSeconds, seconds > 0 else { return "-" }
+    let total = Int(seconds)
+    return String(format: "%02d:%02d", total / 60, total % 60)
+  }
+
+  private var releaseDateText: String {
+    guard let date = todaySong?.releaseDate else { return "-" }
+    let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
+    guard let year = comps.year else { return "-" }
+    guard let month = comps.month, let day = comps.day else { return String(year) }
+    return String(format: "%04d.%02d.%02d", year, month, day)
+  }
+
+  // Reuses RecordDetailView's "always ask which provider" confirmationDialog
+  // pattern (a documented, intentional improvement over RN's single
+  // persisted `musicProvider` preference) rather than reading
+  // MusicProviderPreference — keeps this app's two nearly-identical
+  // "open this song externally" actions consistent with each other.
+  private var providerButton: some View {
+    Button {
+      showingProviderDialog = true
+    } label: {
+      HStack(spacing: 6) {
+        Image(systemName: "music.note")
+          .font(.system(size: 11))
+        Text("Listen")
+          .font(.system(size: 10, weight: .bold))
+          .tracking(0.2)
+      }
+      .foregroundStyle(.white.opacity(0.92))
+      .padding(.horizontal, 8)
+      .padding(.vertical, 6)
+      .background(Color.black.opacity(0.38))
+      .clipShape(Capsule())
+      .overlay(Capsule().stroke(.white.opacity(0.35), lineWidth: 1))
+    }
+    .buttonStyle(.plain)
+    .disabled(todaySong == nil)
+    .confirmationDialog("Open this song", isPresented: $showingProviderDialog) {
+      Button("Open in Spotify") { openInSpotify() }
+      Button("Open in Apple Music") { openInAppleMusic() }
+      Button("Cancel", role: .cancel) {}
+    }
+  }
+
+  private func openInSpotify() {
+    let query = "\(todaySong?.title ?? "") \(todaySong?.artist ?? (record.artist ?? ""))"
+      .trimmingCharacters(in: .whitespaces)
+    guard !query.isEmpty, let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
+
+    if let deepLink = URL(string: "spotify:search:\(encoded)"), UIApplication.shared.canOpenURL(deepLink) {
+      UIApplication.shared.open(deepLink)
+    } else if let webURL = URL(string: "https://open.spotify.com/search/\(encoded)") {
+      UIApplication.shared.open(webURL)
+    }
+  }
+
+  private func openInAppleMusic() {
+    guard let urlString = todaySong?.appleMusicUrl, let url = URL(string: urlString) else { return }
+    UIApplication.shared.open(url)
+  }
+}

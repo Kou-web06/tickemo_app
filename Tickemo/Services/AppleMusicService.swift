@@ -82,16 +82,23 @@ final class AppleMusicService {
     let artistName: String
     let albumName: String
     let artworkUrl: String
+    // Populated for TodaySongCache's back-of-card meta grid (Genre/Rel,
+    // Album/Time) — unused by the existing SetlistEditor search callers,
+    // which only need the fields above.
+    let genreName: String?
+    let durationSeconds: Double?
+    let releaseDate: Date?
+    let appleMusicUrl: String?
   }
 
-  func searchSongs(term: String) async throws -> [SongResult] {
+  func searchSongs(term: String, limit: Int = 10) async throws -> [SongResult] {
     guard !term.isEmpty else {
       return []
     }
     await ensureAuthorized()
 
     var request = MusicCatalogSearchRequest(term: term, types: [Song.self])
-    request.limit = 10
+    request.limit = limit
 
     let response = try await request.response()
 
@@ -102,7 +109,11 @@ final class AppleMusicService {
         title: song.title,
         artistName: song.artistName,
         albumName: song.albumTitle ?? "",
-        artworkUrl: imageUrl
+        artworkUrl: imageUrl,
+        genreName: song.genreNames.first,
+        durationSeconds: song.duration,
+        releaseDate: song.releaseDate,
+        appleMusicUrl: song.url?.absoluteString
       )
     }
   }
