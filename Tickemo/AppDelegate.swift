@@ -10,6 +10,7 @@ struct TickemoApp: App {
     WindowGroup {
       ContentView()
         .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
+        .preferredColorScheme(ThemePreferenceService.shared.colorScheme)
     }
   }
 }
