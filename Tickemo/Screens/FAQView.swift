@@ -136,8 +136,7 @@ struct FAQView: View {
         Button {
           dismiss()
         } label: {
-          Image(systemName: "chevron.left")
-            .font(.system(size: 22, weight: .semibold))
+          HugeIconView(icon: HugeIcons.arrowLeft01, size: 22, weight: 2)
             .foregroundStyle(palette.primaryText)
             .frame(width: 44, height: 44)
         }

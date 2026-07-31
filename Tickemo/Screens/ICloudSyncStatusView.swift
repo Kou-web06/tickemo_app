@@ -55,8 +55,7 @@ struct ICloudSyncStatusView: View {
         Button {
           dismiss()
         } label: {
-          Image(systemName: "chevron.left")
-            .font(.system(size: 28, weight: .semibold))
+          HugeIconView(icon: HugeIcons.arrowLeft01, size: 28, weight: 2)
             .foregroundStyle(palette.titleText)
             .frame(width: 44, height: 44)
         }
@@ -141,7 +140,7 @@ struct ICloudSyncStatusView: View {
           ProgressView().tint(palette.indicatorColor)
           Text("Syncing…")
         } else {
-          Image(systemName: "icloud.and.arrow.up")
+          HugeIconView(icon: HugeIcons.cloudUpload, size: 16)
           Text("Sync now")
         }
       }

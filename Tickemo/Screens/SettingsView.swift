@@ -126,8 +126,7 @@ struct SettingsView: View {
         Button {
           dismiss()
         } label: {
-          Image(systemName: "xmark")
-            .font(.system(size: 20, weight: .semibold))
+          HugeIconView(icon: HugeIcons.cancel01, size: 20, weight: 2)
             .foregroundStyle(palette.primaryText)
             .frame(width: 44, height: 44)
             .background(Color(white: 0.97).opacity(0.92))
@@ -175,8 +174,7 @@ struct SettingsView: View {
       Button {
         showingProfileEdit = true
       } label: {
-        Image(systemName: "pencil")
-          .font(.system(size: 18, weight: .semibold))
+        HugeIconView(icon: HugeIcons.pencilEdit01, size: 18, weight: 2)
           .foregroundStyle(palette.profileEditIcon)
           .frame(width: 30, height: 30)
       }
@@ -385,12 +383,10 @@ struct SettingsView: View {
   private func rowIcon(_ id: String) -> some View {
     switch id {
     case "faq", "icloud-sync", "music-provider", "language":
-      Image(systemName: "chevron.right")
-        .font(.system(size: 15))
+      HugeIconView(icon: HugeIcons.arrowRight01, size: 15)
         .foregroundStyle(palette.iconColor)
     default:
-      Image(systemName: "arrow.up.right")
-        .font(.system(size: 18))
+      HugeIconView(icon: HugeIcons.arrowUpRight01, size: 18)
         .foregroundStyle(palette.iconColor)
     }
   }

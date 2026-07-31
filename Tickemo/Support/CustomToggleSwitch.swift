@@ -26,13 +26,11 @@ struct CustomToggleSwitch: View {
 
         if showIcons {
           HStack {
-            Image(systemName: "sun.max.fill")
-              .font(.system(size: 14, weight: .semibold))
+            HugeIconView(icon: HugeIcons.sun03, size: 14, weight: 2)
               .foregroundStyle(.white)
               .frame(width: 14)
             Spacer()
-            Image(systemName: "moon.fill")
-              .font(.system(size: 14, weight: .semibold))
+            HugeIconView(icon: HugeIcons.moon02, size: 14, weight: 2)
               .foregroundStyle(.white)
               .frame(width: 14)
           }

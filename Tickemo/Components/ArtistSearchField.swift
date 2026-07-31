@@ -55,7 +55,7 @@ struct ArtistSearchField: View {
 
   private var authorizationWarning: some View {
     HStack(spacing: 8) {
-      Image(systemName: "exclamationmark.triangle.fill")
+      HugeIconView(icon: HugeIcons.alert01, size: 17)
         .foregroundStyle(.orange)
       VStack(alignment: .leading, spacing: 2) {
         Text("Apple Music access is off")
@@ -88,7 +88,7 @@ struct ArtistSearchField: View {
         imageUrl = nil
         searchTerm = ""
       } label: {
-        Image(systemName: "xmark.circle.fill")
+        HugeIconView(icon: HugeIcons.cancelCircle, size: 20)
           .foregroundStyle(Color(white: 0.6))
       }
       .buttonStyle(.plain)
@@ -97,7 +97,7 @@ struct ArtistSearchField: View {
 
   private var searchBar: some View {
     HStack(spacing: 8) {
-      Image(systemName: "magnifyingglass")
+      HugeIconView(icon: HugeIcons.search01, size: 18)
         .foregroundStyle(Color(white: 0.6))
       TextField("Search artist", text: $searchTerm)
         .textInputAutocapitalization(.words)
@@ -159,10 +159,7 @@ struct ArtistSearchField: View {
   private func placeholderIcon(size: CGFloat) -> some View {
     ZStack {
       Color(.tertiarySystemBackground)
-      Image(systemName: "person.fill")
-        .resizable()
-        .scaledToFit()
-        .frame(width: size * 0.5, height: size * 0.5)
+      HugeIconView(icon: HugeIcons.user, size: size * 0.5)
         .foregroundStyle(Color(white: 0.6))
     }
   }

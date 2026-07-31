@@ -131,10 +131,7 @@ struct ShareTicketCardView: View {
   private var placeholderJacket: some View {
     ZStack {
       Color(red: 0.953, green: 0.851, blue: 1.0)
-      Image(systemName: "photo")
-        .resizable()
-        .scaledToFit()
-        .frame(width: imageSize * 0.34, height: imageSize * 0.34)
+      HugeIconView(icon: HugeIcons.image01, size: imageSize * 0.34)
         .foregroundStyle(Color(red: 0.718, green: 0.557, blue: 0.812))
     }
   }
@@ -149,10 +146,7 @@ struct ShareTicketCardView: View {
           .scaledToFit()
           .frame(width: qrSize, height: qrSize)
       } else {
-        Image(systemName: "qrcode")
-          .resizable()
-          .scaledToFit()
-          .frame(width: qrSize, height: qrSize)
+        HugeIconView(icon: HugeIcons.qrCode, size: qrSize)
           .foregroundStyle(.tertiary)
       }
     }

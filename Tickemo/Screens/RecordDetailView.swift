@@ -142,7 +142,7 @@ struct RecordDetailView: View {
           .foregroundStyle(Color(white: 0.557))
           .lineLimit(2)
 
-        Label(liveType.label, systemImage: liveType.systemImage)
+        HugeIconLabel(icon: liveType.hugeIcon, size: 12) { Text(liveType.label) }
           .font(.system(size: 12, weight: .bold))
           .foregroundStyle(Color(white: 0.486))
       }
@@ -150,7 +150,7 @@ struct RecordDetailView: View {
       Spacer(minLength: 0)
 
       HStack(spacing: 7) {
-        Image(systemName: "wallet.pass")
+        HugeIconView(icon: HugeIcons.wallet01, size: 17)
           .foregroundStyle(Color(white: 0.616))
         Text(priceText)
           .font(.system(size: 17, weight: .heavy))
@@ -326,8 +326,7 @@ struct RecordDetailView: View {
       Button {
         togglePlay(item)
       } label: {
-        Image(systemName: nowPlayingSongId == songId ? "pause.circle.fill" : "play.circle.fill")
-          .font(.system(size: 22))
+        HugeIconView(icon: nowPlayingSongId == songId ? HugeIcons.pauseCircle : HugeIcons.playCircle, size: 22)
           .foregroundStyle(nowPlayingSongId == songId ? Color.accentColor : Color(white: 0.6))
       }
     }
@@ -402,7 +401,7 @@ struct RecordDetailView: View {
         .foregroundStyle(Color(red: 0.180, green: 0.180, blue: 0.196))
 
       HStack(alignment: .top, spacing: 8) {
-        Image(systemName: "quote.opening")
+        HugeIconView(icon: HugeIcons.quoteUp, size: 17)
           .foregroundStyle(Color(white: 0.608))
         Text(memo)
           .font(.system(size: 16, weight: .medium))
@@ -416,13 +415,13 @@ struct RecordDetailView: View {
 
   private var footerTab: some View {
     HStack(spacing: 8) {
-      footerButton(systemImage: "square.and.arrow.up", color: Color(white: 0.365)) {
+      footerButton(icon: HugeIcons.share01, color: Color(white: 0.365)) {
         showingShareSheet = true
       }
-      footerButton(systemImage: "pencil", color: Color(white: 0.365)) {
+      footerButton(icon: HugeIcons.pencilEdit01, color: Color(white: 0.365)) {
         showingEditSheet = true
       }
-      footerButton(systemImage: "trash", color: Color(red: 0.961, green: 0.337, blue: 0.196)) {
+      footerButton(icon: HugeIcons.delete02, color: Color(red: 0.961, green: 0.337, blue: 0.196)) {
         showingDeleteConfirmation = true
       }
     }
@@ -437,10 +436,9 @@ struct RecordDetailView: View {
     .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 2)
   }
 
-  private func footerButton(systemImage: String, color: Color, action: @escaping () -> Void) -> some View {
+  private func footerButton(icon: HugeIcon, color: Color, action: @escaping () -> Void) -> some View {
     Button(action: action) {
-      Image(systemName: systemImage)
-        .font(.system(size: 18, weight: .medium))
+      HugeIconView(icon: icon, size: 18, weight: 1.75)
         .foregroundStyle(color)
         .frame(width: 44, height: 44)
     }

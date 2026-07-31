@@ -65,8 +65,7 @@ struct LanguagePickerView: View {
         Button {
           dismiss()
         } label: {
-          Image(systemName: "chevron.left")
-            .font(.system(size: 22, weight: .semibold))
+          HugeIconView(icon: HugeIcons.arrowLeft01, size: 22, weight: 2)
             .foregroundStyle(palette.primaryText)
             .frame(width: 44, height: 44)
         }
@@ -102,8 +101,7 @@ struct LanguagePickerView: View {
           .foregroundStyle(palette.primaryText)
         Spacer()
         if selection == value {
-          Image(systemName: "checkmark")
-            .font(.system(size: 20))
+          HugeIconView(icon: HugeIcons.tick02, size: 20)
             .foregroundStyle(palette.primaryText)
         }
       }

@@ -27,11 +27,11 @@ struct QRCodeView: View {
           .resizable()
           .scaledToFit()
       } else {
-        Image(systemName: "qrcode")
-          .resizable()
-          .scaledToFit()
-          .padding(6)
-          .foregroundStyle(.tertiary)
+        GeometryReader { proxy in
+          HugeIconView(icon: HugeIcons.qrCode, size: min(proxy.size.width, proxy.size.height) - 12)
+            .foregroundStyle(.tertiary)
+            .frame(width: proxy.size.width, height: proxy.size.height)
+        }
       }
     }
     .background(Color(.secondarySystemBackground))

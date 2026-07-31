@@ -13,11 +13,11 @@ private enum ShareCardTypeOption: CaseIterable, Hashable {
     }
   }
 
-  var systemImage: String {
+  var hugeIcon: HugeIcon {
     switch self {
-    case .ticket: "ticket.fill"
-    case .receipt: "doc.plaintext"
-    case .cd: "opticaldisc"
+    case .ticket: HugeIcons.ticket01
+    case .receipt: HugeIcons.invoice01
+    case .cd: HugeIcons.cd
     }
   }
 }
@@ -153,8 +153,7 @@ struct ShareSheetView: View {
       showingPaywall = true
     } label: {
       VStack(spacing: 8) {
-        Image(systemName: "lock.fill")
-          .font(.system(size: 28))
+        HugeIconView(icon: HugeIcons.squareLock02, size: 28)
         Text("Upgrade to Plus")
           .font(.system(size: 15, weight: .heavy))
       }
@@ -175,8 +174,7 @@ struct ShareSheetView: View {
           cardType = option
         } label: {
           HStack(spacing: 6) {
-            Image(systemName: option.systemImage)
-              .font(.system(size: 12))
+            HugeIconView(icon: option.hugeIcon, size: 12)
             Text(option.label)
               .font(.system(size: 13, weight: .bold))
           }
@@ -216,15 +214,15 @@ struct ShareSheetView: View {
 
   private var actionButtons: some View {
     HStack(spacing: 32) {
-      actionButton(kind: .save, systemImage: "square.and.arrow.down", scribbleImageName: "ShareScribbleSave", label: "save", action: handleSave)
-      actionButton(kind: .stories, systemImage: "circle.badge.plus", scribbleImageName: "ShareScribbleStories", label: "stories", action: handleStoriesShare)
-      actionButton(kind: .other, systemImage: "square.and.arrow.up", scribbleImageName: "ShareScribbleOther", label: "other", action: handleSystemShare)
+      actionButton(kind: .save, icon: HugeIcons.download04, scribbleImageName: "ShareScribbleSave", label: "save", action: handleSave)
+      actionButton(kind: .stories, icon: HugeIcons.instagram, scribbleImageName: "ShareScribbleStories", label: "stories", action: handleStoriesShare)
+      actionButton(kind: .other, icon: HugeIcons.share01, scribbleImageName: "ShareScribbleOther", label: "other", action: handleSystemShare)
     }
   }
 
   private func actionButton(
     kind: ShareActionKind,
-    systemImage: String,
+    icon: HugeIcon,
     scribbleImageName: String,
     label: String,
     action: @escaping () -> Void
@@ -240,8 +238,7 @@ struct ShareSheetView: View {
           if isGenerating && inFlightAction == kind {
             ProgressView()
           } else {
-            Image(systemName: systemImage)
-              .font(.system(size: 22))
+            HugeIconView(icon: icon, size: 22)
               .foregroundStyle(Color(white: 0.2))
           }
 

@@ -103,8 +103,7 @@ struct NextLiveCardView: View {
             isFlipped.toggle()
           }
         } label: {
-          Image(systemName: "arrow.triangle.2.circlepath")
-            .font(.system(size: 16, weight: .semibold))
+          HugeIconView(icon: HugeIcons.tap03, size: 16, weight: 2)
             .foregroundStyle(.white)
             .frame(width: 34, height: 34)
             .contentShape(Rectangle())
@@ -169,10 +168,7 @@ struct NextLiveCardView: View {
             .scaledToFit()
             .frame(width: 32, height: 32)
         } else {
-          Image(systemName: "qrcode")
-            .resizable()
-            .scaledToFit()
-            .frame(width: 32, height: 32)
+          HugeIconView(icon: HugeIcons.qrCode, size: 32)
             .foregroundStyle(Color(white: 0.173))
         }
       }
@@ -248,7 +244,7 @@ struct NextLiveCardView: View {
   private var todaySongArtworkFallback: some View {
     ZStack {
       Color(hex: "#ECECEC")
-      Image(systemName: "music.note")
+      HugeIconView(icon: HugeIcons.musicNote01, size: 24)
         .foregroundStyle(Color(hex: "#A0A0A0"))
     }
     .frame(width: 52, height: 52)
@@ -307,8 +303,7 @@ struct NextLiveCardView: View {
       showingProviderDialog = true
     } label: {
       HStack(spacing: 6) {
-        Image(systemName: "music.note")
-          .font(.system(size: 11))
+        HugeIconView(icon: HugeIcons.musicNote01, size: 11)
         Text("Listen")
           .font(.system(size: 10, weight: .bold))
           .tracking(0.2)

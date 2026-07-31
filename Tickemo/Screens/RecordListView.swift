@@ -134,9 +134,9 @@ struct RecordListView: View {
         }
       case .grid:
         if artistTiles.isEmpty {
-          ContentUnavailableView(
-            "No Artists Yet",
-            systemImage: "person.2",
+          HugeIconUnavailableView(
+            title: "No Artists Yet",
+            icon: HugeIcons.userMultiple02,
             description: Text("Tickets with an artist name will show up here.")
           )
         } else {
@@ -177,7 +177,7 @@ struct RecordListView: View {
         Button {
           showingDebugSheet = true
         } label: {
-          Image(systemName: "wrench.and.screwdriver")
+          HugeIconView(icon: HugeIcons.wrench02, size: 18)
         }
       }
       #endif
@@ -185,35 +185,35 @@ struct RecordListView: View {
         Button {
           viewMode = (viewMode == .list) ? .grid : .list
         } label: {
-          Image(systemName: viewMode == .list ? "square.grid.2x2" : "list.bullet")
+          HugeIconView(icon: viewMode == .list ? HugeIcons.userMultiple02 : HugeIcons.ticket01, size: 18)
         }
       }
       ToolbarItem(placement: .primaryAction) {
         Button {
           requestAddTicket()
         } label: {
-          Image(systemName: "plus")
+          HugeIconView(icon: HugeIcons.add01, size: 18, weight: 2)
         }
       }
       ToolbarItem(placement: .topBarLeading) {
         Button {
           showingSettings = true
         } label: {
-          Image(systemName: "gearshape")
+          HugeIconView(icon: HugeIcons.settings03, size: 18)
         }
       }
       ToolbarItem(placement: .topBarLeading) {
         Button {
           showingCalendar = true
         } label: {
-          Image(systemName: "calendar")
+          HugeIconView(icon: HugeIcons.calendar03, size: 18)
         }
       }
       ToolbarItem(placement: .topBarLeading) {
         Button {
           showingStatistics = true
         } label: {
-          Image(systemName: "chart.bar.xaxis")
+          HugeIconView(icon: HugeIcons.gridView, size: 18)
         }
       }
     }
@@ -265,7 +265,8 @@ struct RecordListView: View {
           } else if record.objectID == firstPastEventsRecordID {
             sectionLeadLabel("Past Events")
           }
-          NavigationLink(value: record) {
+          ZStack(alignment: .leading) {
+            NavigationLink(value: record) { EmptyView() }.opacity(0)
             RecordRowView(record: record)
           }
         }
@@ -276,7 +277,7 @@ struct RecordListView: View {
           Button(role: .destructive) {
             delete(record)
           } label: {
-            Label("Delete", systemImage: "trash")
+            HugeIconLabel(icon: HugeIcons.delete02) { Text("Delete") }
           }
         }
       }

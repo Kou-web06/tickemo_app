@@ -62,7 +62,7 @@ struct RecordFormView: View {
           TextField("Live name", text: $liveName)
           Picker("Live type", selection: $liveType) {
             ForEach(LiveType.allCases) { type in
-              Label(type.label, systemImage: type.systemImage).tag(type)
+              HugeIconLabel(icon: type.hugeIcon) { Text(type.label) }.tag(type)
             }
           }
           DatePicker("Date", selection: $date, displayedComponents: .date)

@@ -98,7 +98,7 @@ struct StatisticsView: View {
   private var authorizationWarning: some View {
     if musicAuthorizationStatus == .denied || musicAuthorizationStatus == .restricted {
       HStack(spacing: 8) {
-        Image(systemName: "exclamationmark.triangle.fill")
+        HugeIconView(icon: HugeIcons.alert01, size: 17)
           .foregroundStyle(.orange)
         VStack(alignment: .leading, spacing: 2) {
           Text("Apple Music access is off")
@@ -292,7 +292,7 @@ struct StatisticsView: View {
         Button {
           priceHidden.toggle()
         } label: {
-          Image(systemName: priceHidden ? "eye.slash" : "eye")
+          HugeIconView(icon: priceHidden ? HugeIcons.viewOffSlash : HugeIcons.view, size: 18)
         }
       }
     }

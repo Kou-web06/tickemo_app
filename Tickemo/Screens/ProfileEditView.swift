@@ -68,8 +68,7 @@ struct ProfileEditView: View {
       Button {
         dismiss()
       } label: {
-        Image(systemName: "chevron.left")
-          .font(.system(size: 20, weight: .semibold))
+        HugeIconView(icon: HugeIcons.arrowLeft01, size: 20, weight: 2)
           .foregroundStyle(palette.primaryText)
           .frame(width: 36, height: 36)
       }
@@ -90,8 +89,7 @@ struct ProfileEditView: View {
           if isSaving {
             ProgressView().tint(.white)
           } else {
-            Image(systemName: "checkmark")
-              .font(.system(size: 15, weight: .bold))
+            HugeIconView(icon: HugeIcons.tick02, size: 15, weight: 2)
               .foregroundStyle(.white)
           }
         }
@@ -126,8 +124,7 @@ struct ProfileEditView: View {
         Button {
           showingImagePicker = true
         } label: {
-          Image(systemName: "pencil")
-            .font(.system(size: 13, weight: .semibold))
+          HugeIconView(icon: HugeIcons.pencilEdit01, size: 13, weight: 2)
             .foregroundStyle(palette.editIcon)
             .frame(width: 28, height: 28)
             .background(palette.avatarBackground)

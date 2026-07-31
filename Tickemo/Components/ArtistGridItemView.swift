@@ -85,10 +85,7 @@ struct ArtistGridItemView: View {
     } else {
       ZStack {
         Color(.tertiarySystemBackground)
-        Image(systemName: "person.fill")
-          .resizable()
-          .scaledToFit()
-          .frame(width: 40, height: 40)
+        HugeIconView(icon: HugeIcons.user, size: 40)
           .foregroundStyle(Color(white: 0.77))
       }
     }

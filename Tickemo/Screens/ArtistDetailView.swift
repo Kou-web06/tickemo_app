@@ -186,7 +186,7 @@ struct ArtistDetailView: View {
   private var appleMusicLink: some View {
     if let url = URL(string: "https://music.apple.com/search?term=\(artistName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&entity=artist") {
       Link(destination: url) {
-        Label("Search on Apple Music", systemImage: "music.note")
+        HugeIconLabel(icon: HugeIcons.musicNote01, size: 13) { Text("Search on Apple Music") }
           .font(.system(size: 13, weight: .semibold))
       }
     }

@@ -100,8 +100,7 @@ struct SetlistEditorView: View {
           Button("Add Encore") { addEncore() }
           Button("Add MC") { addMC() }
         } label: {
-          Image(systemName: "plus.circle")
-            .font(.title2)
+          HugeIconView(icon: HugeIcons.plusSignCircle, size: 22)
         }
       }
       .padding(.horizontal)
@@ -240,7 +239,7 @@ struct SetlistEditorView: View {
 
   private func mcRow(_ item: Binding<SetlistDraftItem>) -> some View {
     HStack(spacing: 10) {
-      Image(systemName: "mic.fill")
+      HugeIconView(icon: HugeIcons.mic01, size: 17)
         .foregroundStyle(Color(white: 0.5))
       TextField("MC talk", text: item.title)
     }

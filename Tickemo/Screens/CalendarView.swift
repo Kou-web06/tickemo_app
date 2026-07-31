@@ -57,7 +57,7 @@ struct CalendarView: View {
       Button {
         displayedMonth = displayedMonth.adding(months: -1)
       } label: {
-        Image(systemName: "chevron.left")
+        HugeIconView(icon: HugeIcons.arrowLeft01, size: 20)
       }
 
       Spacer()
@@ -79,7 +79,7 @@ struct CalendarView: View {
       Button {
         displayedMonth = displayedMonth.adding(months: 1)
       } label: {
-        Image(systemName: "chevron.right")
+        HugeIconView(icon: HugeIcons.arrowRight01, size: 20)
       }
     }
   }

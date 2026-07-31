@@ -24,14 +24,17 @@
 		1FBF026431BD8FEAA1568620 /* ArtistGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */; };
 		1FF874666EB2D9903E52CE09 /* RecordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */; };
 		228E26C34F43002D7FC684F0 /* ThemePreferenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92DA71054CD0EFE8D1F7193 /* ThemePreferenceService.swift */; };
+		277BF656566EB8B4C3CF05A6 /* HugeIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C6EC8481B37EF24625F26D0 /* HugeIcon.swift */; };
 		2BEF15D3729F4FFC7DFE5DEF /* CloudSyncStatusServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3170DF636891DC9457004DC1 /* CloudSyncStatusServiceTests.swift */; };
 		2D689C8C2D701D3E34B83236 /* ShareCardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91467ED9344BD68D8E2734F6 /* ShareCardData.swift */; };
 		2EA5E6B32379972C9C75E2F8 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */; };
 		2ED127FE8B5D41D48E31A853 /* LiveType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCB5B2FD867D3B5F862DB18E /* LiveType.swift */; };
+		329EF629C46B483642061036 /* HugeIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C429770E4C9FD6D42C2FEB /* HugeIconView.swift */; };
 		332938BE7A954A3D51DBA64F /* ICloudSyncStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FDED7BBE313F4E2B85599A /* ICloudSyncStatusView.swift */; };
 		33F12676F5CB54B827FA70FB /* PaywallBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43A867BF11EF2687DA006A7 /* PaywallBannerView.swift */; };
 		386FC73CF2FB2109F80F7017 /* ShareTicketCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A17275AD7E103F00E8E3B7B /* ShareTicketCardView.swift */; };
 		38F995BD76164F9006D5D91C /* LanguagePreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5612832D3724BCF970A9B7F /* LanguagePreference.swift */; };
+		39674FD09084013CE97DA1C7 /* HugeIconPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B49CBA00EEF9075F3EC942 /* HugeIconPathTests.swift */; };
 		3C8DE8B2C9819C9D537BEA93 /* MusicProviderPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C65D25BA2D311326E32BCE /* MusicProviderPreference.swift */; };
 		3D68379DC1810320883F82F4 /* DataMigrationImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */; };
 		3E2CFD16F7258186E3F713D3 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B81D9B718DAFD8D51D108885 /* ContentView.swift */; };
@@ -85,6 +88,7 @@
 		D9624378D627865C0BD9B0D1 /* CloudSyncStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E20CE008AC84CD1A7790F6 /* CloudSyncStatusService.swift */; };
 		DC8A3EBD510E47D88561F454 /* StatisticsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0D55C5C1F41BD095CB31A2 /* StatisticsData.swift */; };
 		DCC4E1C2CB72401B93B0A171 /* CalendarDayEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72645012E927C7402CB88893 /* CalendarDayEventsView.swift */; };
+		DEABC535C445036472BCCC2D /* HugeIconPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1230990001977CC87208EC0 /* HugeIconPath.swift */; };
 		E0962E8E2F853CAD00CE3EF6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */; };
 		E0962E902F853CAD00CE3EF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */; };
 		E0962E9F2F853CAE00CE3EF6 /* LiveWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -151,6 +155,7 @@
 		13B07F961A680F5B00A75B9A /* Tickemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tickemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Tickemo/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Tickemo/Info.plist; sourceTree = "<group>"; };
+		1C6EC8481B37EF24625F26D0 /* HugeIcon.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HugeIcon.swift; sourceTree = "<group>"; };
 		1DE5A0AE4E80A473E0455B35 /* SettingsPalette.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsPalette.swift; sourceTree = "<group>"; };
 		26FD9F153931A7B6B67A5D6F /* EarlyOfferService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EarlyOfferService.swift; sourceTree = "<group>"; };
 		291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppleMusicService.swift; sourceTree = "<group>"; };
@@ -170,6 +175,7 @@
 		4A46977CD287EA4809AF52CF /* CalendarEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarEvents.swift; sourceTree = "<group>"; };
 		4AFC27233C7B2540CCA957DB /* MusicKitService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MusicKitService.swift; sourceTree = "<group>"; };
 		533F2487C9C6F1664BADB87E /* PersistenceController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		54B49CBA00EEF9075F3EC942 /* HugeIconPathTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HugeIconPathTests.swift; sourceTree = "<group>"; };
 		57F6AB66827543B4F22966F1 /* CollectionPalette.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CollectionPalette.swift; sourceTree = "<group>"; };
 		5CFF0E3AA54C736CBE34C4B2 /* UserProfileFetching.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserProfileFetching.swift; sourceTree = "<group>"; };
 		5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DataMigrationImporter.swift; sourceTree = "<group>"; };
@@ -203,6 +209,7 @@
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Tickemo/SplashScreen.storyboard; sourceTree = "<group>"; };
 		ABE32B53EF806DB6BDB8FBCE /* ChekiRecordSetlist.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordSetlist.swift; sourceTree = "<group>"; };
 		AE6333409566700D88792880 /* WidgetReloaderService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetReloaderService.swift; sourceTree = "<group>"; };
+		B4C429770E4C9FD6D42C2FEB /* HugeIconView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HugeIconView.swift; sourceTree = "<group>"; };
 		B50F6C3CEF28C0BADA509B18 /* ArtistGridItemView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGridItemView.swift; sourceTree = "<group>"; };
 		B7AB15D7BE3D2FEE1716FAB6 /* BlurEffectView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlurEffectView.swift; sourceTree = "<group>"; };
 		B81D9B718DAFD8D51D108885 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Tickemo/ContentView.swift; sourceTree = "<group>"; };
@@ -219,6 +226,7 @@
 		E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		E0962EA52F85506700CE3EF6 /* LiveWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LiveWidgetExtension.entitlements; sourceTree = "<group>"; };
+		E1230990001977CC87208EC0 /* HugeIconPath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HugeIconPath.swift; sourceTree = "<group>"; };
 		E6D0322E74FBB97B858D09B7 /* ShareCapture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareCapture.swift; sourceTree = "<group>"; };
 		E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGroupingTests.swift; sourceTree = "<group>"; };
 		E7E20CE008AC84CD1A7790F6 /* CloudSyncStatusService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CloudSyncStatusService.swift; sourceTree = "<group>"; };
@@ -326,6 +334,7 @@
 				3170DF636891DC9457004DC1 /* CloudSyncStatusServiceTests.swift */,
 				BC5749B839253A3F61FF46E6 /* NextLiveCardDataTests.swift */,
 				8F112A4E3B46AB1AE66E7005 /* TodaySongCacheTests.swift */,
+				54B49CBA00EEF9075F3EC942 /* HugeIconPathTests.swift */,
 			);
 			name = TickemoTests;
 			path = TickemoTests;
@@ -346,6 +355,7 @@
 				A0C45BE9B9FDDAE7F4AFF6B2 /* ArtistSearchField.swift */,
 				0D467034D6C0B9328174DB88 /* ArtistArchiveShape.swift */,
 				A371BE32126D98ECF1FB2676 /* NextLiveCardView.swift */,
+				B4C429770E4C9FD6D42C2FEB /* HugeIconView.swift */,
 			);
 			name = Components;
 			path = Tickemo/Components;
@@ -501,6 +511,8 @@
 				57F6AB66827543B4F22966F1 /* CollectionPalette.swift */,
 				39FE35494D7275C25C11EC3C /* NextLiveCardData.swift */,
 				419A547938484EA5ADAFBE45 /* TodaySongCache.swift */,
+				E1230990001977CC87208EC0 /* HugeIconPath.swift */,
+				1C6EC8481B37EF24625F26D0 /* HugeIcon.swift */,
 			);
 			name = Support;
 			path = Tickemo/Support;
@@ -655,6 +667,7 @@
 				2BEF15D3729F4FFC7DFE5DEF /* CloudSyncStatusServiceTests.swift in Sources */,
 				18CB9921BAC0B482BAC0D230 /* NextLiveCardDataTests.swift in Sources */,
 				8588C35905CA46420FD156B0 /* TodaySongCacheTests.swift in Sources */,
+				39674FD09084013CE97DA1C7 /* HugeIconPathTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -739,6 +752,9 @@
 				E749E1331B2C9C50F58C5219 /* NextLiveCardData.swift in Sources */,
 				1216542C709DB0751D12FEFD /* TodaySongCache.swift in Sources */,
 				441D443A5883C12FD0AC5AD3 /* NextLiveCardView.swift in Sources */,
+				DEABC535C445036472BCCC2D /* HugeIconPath.swift in Sources */,
+				277BF656566EB8B4C3CF05A6 /* HugeIcon.swift in Sources */,
+				329EF629C46B483642061036 /* HugeIconView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

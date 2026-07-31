@@ -24,14 +24,14 @@ enum LiveType: String, CaseIterable, Identifiable {
     }
   }
 
-  var systemImage: String {
+  var hugeIcon: HugeIcon {
     switch self {
-    case .oneMan: "person"
-    case .twoMan: "person.2"
-    case .festival: "person.3"
-    case .fcOnly: "star.circle"
-    case .streaming: "dot.radiowaves.left.and.right"
-    case .sports: "sportscourt"
+    case .oneMan: HugeIcons.user
+    case .twoMan: HugeIcons.userMultiple02
+    case .festival: HugeIcons.userGroup03
+    case .fcOnly: HugeIcons.starCircle
+    case .streaming: HugeIcons.radio
+    case .sports: HugeIcons.football
     }
   }
 

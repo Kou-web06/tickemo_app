@@ -74,11 +74,11 @@ struct RecordRowView: View {
     } else {
       ZStack {
         Color(.tertiarySystemBackground)
-        Image(systemName: "photo")
-          .resizable()
-          .scaledToFit()
-          .padding(18)
-          .foregroundStyle(.tertiary)
+        GeometryReader { proxy in
+          HugeIconView(icon: HugeIcons.image01, size: min(proxy.size.width, proxy.size.height) - 36)
+            .foregroundStyle(.tertiary)
+            .frame(width: proxy.size.width, height: proxy.size.height)
+        }
       }
     }
   }

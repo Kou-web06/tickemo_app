@@ -16,10 +16,10 @@ struct PaywallView: View {
   @State private var isRestoring = false
   @State private var alertMessage: String?
 
-  private let benefits: [(icon: String, title: String, description: String)] = [
-    ("infinity", "Unlimited Tickets", "Add as many live tickets as you want."),
-    ("music.note.list", "Full Setlist Access", "Save and edit setlists for every show."),
-    ("heart.fill", "Support Development", "Help keep Tickemo growing."),
+  private let benefits: [(icon: HugeIcon, title: String, description: String)] = [
+    (HugeIcons.infinity01, "Unlimited Tickets", "Add as many live tickets as you want."),
+    (HugeIcons.playList, "Full Setlist Access", "Save and edit setlists for every show."),
+    (HugeIcons.favourite, "Support Development", "Help keep Tickemo growing."),
   ]
 
   var body: some View {
@@ -47,8 +47,7 @@ struct PaywallView: View {
           VStack(spacing: 16) {
             ForEach(benefits, id: \.title) { benefit in
               HStack(spacing: 12) {
-                Image(systemName: benefit.icon)
-                  .font(.system(size: 20))
+                HugeIconView(icon: benefit.icon, size: 20)
                   .foregroundStyle(.primary)
                   .frame(width: 32)
                 VStack(alignment: .leading, spacing: 3) {
@@ -75,7 +74,7 @@ struct PaywallView: View {
           Button {
             dismiss()
           } label: {
-            Image(systemName: "xmark")
+            HugeIconView(icon: HugeIcons.cancel01, size: 17)
           }
         }
         ToolbarItem(placement: .primaryAction) {

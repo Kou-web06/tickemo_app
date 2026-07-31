@@ -53,10 +53,7 @@ struct ArtistArchiveCardView: View {
   private var placeholder: some View {
     ZStack {
       Color(.tertiarySystemBackground)
-      Image(systemName: "person.fill")
-        .resizable()
-        .scaledToFit()
-        .frame(width: 32, height: 32)
+      HugeIconView(icon: HugeIcons.user, size: 32)
         .foregroundStyle(Color(white: 0.77))
     }
     .frame(width: cardWidth, height: cardHeight)
