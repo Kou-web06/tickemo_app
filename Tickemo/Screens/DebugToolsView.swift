@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Phase 0/1 debug tools (Apple Music auth test, data migration test),
 /// moved out of the app's main body once RecordListView became the real
-/// entry screen. DEBUG-only, reached via a toolbar icon on RecordListView.
+/// entry screen. DEBUG-only, reached via a "Debug Tools" row in the
+/// Settings tab.
 struct DebugToolsView: View {
   private let appleMusicService = AppleMusicService()
   @State private var isAuthorized = false

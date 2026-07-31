@@ -17,10 +17,12 @@ private let appStoreURL = URL(string: "https://apps.apple.com/ja/app/tickemo-%E3
 /// haptics toggle now shows ON as right/purple instead of RN's inverted
 /// display. `NotificationSettingsScreen` and the "sns"/"about" row ids are
 /// excluded — confirmed dead code in RN (registered as routes, but no row
-/// in RN's live `sections` array ever navigates to them).
+/// in RN's live `sections` array ever navigates to them). Root of the
+/// "Settings" tab (see ContentView) — no dismiss chrome since it's a
+/// permanent tab page, not a sheet; the DEBUG tools entry point that used
+/// to live on RecordListView's toolbar now lives here as a debug-only row.
 struct SettingsView: View {
   @Environment(\.managedObjectContext) private var viewContext
-  @Environment(\.dismiss) private var dismiss
   @Environment(\.requestReview) private var requestReview
   @Environment(\.colorScheme) private var systemColorScheme
   @Environment(\.openURL) private var openURL
@@ -35,6 +37,9 @@ struct SettingsView: View {
   @State private var showingFAQ = false
   @State private var showingShareSheet = false
   @State private var resolvedProfile: CD_UserProfile?
+  #if DEBUG
+  @State private var showingDebugSheet = false
+  #endif
 
   @State private var isHapticsEnabled = HapticsPreferenceService.shared.isEnabled
   @State private var musicProviderValue = MusicProviderPreferenceStore.load()
@@ -112,6 +117,11 @@ struct SettingsView: View {
     } message: {
       Text("All records and settings will be deleted. This action cannot be undone.")
     }
+    #if DEBUG
+    .sheet(isPresented: $showingDebugSheet) {
+      DebugToolsView()
+    }
+    #endif
   }
 
   // MARK: - Header
@@ -123,17 +133,6 @@ struct SettingsView: View {
           .font(.system(size: 28, weight: .heavy))
           .foregroundStyle(palette.titleText)
         Spacer()
-        Button {
-          dismiss()
-        } label: {
-          HugeIconView(icon: HugeIcons.cancel01, size: 20, weight: 2)
-            .foregroundStyle(palette.primaryText)
-            .frame(width: 44, height: 44)
-            .background(Color(white: 0.97).opacity(0.92))
-            .clipShape(Circle())
-            .overlay(Circle().stroke(Color.white.opacity(0.8), lineWidth: 1))
-            .shadow(color: Color(hex: "#443e48").opacity(0.08), radius: 5, x: 0, y: 4)
-        }
       }
       .padding(.horizontal, 20)
       .padding(.top, 8)
@@ -276,7 +275,7 @@ struct SettingsView: View {
   }
 
   private var sectionsData: [RowSection] {
-    [
+    var sections = [
       RowSection(id: "general", title: "General", rows: [
         Row(id: "dark-mode", label: "Theme"),
         Row(id: "haptics", label: "Haptics"),
@@ -298,6 +297,12 @@ struct SettingsView: View {
         Row(id: "delete", label: "Delete all data", destructive: true),
       ]),
     ]
+    #if DEBUG
+    sections.append(RowSection(id: "debug", title: "Debug", rows: [
+      Row(id: "debug-tools", label: "Debug Tools"),
+    ]))
+    #endif
+    return sections
   }
 
   private var languageValueLabel: String {
@@ -382,7 +387,7 @@ struct SettingsView: View {
   @ViewBuilder
   private func rowIcon(_ id: String) -> some View {
     switch id {
-    case "faq", "icloud-sync", "music-provider", "language":
+    case "faq", "icloud-sync", "music-provider", "language", "debug-tools":
       HugeIconView(icon: HugeIcons.arrowRight01, size: 15)
         .foregroundStyle(palette.iconColor)
     default:
@@ -403,6 +408,9 @@ struct SettingsView: View {
     case "feedback": openURL(feedbackURL)
     case "terms": openURL(termsURL)
     case "privacy": openURL(privacyURL)
+    #if DEBUG
+    case "debug-tools": showingDebugSheet = true
+    #endif
     default: break
     }
   }

@@ -13,8 +13,10 @@ private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 /// react-native-gifted-charts dependency — a single flat bar series needs
 /// nothing gifted-charts-specific. Total-spending hide/reveal is a plain
 /// non-persisted @State, matching RN's own (non-persisted) toggle exactly.
+/// Root of the "Report" tab (see ContentView), so it self-wraps a
+/// NavigationStack for its own title bar but has no dismiss chrome — it's a
+/// permanent tab page, not a sheet.
 struct StatisticsView: View {
-  @Environment(\.dismiss) private var dismiss
   @FetchRequest(sortDescriptors: []) private var records: FetchedResults<CD_ChekiRecord>
 
   @State private var selectedYear: Int?
@@ -63,13 +65,8 @@ struct StatisticsView: View {
         }
         .padding(16)
       }
-      .navigationTitle("Statistics")
+      .navigationTitle("Report")
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("Done") { dismiss() }
-        }
-      }
       .navigationDestination(for: ArtistRoute.self) { route in
         ArtistDetailView(artistName: route.name)
       }

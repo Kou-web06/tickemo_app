@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Renders a `HugeIcon`'s path/circle elements, built in the fixed 24x24
 /// coordinate space every HugeIcons icon uses (see Support/HugeIcon.swift),
@@ -94,5 +95,39 @@ struct HugeIconUnavailableView: View {
     }
     .multilineTextAlignment(.center)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+}
+
+private extension HugeIcon {
+  /// Rasterizes this icon into a template-mode `UIImage`. `.tabItem`
+  /// requires an `Image`/`Label` pair to get the system's automatic
+  /// selected/unselected tab-bar tinting and standard icon-over-caption
+  /// layout — a raw custom `Shape` view isn't guaranteed either.
+  func templateImage(size: CGFloat = 24, weight: CGFloat = 1.8) -> UIImage {
+    let rect = CGRect(x: 0, y: 0, width: size, height: size)
+    let renderer = UIGraphicsImageRenderer(size: rect.size)
+    let image = renderer.image { _ in
+      let path = UIBezierPath(cgPath: HugeIconShape(icon: self).path(in: rect).cgPath)
+      path.lineWidth = weight * size / 24
+      path.lineCapStyle = .round
+      path.lineJoinStyle = .round
+      UIColor.black.setStroke()
+      path.stroke()
+    }
+    return image.withRenderingMode(.alwaysTemplate)
+  }
+}
+
+/// A tab bar item built from a `HugeIcon` — use inside `.tabItem { }`.
+struct HugeIconTabLabel: View {
+  var icon: HugeIcon
+  var title: String
+
+  var body: some View {
+    Label {
+      Text(title)
+    } icon: {
+      Image(uiImage: icon.templateImage())
+    }
   }
 }

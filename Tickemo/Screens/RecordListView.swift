@@ -23,12 +23,11 @@ enum RecordViewMode {
 /// Matches CollectionScreen.tsx's FREE_TICKET_LIMIT.
 private let freeTicketLimit = 3
 
-/// Ports screens/CollectionScreen.tsx. Navigation chrome (toolbar
-/// icons/FAB) intentionally stays this app's existing NavigationStack +
-/// toolbar convention rather than RN's separate App.tsx-level floating
-/// pill toolbar/bottom tab bar — that's a full-app navigation-architecture
-/// difference decided once for the whole migration, not something to
-/// revisit per-screen. RN's own All/Upcoming/Past filter dropdown is kept
+/// Ports screens/CollectionScreen.tsx. This is the "Home" tab's root
+/// screen (see ContentView's TabView) — Settings/Calendar/Statistics moved
+/// out to their own tabs, so this view's toolbar now only keeps the
+/// actions that are specific to the Home tab itself (view-mode toggle,
+/// add-ticket FAB). RN's own All/Upcoming/Past filter dropdown is kept
 /// too, but as this screen's existing working segmented Picker: migration
 /// research found RN's real filter dropdown UI has no reachable way to
 /// open it (dead code), so its filtering logic exists in RN but is never
@@ -49,12 +48,6 @@ struct RecordListView: View {
   @State private var viewMode: RecordViewMode = .list
   @State private var showingCreateSheet = false
   @State private var showingPaywall = false
-  @State private var showingSettings = false
-  @State private var showingCalendar = false
-  @State private var showingStatistics = false
-  #if DEBUG
-  @State private var showingDebugSheet = false
-  #endif
 
   private var isDarkMode: Bool {
     ThemePreferenceService.shared.effectiveIsDark(systemIsDark: systemColorScheme == .dark)
@@ -172,15 +165,6 @@ struct RecordListView: View {
       ArtistDetailView(artistName: route.name)
     }
     .toolbar {
-      #if DEBUG
-      ToolbarItem(placement: .topBarLeading) {
-        Button {
-          showingDebugSheet = true
-        } label: {
-          HugeIconView(icon: HugeIcons.wrench02, size: 18)
-        }
-      }
-      #endif
       ToolbarItem(placement: .primaryAction) {
         Button {
           viewMode = (viewMode == .list) ? .grid : .list
@@ -195,27 +179,6 @@ struct RecordListView: View {
           HugeIconView(icon: HugeIcons.add01, size: 18, weight: 2)
         }
       }
-      ToolbarItem(placement: .topBarLeading) {
-        Button {
-          showingSettings = true
-        } label: {
-          HugeIconView(icon: HugeIcons.settings03, size: 18)
-        }
-      }
-      ToolbarItem(placement: .topBarLeading) {
-        Button {
-          showingCalendar = true
-        } label: {
-          HugeIconView(icon: HugeIcons.calendar03, size: 18)
-        }
-      }
-      ToolbarItem(placement: .topBarLeading) {
-        Button {
-          showingStatistics = true
-        } label: {
-          HugeIconView(icon: HugeIcons.gridView, size: 18)
-        }
-      }
     }
     .sheet(isPresented: $showingCreateSheet) {
       RecordFormView(record: nil)
@@ -223,20 +186,6 @@ struct RecordListView: View {
     .sheet(isPresented: $showingPaywall) {
       PaywallView()
     }
-    .sheet(isPresented: $showingCalendar) {
-      CalendarView()
-    }
-    .sheet(isPresented: $showingStatistics) {
-      StatisticsView()
-    }
-    .sheet(isPresented: $showingSettings) {
-      SettingsView()
-    }
-    #if DEBUG
-    .sheet(isPresented: $showingDebugSheet) {
-      DebugToolsView()
-    }
-    #endif
     .background(palette.screenBackground)
   }
 

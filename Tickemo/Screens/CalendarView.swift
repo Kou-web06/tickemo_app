@@ -10,9 +10,10 @@ private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 /// DateFormatting.utcCalendar — this migration already fixed two separate
 /// local-timezone-vs-UTC-string bugs, and the RN source for this exact
 /// screen shows three different ad hoc local-timezone anchors fighting the
-/// same problem, so this is deliberately not repeated here.
+/// same problem, so this is deliberately not repeated here. Root of the
+/// "Calendar" tab (see ContentView), so it self-wraps a NavigationStack for
+/// its own title bar but has no dismiss chrome — it's a permanent tab page.
 struct CalendarView: View {
-  @Environment(\.dismiss) private var dismiss
   @FetchRequest(sortDescriptors: []) private var records: FetchedResults<CD_ChekiRecord>
 
   @State private var displayedMonth = CalendarMonth.current
@@ -41,11 +42,6 @@ struct CalendarView: View {
       .padding(.top, 8)
       .navigationTitle("Calendar")
       .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button("Done") { dismiss() }
-        }
-      }
       .sheet(item: $selectedDay) { day in
         CalendarDayEventsView(dateString: day.dateString, records: recordsByDate[day.dateString] ?? [])
       }
