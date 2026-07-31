@@ -30,28 +30,27 @@ struct NextLiveCardView: View {
         .font(.system(size: 15, weight: .heavy))
         .padding(.horizontal, 30)
 
-      GeometryReader { proxy in
-        ZStack {
-          backgroundImage
-            .frame(width: proxy.size.width, height: proxy.size.height)
+      ZStack {
+        frontFace
+          .opacity(isFlipped ? 0 : 1)
+          .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
+          .allowsHitTesting(!isFlipped)
+          .zIndex(0)
+        backFace
+          .opacity(isFlipped ? 1 : 0)
+          .rotation3DEffect(.degrees(isFlipped ? 0 : -180), axis: (x: 0, y: 1, z: 0))
+          .allowsHitTesting(isFlipped)
+          .zIndex(0)
 
-          frontFace
-            .frame(width: proxy.size.width, height: proxy.size.height)
-            .opacity(isFlipped ? 0 : 1)
-            .rotation3DEffect(.degrees(isFlipped ? 180 : 0), axis: (x: 0, y: 1, z: 0))
-            .allowsHitTesting(!isFlipped)
-          backFace
-            .frame(width: proxy.size.width, height: proxy.size.height)
-            .opacity(isFlipped ? 1 : 0)
-            .rotation3DEffect(.degrees(isFlipped ? 0 : -180), axis: (x: 0, y: 1, z: 0))
-            .allowsHitTesting(isFlipped)
-
-          flipButton
-            .frame(width: proxy.size.width, height: proxy.size.height)
-        }
-        .frame(width: proxy.size.width, height: proxy.size.height)
+        // Explicit zIndex guarantees this always wins hit-testing over the
+        // front/back faces regardless of any compositor ordering quirk
+        // introduced by their opacity/rotation3DEffect siblings.
+        flipButton
+          .zIndex(1)
       }
+      .frame(maxWidth: .infinity)
       .frame(height: Self.cardHeight)
+      .background(backgroundImage)
       .clipShape(RoundedRectangle(cornerRadius: 16))
       .padding(.horizontal, 20)
     }
@@ -72,11 +71,18 @@ struct NextLiveCardView: View {
 
   // MARK: - Shared background
 
-  // `.clipped()` is required here: without it, a `scaledToFill()` image's
-  // deliberately-oversized (unclipped) intrinsic bounds can throw off how
-  // the surrounding ZStack proposes size to its *sibling* views (frontFace/
-  // backFace), silently shrinking their content above/behind the visible
-  // frame — confirmed by bisecting this view down to a minimal repro.
+  // Applied via `.background()` on the whole front/back ZStack rather than
+  // as a ZStack *sibling* — a `scaledToFill()` Image sibling alongside
+  // Text-heavy siblings (each stretched with `.frame(maxWidth: .infinity,
+  // maxHeight: .infinity)`) was previously found to silently corrupt the
+  // *other* siblings' measured layout (their first lines of text got
+  // clipped off above the visible frame). `.background()` sizes its
+  // content to match the foreground's already-resolved frame instead of
+  // participating in that same proposed-size negotiation, which avoids the
+  // bug entirely and also drops the GeometryReader indirection this view
+  // used to need — GeometryReader nested inside a List row is a known
+  // source of hit-testing/sizing flakiness for nested buttons, which is
+  // suspected to be why the flip button didn't respond to taps on device.
   @ViewBuilder
   private var backgroundImage: some View {
     if let data = record.coverImageData, let uiImage = UIImage(data: data) {
@@ -101,12 +107,14 @@ struct NextLiveCardView: View {
             .font(.system(size: 16, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: 34, height: 34)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
       }
       Spacer()
     }
     .padding(12)
+    .allowsHitTesting(true)
   }
 
   // MARK: - Front face
