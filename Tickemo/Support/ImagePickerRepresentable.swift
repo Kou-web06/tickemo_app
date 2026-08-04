@@ -11,12 +11,14 @@ import UIKit
 /// `RecordFormView`/`ImageCropping.swift`), specifically because
 /// ProfileEditView is in scope for RN-exact interactive-crop parity.
 struct ImagePickerRepresentable: UIViewControllerRepresentable {
+  var sourceType: UIImagePickerController.SourceType = .photoLibrary
+  var allowsEditing: Bool = true
   var onPick: (Data) -> Void
 
   func makeUIViewController(context: Context) -> UIImagePickerController {
     let picker = UIImagePickerController()
-    picker.sourceType = .photoLibrary
-    picker.allowsEditing = true
+    picker.sourceType = sourceType
+    picker.allowsEditing = allowsEditing
     picker.delegate = context.coordinator
     return picker
   }
@@ -41,7 +43,12 @@ struct ImagePickerRepresentable: UIViewControllerRepresentable {
       picker.dismiss(animated: true)
       let image = (info[.editedImage] as? UIImage) ?? (info[.originalImage] as? UIImage)
       guard let data = image?.jpegData(compressionQuality: 0.9) else { return }
-      onPick(data)
+      // Delay lets SwiftUI finish processing the sheet dismissal before the
+      // caller presents another sheet or updates state — without this, setting
+      // new sheet state while the picker is still animating out causes a crash.
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [self] in
+        onPick(data)
+      }
     }
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {

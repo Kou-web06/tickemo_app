@@ -58,14 +58,17 @@ struct NextLiveCardView: View {
     .task(id: record.objectID) {
       isFlipped = false
       todaySong = nil
-      let artistName = record.artist?.trimmingCharacters(in: .whitespaces) ?? ""
+      // ArtistGrouping.names handles both artistsArray and the legacy single
+      // artist field, so the correct name is used even when record.artist is
+      // empty because only artistsArray is populated.
+      let artistName = ArtistGrouping.names(for: record).first ?? ""
       guard !artistName.isEmpty else { return }
       todaySong = await TodaySongCache.fetchTodaySong(for: artistName)
     }
-    .alert("Unable to open", isPresented: $showingInvalidQrAlert) {
+    .alert("開けません", isPresented: $showingInvalidQrAlert) {
       Button("OK", role: .cancel) {}
     } message: {
-      Text("QR code URL is invalid.")
+      Text("QRコードのURLが無効です。")
     }
   }
 
@@ -127,7 +130,7 @@ struct NextLiveCardView: View {
           .font(.system(size: 22, weight: .heavy))
           .foregroundStyle(.white)
           .lineLimit(1)
-        Text(record.artist?.isEmpty == false ? record.artist! : "-")
+        Text(ArtistGrouping.names(for: record).first ?? "-")
           .font(.system(size: 13))
           .foregroundStyle(.white)
           .lineLimit(1)
@@ -317,10 +320,10 @@ struct NextLiveCardView: View {
     }
     .buttonStyle(.plain)
     .disabled(todaySong == nil)
-    .confirmationDialog("Open this song", isPresented: $showingProviderDialog) {
-      Button("Open in Spotify") { openInSpotify() }
-      Button("Open in Apple Music") { openInAppleMusic() }
-      Button("Cancel", role: .cancel) {}
+    .confirmationDialog("この曲を開く", isPresented: $showingProviderDialog) {
+      Button("Spotifyで開く") { openInSpotify() }
+      Button("Apple Musicで開く") { openInAppleMusic() }
+      Button("キャンセル", role: .cancel) {}
     }
   }
 

@@ -13,11 +13,11 @@ private enum ShareCardTypeOption: CaseIterable, Hashable {
     }
   }
 
-  var hugeIcon: HugeIcon {
+  var imageName: String {
     switch self {
-    case .ticket: HugeIcons.ticket01
-    case .receipt: HugeIcons.invoice01
-    case .cd: HugeIcons.cd
+    case .ticket: "Ticket"
+    case .receipt: "Receipt bill"
+    case .cd: "Podcast"
     }
   }
 }
@@ -85,7 +85,9 @@ struct ShareSheetView: View {
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
-          Button("Done") { dismiss() }
+          Button { dismiss() } label: {
+            HugeIconView(icon: HugeIcons.cancel01, size: 17)
+          }
         }
       }
       .task {
@@ -98,7 +100,7 @@ struct ShareSheetView: View {
       .sheet(item: $activityShareItems) { wrapper in
         ActivityShareSheet(items: wrapper.items)
       }
-      .alert("Error", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+      .alert("エラー", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
         Button("OK", role: .cancel) {}
       } message: {
         Text(errorMessage ?? "")
@@ -120,12 +122,15 @@ struct ShareSheetView: View {
         .frame(width: canvasSize.width * scale, height: previewHeight)
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
+        .id(cardType)
+        .transition(.opacity.combined(with: .scale(scale: 0.96)))
 
       if isLockedPreview {
         lockOverlay
       }
     }
     .frame(height: previewHeight)
+    .animation(.spring(duration: 0.4, bounce: 0.08), value: cardType)
   }
 
   private var currentCanvasSize: CGSize {
@@ -171,10 +176,16 @@ struct ShareSheetView: View {
     HStack(spacing: 8) {
       ForEach(ShareCardTypeOption.allCases, id: \.self) { option in
         Button {
-          cardType = option
+          withAnimation(.spring(duration: 0.4, bounce: 0.08)) {
+            cardType = option
+          }
         } label: {
           HStack(spacing: 6) {
-            HugeIconView(icon: option.hugeIcon, size: 12)
+            Image(option.imageName)
+              .renderingMode(.template)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 13, height: 13)
             Text(option.label)
               .font(.system(size: 13, weight: .bold))
           }
@@ -214,15 +225,15 @@ struct ShareSheetView: View {
 
   private var actionButtons: some View {
     HStack(spacing: 32) {
-      actionButton(kind: .save, icon: HugeIcons.download04, scribbleImageName: "ShareScribbleSave", label: "save", action: handleSave)
-      actionButton(kind: .stories, icon: HugeIcons.instagram, scribbleImageName: "ShareScribbleStories", label: "stories", action: handleStoriesShare)
-      actionButton(kind: .other, icon: HugeIcons.share01, scribbleImageName: "ShareScribbleOther", label: "other", action: handleSystemShare)
+      actionButton(kind: .save, imageName: "Download", scribbleImageName: "ShareScribbleSave", label: "save", action: handleSave)
+      actionButton(kind: .stories, imageName: "Instagram", scribbleImageName: "ShareScribbleStories", label: "stories", action: handleStoriesShare)
+      actionButton(kind: .other, imageName: "More Circle", scribbleImageName: "ShareScribbleOther", label: "other", action: handleSystemShare)
     }
   }
 
   private func actionButton(
     kind: ShareActionKind,
-    icon: HugeIcon,
+    imageName: String,
     scribbleImageName: String,
     label: String,
     action: @escaping () -> Void
@@ -238,7 +249,11 @@ struct ShareSheetView: View {
           if isGenerating && inFlightAction == kind {
             ProgressView()
           } else {
-            HugeIconView(icon: icon, size: 22)
+            Image(imageName)
+              .renderingMode(.template)
+              .resizable()
+              .scaledToFit()
+              .frame(width: 24, height: 24)
               .foregroundStyle(Color(white: 0.2))
           }
 
@@ -275,7 +290,7 @@ struct ShareSheetView: View {
   private func handleSave() {
     guard !isLockedPreview else { showingPaywall = true; return }
     guard let pngData = ShareCapture.capturePNG(currentCardKind(blurredBackground: false)) else {
-      errorMessage = "Couldn't generate the image."
+      errorMessage = "画像を生成できませんでした。"
       return
     }
 
@@ -290,7 +305,7 @@ struct ShareSheetView: View {
         try await ShareActions.saveToPhotos(pngData: pngData)
         dismiss()
       } catch {
-        errorMessage = "Couldn't save to Photos."
+        errorMessage = "写真への保存に失敗しました。"
       }
     }
   }
@@ -300,7 +315,7 @@ struct ShareSheetView: View {
     guard let pngData = ShareCapture.capturePNG(currentCardKind(blurredBackground: true)),
           let uiImage = UIImage(data: pngData)
     else {
-      errorMessage = "Couldn't generate the image."
+      errorMessage = "画像を生成できませんでした。"
       return
     }
 
@@ -311,14 +326,14 @@ struct ShareSheetView: View {
   private func handleStoriesShare() {
     guard !isLockedPreview else { showingPaywall = true; return }
     guard let pngData = ShareCapture.capturePNG(currentCardKind(blurredBackground: true)) else {
-      errorMessage = "Couldn't generate the image."
+      errorMessage = "画像を生成できませんでした。"
       return
     }
 
     if ShareActions.shareToInstagramStories(pngData: pngData) {
       dismiss()
     } else {
-      errorMessage = "Instagram isn't installed."
+      errorMessage = "Instagramがインストールされていません。"
     }
   }
 }

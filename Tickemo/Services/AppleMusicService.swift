@@ -4,6 +4,11 @@ import Foundation
 final class AppleMusicService {
   private var musicPlayer = ApplicationMusicPlayer.shared
 
+  // Storefront hardcoded to "jp", matching RN's utils/appleMusicApi.ts exactly
+  // (never derived from the device's region) — this app's userbase/content is
+  // Japan-focused regardless of what a given device happens to be set to.
+  private static let storefront = "jp"
+
   func authorize() async -> Bool {
     let status = await MusicAuthorization.request()
     return status == .authorized
@@ -49,31 +54,12 @@ final class AppleMusicService {
     _ = await MusicAuthorization.request()
   }
 
+  // MARK: - Result types
+
   struct ArtistResult {
     let id: String
     let name: String
     let imageUrl: String
-  }
-
-  func searchArtists(term: String) async throws -> [ArtistResult] {
-    guard !term.isEmpty else {
-      return []
-    }
-    await ensureAuthorized()
-
-    var request = MusicCatalogSearchRequest(term: term, types: [Artist.self])
-    request.limit = 10
-
-    let response = try await request.response()
-
-    return response.artists.map { artist in
-      // 1200x1200 comfortably clears the requested 800x800 floor; a single
-      // high-resolution URL is stored (see ArtistSearchField/ArtistGrouping)
-      // rather than RN's template-URL-resolved-per-call-site approach, since
-      // MusicKit's Artwork.url(width:height:) already returns a fixed URL.
-      let imageUrl = artist.artwork?.url(width: 1200, height: 1200)?.absoluteString ?? ""
-      return ArtistResult(id: artist.id.rawValue, name: artist.name, imageUrl: imageUrl)
-    }
   }
 
   struct SongResult {
@@ -91,30 +77,200 @@ final class AppleMusicService {
     let appleMusicUrl: String?
   }
 
-  func searchSongs(term: String, limit: Int = 10) async throws -> [SongResult] {
-    guard !term.isEmpty else {
-      return []
+  // MARK: - Language
+
+  // MusicCatalogSearchRequest uses Locale.current internally, which reflects
+  // the device language — not the app's LanguagePreference. Using MusicDataRequest
+  // with an explicit `l` parameter ensures results match the in-app language
+  // setting even when the device is in a different language.
+  private func preferredLanguageCode() -> String {
+    switch LanguagePreferenceStore.load() {
+    case .ja: return "ja"
+    case .en: return "en"
+    case .system:
+      return Locale.current.language.languageCode?.identifier ?? "en"
     }
+  }
+
+  // MARK: - Apple Music API Codable types
+
+  private struct AMSearchResponse: Decodable {
+    struct Results: Decodable {
+      var artists: AMCollection<AMArtist>?
+      var songs: AMCollection<AMSong>?
+    }
+    var results: Results
+  }
+
+  private struct AMCollection<T: Decodable>: Decodable {
+    var data: [T]
+  }
+
+  private struct AMArtist: Decodable {
+    var id: String
+    var attributes: Attributes?
+    struct Attributes: Decodable {
+      var name: String
+      var artwork: AMArtwork?
+    }
+  }
+
+  private struct AMSong: Decodable {
+    var id: String
+    var attributes: Attributes?
+    struct Attributes: Decodable {
+      var name: String
+      var artistName: String
+      var albumTitle: String?
+      var artwork: AMArtwork?
+      var genreNames: [String]?
+      var durationInMillis: Double?
+      var releaseDate: String?
+      var url: String?
+    }
+  }
+
+  private struct AMArtwork: Decodable {
+    var url: String
+  }
+
+  /// Apple Music API artwork URLs are templates like ".../{w}x{h}bb.jpg" —
+  /// resolved at each display site to the size that site needs (matching
+  /// RN's utils/appleMusicApi.ts `getArtworkUrl`), rather than baked into a
+  /// single fixed size at fetch time. Non-template URLs pass through
+  /// unchanged.
+  static func resolvedArtworkURL(_ url: String, size: Int) -> String {
+    guard url.contains("{w}") || url.contains("{h}") else { return url }
+    return url
+      .replacingOccurrences(of: "{w}", with: "\(size)")
+      .replacingOccurrences(of: "{h}", with: "\(size)")
+  }
+
+  // Mirrors RN's appleMusicApi.ts module-level cache: 5-minute TTL, keyed by
+  // normalized term+limit+storefront+locale, with in-flight de-duplication
+  // so two concurrent identical searches share one network call. Actor-
+  // isolated since AppleMusicService instances are created per-view (not a
+  // shared singleton) but this cache is meant to be shared app-wide, same as
+  // RN's module-scope Maps.
+  private actor SearchCache {
+    static let shared = SearchCache()
+    private let ttl: TimeInterval = 5 * 60
+
+    private struct Entry<T> {
+      let value: T
+      let expiresAt: Date
+    }
+
+    private var artistResults: [String: Entry<[ArtistResult]>] = [:]
+    private var songResults: [String: Entry<[SongResult]>] = [:]
+    private var artistInFlight: [String: Task<[ArtistResult], Error>] = [:]
+    private var songInFlight: [String: Task<[SongResult], Error>] = [:]
+
+    func artists(for key: String, fetch: @escaping () async throws -> [ArtistResult]) async throws -> [ArtistResult] {
+      if let cached = artistResults[key], cached.expiresAt > Date() { return cached.value }
+      if let inFlight = artistInFlight[key] { return try await inFlight.value }
+      let task = Task { try await fetch() }
+      artistInFlight[key] = task
+      defer { artistInFlight[key] = nil }
+      let value = try await task.value
+      artistResults[key] = Entry(value: value, expiresAt: Date().addingTimeInterval(ttl))
+      return value
+    }
+
+    func songs(for key: String, fetch: @escaping () async throws -> [SongResult]) async throws -> [SongResult] {
+      if let cached = songResults[key], cached.expiresAt > Date() { return cached.value }
+      if let inFlight = songInFlight[key] { return try await inFlight.value }
+      let task = Task { try await fetch() }
+      songInFlight[key] = task
+      defer { songInFlight[key] = nil }
+      let value = try await task.value
+      songResults[key] = Entry(value: value, expiresAt: Date().addingTimeInterval(ttl))
+      return value
+    }
+  }
+
+  private func cacheKey(term: String, limit: Int) -> String {
+    "\(term.trimmingCharacters(in: .whitespaces).lowercased())::\(limit)::\(Self.storefront)::\(preferredLanguageCode())"
+  }
+
+  private static let releaseDateFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.dateFormat = "yyyy-MM-dd"
+    f.locale = Locale(identifier: "en_US_POSIX")
+    return f
+  }()
+
+  private func catalogSearchURL(term: String, types: String, limit: Int) -> URL? {
+    var comps = URLComponents(string: "https://api.music.apple.com/v1/catalog/\(Self.storefront)/search")
+    comps?.queryItems = [
+      URLQueryItem(name: "term", value: term),
+      URLQueryItem(name: "types", value: types),
+      URLQueryItem(name: "l", value: preferredLanguageCode()),
+      URLQueryItem(name: "limit", value: "\(limit)"),
+    ]
+    return comps?.url
+  }
+
+  // MARK: - Search
+
+  /// Matches RN's StatisticsScreen.tsx backfill exactly: search with
+  /// `limit=1` and take whatever comes back, no name-similarity scoring.
+  func bestMatchArtistImageUrl(for name: String) async -> String? {
+    let results = (try? await searchArtists(term: name, limit: 1)) ?? []
+    guard let url = results.first?.imageUrl, !url.isEmpty else { return nil }
+    return url
+  }
+
+  func searchArtists(term: String, limit: Int = 10) async throws -> [ArtistResult] {
+    guard !term.isEmpty else { return [] }
     await ensureAuthorized()
 
-    var request = MusicCatalogSearchRequest(term: term, types: [Song.self])
-    request.limit = limit
+    let key = cacheKey(term: term, limit: limit)
+    return try await SearchCache.shared.artists(for: key) { [self] in
+      guard let url = catalogSearchURL(term: term, types: "artists", limit: limit) else { return [] }
+      let response = try await MusicDataRequest(urlRequest: URLRequest(url: url)).response()
+      let decoded = try JSONDecoder().decode(AMSearchResponse.self, from: response.data)
 
-    let response = try await request.response()
+      return decoded.results.artists?.data.compactMap { item in
+        guard let attrs = item.attributes else { return nil }
+        // Raw template URL, unresolved — matches RN's ArtistInput, which
+        // saves `artist.templateUrl` and resolves it per display site
+        // (search dropdown/chip: 80px, Statistics/ArtistDetail: 800-900px)
+        // rather than baking in one fixed size at fetch time.
+        return ArtistResult(
+          id: item.id,
+          name: attrs.name,
+          imageUrl: attrs.artwork?.url ?? ""
+        )
+      } ?? []
+    }
+  }
 
-    return response.songs.map { song in
-      let imageUrl = song.artwork?.url(width: 300, height: 300)?.absoluteString ?? ""
-      return SongResult(
-        id: song.id.rawValue,
-        title: song.title,
-        artistName: song.artistName,
-        albumName: song.albumTitle ?? "",
-        artworkUrl: imageUrl,
-        genreName: song.genreNames.first,
-        durationSeconds: song.duration,
-        releaseDate: song.releaseDate,
-        appleMusicUrl: song.url?.absoluteString
-      )
+  func searchSongs(term: String, limit: Int = 10) async throws -> [SongResult] {
+    guard !term.isEmpty else { return [] }
+    await ensureAuthorized()
+
+    let key = cacheKey(term: term, limit: limit)
+    return try await SearchCache.shared.songs(for: key) { [self] in
+      guard let url = catalogSearchURL(term: term, types: "songs", limit: limit) else { return [] }
+      let response = try await MusicDataRequest(urlRequest: URLRequest(url: url)).response()
+      let decoded = try JSONDecoder().decode(AMSearchResponse.self, from: response.data)
+
+      return decoded.results.songs?.data.compactMap { item in
+        guard let attrs = item.attributes else { return nil }
+        let releaseDate = attrs.releaseDate.flatMap { Self.releaseDateFormatter.date(from: $0) }
+        return SongResult(
+          id: item.id,
+          title: attrs.name,
+          artistName: attrs.artistName,
+          albumName: attrs.albumTitle ?? "",
+          artworkUrl: Self.resolvedArtworkURL(attrs.artwork?.url ?? "", size: 300),
+          genreName: attrs.genreNames?.first,
+          durationSeconds: attrs.durationInMillis.map { $0 / 1000 },
+          releaseDate: releaseDate,
+          appleMusicUrl: attrs.url
+        )
+      } ?? []
     }
   }
 }

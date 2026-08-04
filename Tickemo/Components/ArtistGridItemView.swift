@@ -49,9 +49,8 @@ struct ArtistGridItemView: View {
     .shadow(color: .black.opacity(0.14), radius: 18, x: 0, y: 6)
     .task(id: tile.id) {
       guard tile.artistImageUrl == nil, backfillImageUrl == nil else { return }
-      guard let result = try? await appleMusicService.searchArtists(term: tile.name).first,
-            !result.imageUrl.isEmpty else { return }
-      backfillImageUrl = result.imageUrl
+      guard let url = await appleMusicService.bestMatchArtistImageUrl(for: tile.name) else { return }
+      backfillImageUrl = AppleMusicService.resolvedArtworkURL(url, size: 800)
     }
   }
 

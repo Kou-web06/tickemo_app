@@ -28,20 +28,11 @@ enum ArtistGrouping {
       let rawUrl = index < urls.count ? urls[index] : (index == 0 ? record.artistImageUrl : nil)
       let trimmedUrl = rawUrl?.trimmingCharacters(in: .whitespaces)
       guard let trimmedUrl, !trimmedUrl.isEmpty else { return (name, nil) }
-      // RN stored MusicKit artwork as template URLs (e.g. …/{w}x{h}bb.jpg).
-      // Resolve them so AsyncImage can load them; the native app always writes
-      // resolved URLs, so non-template URLs pass through unchanged.
-      return (name, resolveArtworkTemplate(trimmedUrl))
+      // MusicKit artwork is stored as a template URL (e.g. …/{w}x{h}bb.jpg),
+      // same as RN — resolved here to 800px, matching RN's Statistics/grid
+      // sizing, so AsyncImage can load it.
+      return (name, AppleMusicService.resolvedArtworkURL(trimmedUrl, size: 800))
     }
-  }
-
-  /// Replaces MusicKit JS template placeholders `{w}` / `{h}` with a
-  /// concrete resolution. Returns the URL unchanged if it contains neither.
-  private static func resolveArtworkTemplate(_ url: String, size: Int = 800) -> String {
-    guard url.contains("{w}") || url.contains("{h}") else { return url }
-    return url
-      .replacingOccurrences(of: "{w}", with: "\(size)")
-      .replacingOccurrences(of: "{h}", with: "\(size)")
   }
 
   static func names(for record: CD_ChekiRecord) -> [String] {

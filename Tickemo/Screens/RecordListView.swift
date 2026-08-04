@@ -73,17 +73,50 @@ struct RecordListView: View {
     ArtistGrouping.tiles(from: filteredRecords)
   }
 
+  private static let jstCalendar: Calendar = {
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = TimeZone(identifier: "Asia/Tokyo")!
+    return cal
+  }()
+
+  private var todayJST: Date { Self.jstCalendar.startOfDay(for: Date()) }
+
+  // Upcoming events sorted ascending (most imminent first),
+  // past events sorted descending (most recent first), concatenated.
+  // Both boundaries use JST so a Japanese user's "today" is always correct.
   private var filteredRecords: [CD_ChekiRecord] {
-    guard filter != .all else { return Array(records) }
-    let today = DateFormatting.utcCalendar.startOfDay(for: Date())
-    return records.filter { record in
-      guard let date = DateFormatting.date(from: record.date) else { return filter == .all }
-      switch filter {
-      case .all: return true
-      case .upcoming: return date >= today
-      case .past: return date < today
+    let today = todayJST
+    let source: [CD_ChekiRecord]
+    switch filter {
+    case .all:
+      source = Array(records)
+    case .upcoming:
+      source = records.filter {
+        guard let d = DateFormatting.date(from: $0.date) else { return false }
+        return d >= today
+      }
+    case .past:
+      source = records.filter {
+        guard let d = DateFormatting.date(from: $0.date) else { return false }
+        return d < today
       }
     }
+    var upcoming: [CD_ChekiRecord] = []
+    var past: [CD_ChekiRecord] = []
+    for r in source {
+      if let d = DateFormatting.date(from: r.date), d >= today {
+        upcoming.append(r)
+      } else {
+        past.append(r)
+      }
+    }
+    upcoming.sort {
+      (DateFormatting.date(from: $0.date) ?? .distantPast) < (DateFormatting.date(from: $1.date) ?? .distantPast)
+    }
+    past.sort {
+      (DateFormatting.date(from: $0.date) ?? .distantPast) > (DateFormatting.date(from: $1.date) ?? .distantPast)
+    }
+    return upcoming + past
   }
 
   // Ports RN's `nextLiveRecord` — always derived from ALL records, not the
@@ -95,13 +128,8 @@ struct RecordListView: View {
     return NextLiveCardData.nextLiveRecord(from: Array(records))
   }
 
-  // RN's `firstSectionLabelRecordIds`: since `filteredRecords` is already
-  // sorted farthest-future-first (matching the FetchRequest's descending
-  // date sort), the first record satisfying each condition marks the
-  // *start* of that segment in the combined list — not literally "the
-  // next show" — matching RN's one-time section-divider semantics.
   private var firstUpNextRecordID: NSManagedObjectID? {
-    let today = DateFormatting.utcCalendar.startOfDay(for: Date())
+    let today = todayJST
     return filteredRecords.first { record in
       guard let date = DateFormatting.date(from: record.date) else { return false }
       return date >= today
@@ -109,7 +137,7 @@ struct RecordListView: View {
   }
 
   private var firstPastEventsRecordID: NSManagedObjectID? {
-    let today = DateFormatting.utcCalendar.startOfDay(for: Date())
+    let today = todayJST
     return filteredRecords.first { record in
       guard let date = DateFormatting.date(from: record.date) else { return false }
       return date < today
@@ -155,9 +183,10 @@ struct RecordListView: View {
       }
       .pickerStyle(.segmented)
       .padding(.horizontal)
-      .padding(.top, 8)
+      .padding(.vertical, 6)
     }
     .navigationTitle("Collection")
+    .navigationBarTitleDisplayMode(.inline)
     .navigationDestination(for: CD_ChekiRecord.self) { record in
       RecordDetailView(record: record)
     }
@@ -187,6 +216,12 @@ struct RecordListView: View {
       PaywallView()
     }
     .background(palette.screenBackground)
+    .onAppear {
+      WidgetReloaderService.sync(records: Array(records))
+    }
+    .onChange(of: records.count) { _, _ in
+      WidgetReloaderService.sync(records: Array(records))
+    }
   }
 
   // MARK: - List mode
@@ -226,7 +261,7 @@ struct RecordListView: View {
           Button(role: .destructive) {
             delete(record)
           } label: {
-            HugeIconLabel(icon: HugeIcons.delete02) { Text("Delete") }
+            HugeIconLabel(icon: HugeIcons.delete02) { Text("削除") }
           }
         }
       }

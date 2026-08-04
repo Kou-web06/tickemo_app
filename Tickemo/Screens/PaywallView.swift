@@ -88,7 +88,7 @@ struct PaywallView: View {
       .task {
         await loadOfferings()
       }
-      .alert("Notice", isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
+      .alert("お知らせ", isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
         Button("OK") {}
       } message: {
         Text(alertMessage ?? "")
@@ -121,7 +121,7 @@ struct PaywallView: View {
           if isPurchasing {
             ProgressView().tint(.white)
           }
-          Text(isPurchasing ? "Processing…" : "Continue")
+          Text(isPurchasing ? "処理中…" : "購入する")
             .font(.system(size: 16, weight: .bold))
         }
         .frame(maxWidth: .infinity)
@@ -169,7 +169,7 @@ struct PaywallView: View {
         dismiss()
         return
       }
-      alertMessage = "Your purchase is still processing. Please check back shortly."
+      alertMessage = "購入処理中です。しばらくしてからご確認ください。"
     } catch let error as ErrorCode where error == .purchaseCancelledError {
       return
     } catch let error as ErrorCode where error == .invalidReceiptError {
@@ -178,9 +178,9 @@ struct PaywallView: View {
         dismiss()
         return
       }
-      alertMessage = "Your purchase is still processing. Please check back shortly."
+      alertMessage = "購入処理中です。しばらくしてからご確認ください。"
     } catch {
-      alertMessage = "The purchase couldn't be completed. Please try again."
+      alertMessage = "購入を完了できませんでした。もう一度お試しください。"
     }
   }
 
@@ -202,13 +202,13 @@ struct PaywallView: View {
     do {
       _ = try await PurchasesService.shared.restorePurchases()
       if PurchasesService.shared.isPremium {
-        alertMessage = "Your purchase has been restored."
+        alertMessage = "購入が復元されました。"
         dismiss()
       } else {
-        alertMessage = "No previous purchase was found."
+        alertMessage = "以前の購入が見つかりませんでした。"
       }
     } catch {
-      alertMessage = "No previous purchase was found."
+      alertMessage = "以前の購入が見つかりませんでした。"
     }
   }
 }

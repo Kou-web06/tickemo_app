@@ -21,7 +21,7 @@ const ICON_NAMES = [
   "PlayCircleIcon", "PauseCircleIcon", "Sun03Icon", "Moon02Icon",
   "PlusSignCircleIcon", "Infinity01Icon", "PlayListIcon", "FavouriteIcon",
   "UserGroup03Icon", "StarCircleIcon", "RadioIcon", "FootballIcon",
-  "Invoice01Icon", "CdIcon", "Home05Icon",
+  "Invoice01Icon", "CdIcon", "Home05Icon", "MagicWand04Icon",
 ];
 
 const esmDir = path.join(

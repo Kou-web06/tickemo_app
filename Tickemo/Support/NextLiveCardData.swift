@@ -15,7 +15,7 @@ enum NextLiveCardData {
   /// date-only — RN's own `toTime` helper ignores `startTime` — unlike
   /// `instant(for:)` below, which factors it in for the countdown target.
   static func nextLiveRecord(from records: [CD_ChekiRecord], now: Date = Date()) -> CD_ChekiRecord? {
-    let today = DateFormatting.utcCalendar.startOfDay(for: now)
+    let today = jstCalendar.startOfDay(for: now)
     let dated = records.compactMap { record -> (record: CD_ChekiRecord, date: Date)? in
       guard let date = DateFormatting.date(from: record.date) else { return nil }
       return (record, date)
@@ -28,18 +28,32 @@ enum NextLiveCardData {
     return dated.max { $0.date < $1.date }?.record
   }
 
-  /// The full date+startTime instant, defaulting startTime to 18:00 when
-  /// absent or unparseable — CollectionScreen.tsx's own bespoke default for
-  /// this specific card, distinct from StatisticsData.recordInstant's
-  /// midnight default used elsewhere for a different feature.
+  /// The full date+time instant used for the countdown target.
+  /// endTime (Show start / 開演) is preferred over startTime (Doors open / 開場),
+  /// falling back to startTime when endTime is absent, then defaulting to 18:00.
   static func instant(for record: CD_ChekiRecord) -> Date? {
     guard let day = DateFormatting.date(from: record.date) else { return nil }
-    let startTime = (record.startTime?.isEmpty == false) ? record.startTime! : "18:00"
-    let parts = startTime.split(separator: ":").compactMap { Int($0) }
+    let rawTime: String
+    if let t = record.endTime, !t.isEmpty {
+      rawTime = t
+    } else if let t = record.startTime, !t.isEmpty {
+      rawTime = t
+    } else {
+      rawTime = "18:00"
+    }
+    let parts = rawTime.split(separator: ":").compactMap { Int($0) }
     guard let hour = parts.first else { return day }
     let minute = parts.count > 1 ? parts[1] : 0
-    return DateFormatting.utcCalendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+    // 開演時刻はJST（日本時間）で入力されるため、UTCカレンダーで適用すると
+    // 9時間ズレる。Asia/Tokyoカレンダーで正しく解釈する。
+    return jstCalendar.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
   }
+
+  private static let jstCalendar: Calendar = {
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = TimeZone(identifier: "Asia/Tokyo")!
+    return cal
+  }()
 
   static func isPast(_ record: CD_ChekiRecord, now: Date = Date()) -> Bool {
     guard let instant = instant(for: record) else { return false }

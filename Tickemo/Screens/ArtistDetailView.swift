@@ -58,9 +58,8 @@ struct ArtistDetailView: View {
     .navigationBarTitleDisplayMode(.inline)
     .task(id: artistName) {
       guard heroImageUrl == nil, backfillImageUrl == nil else { return }
-      guard let result = try? await appleMusicService.searchArtists(term: artistName).first,
-            !result.imageUrl.isEmpty else { return }
-      backfillImageUrl = result.imageUrl
+      guard let url = await appleMusicService.bestMatchArtistImageUrl(for: artistName) else { return }
+      backfillImageUrl = AppleMusicService.resolvedArtworkURL(url, size: 900)
     }
   }
 

@@ -50,7 +50,7 @@ struct SettingsPalette {
     subtleText = isDarkMode ? Color(hex: "#B7B7C2") : Color(hex: "#666666")
     destructiveText = Color(hex: "#FF453A")
     rowBorder = isDarkMode ? Color(hex: "#2E2E35") : Color(hex: "#E8E8E8")
-    iconColor = isDarkMode ? Color(hex: "#D0D0D7") : Color(hex: "#C7C7CC")
+    iconColor = isDarkMode ? Color(hex: "#A8A8B4") : Color(hex: "#8E8E96")
     avatarRingBackground = isDarkMode ? Color(hex: "#222227") : Color(hex: "#FFFFFF")
     avatarFallbackBackground = isDarkMode ? Color(hex: "#313643") : Color(hex: "#D9DEE8")
     avatarFallbackText = isDarkMode ? Color(hex: "#E8EBF4") : Color(hex: "#3B4454")

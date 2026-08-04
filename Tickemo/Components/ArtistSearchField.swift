@@ -142,7 +142,10 @@ struct ArtistSearchField: View {
 
   private func thumbnail(urlString: String?, size: CGFloat) -> some View {
     Group {
-      if let urlString, let url = URL(string: urlString) {
+      // RN's ArtistInput resolves artwork to 80px for both the dropdown rows
+      // and the selected chip — same fixed size regardless of the thumbnail's
+      // on-screen point size here.
+      if let urlString, let url = URL(string: AppleMusicService.resolvedArtworkURL(urlString, size: 80)) {
         AsyncImage(url: url) { image in
           image.resizable().scaledToFill()
         } placeholder: {

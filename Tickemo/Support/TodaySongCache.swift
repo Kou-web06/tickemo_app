@@ -117,11 +117,14 @@ enum TodaySongCache {
     guard !songs.isEmpty else { return nil }
 
     let normalizedTarget = normalizeArtistName(artistName)
-    let artistMatched = songs.filter {
+    // Exact normalized match first — "contains" alone is too loose and can
+    // match a different artist whose name overlaps (e.g. "AI" inside "AIMYON").
+    let exactMatched = songs.filter { normalizeArtistName($0.artistName) == normalizedTarget }
+    let looseMatched = songs.filter {
       let normalized = normalizeArtistName($0.artistName)
       return normalized.contains(normalizedTarget) || normalizedTarget.contains(normalized)
     }
-    let filteredSongs = artistMatched.isEmpty ? songs : artistMatched
+    let filteredSongs = exactMatched.isEmpty ? (looseMatched.isEmpty ? songs : looseMatched) : exactMatched
 
     let freshCandidates = filteredSongs.filter { !history.contains($0.id) }
     let candidates = freshCandidates.isEmpty ? filteredSongs : freshCandidates

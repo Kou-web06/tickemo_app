@@ -7,20 +7,7 @@ private let privacyURL = URL(string: "https://traveling-fahrenheit-b9b.notion.si
 private let feedbackURL = URL(string: "https://forms.gle/Z6fQZZUM79WprPSk8")!
 private let appStoreURL = URL(string: "https://apps.apple.com/ja/app/tickemo-%E3%83%A9%E3%82%A4%E3%83%96%E3%81%AE%E6%80%9D%E3%81%84%E5%87%BA%E3%82%92%E8%A8%98%E9%8C%B2/id6758604980")!
 
-/// Full pixel-and-feature parity port of screens/SettingsScreen.tsx, per
-/// the user's explicit "match RN exactly" request. Two deliberate
-/// deviations from RN, both confirmed to be RN bugs rather than design
-/// choices, fixed here at the user's direction (see
-/// ThemePreferenceService/CustomToggleSwitch call sites for the specifics
-/// of each): dark mode with no manual override now actually follows the
-/// system appearance instead of RN's hard-coded-light collapse, and the
-/// haptics toggle now shows ON as right/purple instead of RN's inverted
-/// display. `NotificationSettingsScreen` and the "sns"/"about" row ids are
-/// excluded — confirmed dead code in RN (registered as routes, but no row
-/// in RN's live `sections` array ever navigates to them). Root of the
-/// "Settings" tab (see ContentView) — no dismiss chrome since it's a
-/// permanent tab page, not a sheet; the DEBUG tools entry point that used
-/// to live on RecordListView's toolbar now lives here as a debug-only row.
+private let settingsAccentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 struct SettingsView: View {
   @Environment(\.managedObjectContext) private var viewContext
   @Environment(\.requestReview) private var requestReview
@@ -36,6 +23,8 @@ struct SettingsView: View {
   @State private var showingICloudSync = false
   @State private var showingFAQ = false
   @State private var showingShareSheet = false
+  @State private var showingWebView = false
+  @State private var webViewURL: URL = termsURL
   @State private var resolvedProfile: CD_UserProfile?
   #if DEBUG
   @State private var showingDebugSheet = false
@@ -56,18 +45,21 @@ struct SettingsView: View {
   private var palette: SettingsPalette { SettingsPalette(isDarkMode: isDarkMode) }
 
   var body: some View {
-    Group {
-      if let profile {
-        settingsBody(profile: profile)
-      } else {
-        ProgressView()
+    NavigationStack {
+      Group {
+        if let profile {
+          settingsBody(profile: profile)
+        } else {
+          ProgressView()
+        }
       }
-    }
-    .task {
-      guard profiles.first == nil, resolvedProfile == nil else { return }
-      let created = UserProfileFetching.fetchOrCreateUserProfile(context: viewContext)
-      try? viewContext.save()
-      resolvedProfile = created
+      .navigationTitle("マイページ")
+      .task {
+        guard profiles.first == nil, resolvedProfile == nil else { return }
+        let created = UserProfileFetching.fetchOrCreateUserProfile(context: viewContext)
+        try? viewContext.save()
+        resolvedProfile = created
+      }
     }
   }
 
@@ -92,7 +84,6 @@ struct SettingsView: View {
       .padding(.bottom, 120)
     }
     .background(palette.screenBackground.ignoresSafeArea())
-    .safeAreaInset(edge: .top, spacing: 0) { headerBar }
     .sheet(isPresented: $showingProfileEdit) {
       ProfileEditView(profile: profile)
     }
@@ -111,42 +102,20 @@ struct SettingsView: View {
     .sheet(isPresented: $showingShareSheet) {
       ActivityShareSheet(items: ["Tickemo\n\(appStoreURL.absoluteString)"])
     }
-    .alert("Delete all data?", isPresented: $showingDeleteConfirmation) {
-      Button("Delete", role: .destructive) { deleteAllData() }
-      Button("Cancel", role: .cancel) {}
+    .sheet(isPresented: $showingWebView) {
+      SafariView(url: webViewURL)
+    }
+    .alert("すべてのデータを削除しますか？", isPresented: $showingDeleteConfirmation) {
+      Button("削除", role: .destructive) { deleteAllData() }
+      Button("キャンセル", role: .cancel) {}
     } message: {
-      Text("All records and settings will be deleted. This action cannot be undone.")
+      Text("すべての記録と設定が削除されます。この操作は取り消せません。")
     }
     #if DEBUG
     .sheet(isPresented: $showingDebugSheet) {
       DebugToolsView()
     }
     #endif
-  }
-
-  // MARK: - Header
-
-  private var headerBar: some View {
-    VStack(spacing: 0) {
-      HStack {
-        Text("My page")
-          .font(.system(size: 28, weight: .heavy))
-          .foregroundStyle(palette.titleText)
-        Spacer()
-      }
-      .padding(.horizontal, 20)
-      .padding(.top, 8)
-      .padding(.bottom, 10)
-    }
-    .background(
-      ZStack {
-        BlurEffectView(style: isDarkMode ? .systemMaterialDark : .systemMaterialLight)
-        palette.headerBackground
-      }
-    )
-    .overlay(alignment: .bottom) {
-      Rectangle().fill(palette.headerBorder).frame(height: 1)
-    }
   }
 
   // MARK: - Profile header
@@ -159,12 +128,12 @@ struct SettingsView: View {
 
         VStack(alignment: .leading, spacing: 8) {
           HStack(spacing: 8) {
-            Text(profile.name?.isEmpty == false ? profile.name! : "User")
+            Text(profile.name?.isEmpty == false ? profile.name! : "ユーザー")
               .font(.system(size: 20, weight: .heavy))
               .foregroundStyle(palette.titleText)
             membershipBadge(isPremium: isPremium)
           }
-          Text("@\(displayUsername(profile)) • Joined \(JoinedDateFormatting.relativeString(from: profile.joinedAt))")
+          Text("@\(displayUsername(profile)) • joined \(JoinedDateFormatting.relativeString(from: profile.joinedAt))")
             .font(.system(size: 12))
             .foregroundStyle(palette.secondaryText)
         }
@@ -173,7 +142,11 @@ struct SettingsView: View {
       Button {
         showingProfileEdit = true
       } label: {
-        HugeIconView(icon: HugeIcons.pencilEdit01, size: 18, weight: 2)
+        Image("Edit")
+          .renderingMode(.template)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 20, height: 20)
           .foregroundStyle(palette.profileEditIcon)
           .frame(width: 30, height: 30)
       }
@@ -228,7 +201,7 @@ struct SettingsView: View {
   }
 
   private func initials(_ profile: CD_UserProfile) -> String {
-    let name = profile.name?.isEmpty == false ? profile.name! : "User"
+    let name = profile.name?.isEmpty == false ? profile.name! : "ユーザー"
     let letters = name.split(separator: " ").compactMap { $0.first }.prefix(2)
     let result = letters.map(String.init).joined().uppercased()
     return result.isEmpty ? "U" : result
@@ -254,7 +227,7 @@ struct SettingsView: View {
           }
       }
     }
-    .frame(width: isPremium ? 34 : 34, height: 20)
+    .frame(width: 34, height: 20)
     .clipShape(RoundedRectangle(cornerRadius: 12))
     .fixedSize()
   }
@@ -274,32 +247,40 @@ struct SettingsView: View {
     let rows: [Row]
   }
 
+  private var icloudSyncStatusText: String {
+    switch CloudSyncStatusService.shared.status {
+    case .notSyncedYet: "未同期"
+    case .syncing: "同期中…"
+    case .synced: "同期済み"
+    }
+  }
+
   private var sectionsData: [RowSection] {
     var sections = [
-      RowSection(id: "general", title: "General", rows: [
-        Row(id: "dark-mode", label: "Theme"),
-        Row(id: "haptics", label: "Haptics"),
-        Row(id: "music-provider", label: "Music Provider", value: musicProviderValue == .spotify ? "Spotify" : "Apple Music"),
-        Row(id: "language", label: "Language", value: languageValueLabel),
-        Row(id: "icloud-sync", label: "iCloud Sync"),
+      RowSection(id: "general", title: "一般", rows: [
+        Row(id: "dark-mode", label: "ダークモード"),
+        Row(id: "haptics", label: "触覚フィードバック"),
+        Row(id: "music-provider", label: "音楽プロバイダー", value: musicProviderValue == .spotify ? "Spotify" : "Apple Music"),
+        Row(id: "language", label: "言語", value: languageValueLabel),
+        Row(id: "icloud-sync", label: "iCloud同期", value: icloudSyncStatusText),
       ]),
-      RowSection(id: "about", title: "About this app", rows: [
-        Row(id: "terms", label: "Terms of Use"),
-        Row(id: "privacy", label: "Privacy Policy"),
+      RowSection(id: "about", title: "アプリについて", rows: [
+        Row(id: "terms", label: "利用規約"),
+        Row(id: "privacy", label: "プライバシーポリシー"),
       ]),
-      RowSection(id: "support", title: "Support", rows: [
-        Row(id: "review", label: "Review the app"),
-        Row(id: "share-app", label: "Share this app"),
-        Row(id: "faq", label: "FAQ"),
-        Row(id: "feedback", label: "Feedback"),
+      RowSection(id: "support", title: "サポート", rows: [
+        Row(id: "review", label: "アプリをレビュー"),
+        Row(id: "share-app", label: "アプリを応援"),
+        Row(id: "faq", label: "よくある質問"),
+        Row(id: "feedback", label: "フィードバック"),
       ]),
-      RowSection(id: "account", title: "Account", rows: [
-        Row(id: "delete", label: "Delete all data", destructive: true),
+      RowSection(id: "account", title: "アカウント", rows: [
+        Row(id: "delete", label: "データをすべて削除", destructive: true),
       ]),
     ]
     #if DEBUG
-    sections.append(RowSection(id: "debug", title: "Debug", rows: [
-      Row(id: "debug-tools", label: "Debug Tools"),
+    sections.append(RowSection(id: "debug", title: "デバッグ", rows: [
+      Row(id: "debug-tools", label: "デバッグツール"),
     ]))
     #endif
     return sections
@@ -307,7 +288,7 @@ struct SettingsView: View {
 
   private var languageValueLabel: String {
     switch languageValue {
-    case .system: "System Default"
+    case .system: "システムデフォルト"
     case .ja: "日本語"
     case .en: "English"
     }
@@ -339,47 +320,109 @@ struct SettingsView: View {
 
   @ViewBuilder
   private func rowView(_ row: Row) -> some View {
-    let isToggleRow = row.id == "dark-mode" || row.id == "haptics"
-    Button {
-      handleRowTap(row.id)
-    } label: {
-      HStack(spacing: 8) {
-        Text(row.label)
-          .font(.system(size: 14, weight: .semibold))
-          .foregroundStyle(row.destructive ? palette.destructiveText : palette.primaryText)
-
-        Spacer(minLength: 8)
-
-        rowTrailingContent(row)
+    if row.id == "dark-mode" || row.id == "haptics" {
+      toggleRow(row)
+    } else {
+      Button {
+        handleRowTap(row.id)
+      } label: {
+        HStack(spacing: 12) {
+          rowLeadingIcon(row.id)
+          Text(row.label)
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(row.destructive ? palette.destructiveText : palette.primaryText)
+          Spacer(minLength: 8)
+          rowTrailingContent(row)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 19)
+        .contentShape(Rectangle())
       }
-      .padding(.horizontal, 16)
-      .padding(.vertical, 20)
-      .contentShape(Rectangle())
+      .buttonStyle(.plain)
     }
-    .buttonStyle(.plain)
-    .disabled(isToggleRow)
+  }
+
+  @ViewBuilder
+  private func toggleRow(_ row: Row) -> some View {
+    HStack(spacing: 12) {
+      rowLeadingIcon(row.id)
+      Text(row.label)
+        .font(.system(size: 14, weight: .semibold))
+        .foregroundStyle(palette.primaryText)
+      Spacer(minLength: 8)
+      if row.id == "dark-mode" {
+        Toggle("", isOn: Binding(
+          get: { isDarkMode },
+          set: { _ in ThemePreferenceService.shared.setManualDarkMode(!isDarkMode) }
+        ))
+        .labelsHidden()
+        .tint(settingsAccentPurple)
+      } else {
+        Toggle("", isOn: $isHapticsEnabled)
+          .labelsHidden()
+          .tint(settingsAccentPurple)
+          .onChange(of: isHapticsEnabled) { _, newValue in
+            HapticsPreferenceService.shared.setEnabled(newValue)
+          }
+      }
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 16)
+  }
+
+  @ViewBuilder
+  private func rowLeadingIcon(_ id: String) -> some View {
+    switch id {
+    case "dark-mode":
+      settingsIcon("Moon", color: palette.iconColor)
+    case "haptics":
+      settingsIcon("haptics", color: palette.iconColor)
+    case "music-provider":
+      if musicProviderValue == .spotify {
+        settingsIcon("Spotify", color: palette.iconColor)
+      } else {
+        settingsIcon("Itunes", color: palette.iconColor)
+      }
+    case "language":
+      settingsIcon("language", color: palette.iconColor)
+    case "icloud-sync":
+      settingsIcon("Cloud", color: palette.iconColor)
+    case "terms":
+      settingsIcon("Palm", color: palette.iconColor)
+    case "privacy":
+      settingsIcon("Shield", color: palette.iconColor)
+    case "review":
+      settingsIcon("Star", color: palette.iconColor)
+    case "share-app":
+      settingsIcon("megaphone", color: palette.iconColor)
+    case "faq":
+      settingsIcon("question", color: palette.iconColor)
+    case "feedback":
+      settingsIcon("email", color: palette.iconColor)
+    case "delete":
+      settingsIcon("Confounded", color: palette.destructiveText)
+    default:
+      Color.clear.frame(width: 24, height: 24)
+    }
+  }
+
+  private func settingsIcon(_ name: String, color: Color) -> some View {
+    Image(name)
+      .renderingMode(.template)
+      .resizable()
+      .scaledToFit()
+      .frame(width: 24, height: 24)
+      .foregroundStyle(color)
   }
 
   @ViewBuilder
   private func rowTrailingContent(_ row: Row) -> some View {
-    switch row.id {
-    case "dark-mode":
-      CustomToggleSwitch(isOn: isDarkMode, trackOnColor: Color(hex: "#333333"), trackOffColor: Color(hex: "#8B5CF6")) {
-        ThemePreferenceService.shared.setManualDarkMode(!isDarkMode)
+    HStack(spacing: 8) {
+      if let value = row.value {
+        Text(value).font(.system(size: 10)).foregroundStyle(palette.secondaryText)
       }
-    case "haptics":
-      CustomToggleSwitch(isOn: isHapticsEnabled, trackOnColor: Color(hex: "#8B5CF6"), trackOffColor: Color(hex: "#333333")) {
-        isHapticsEnabled.toggle()
-        HapticsPreferenceService.shared.setEnabled(isHapticsEnabled)
-      }
-    default:
-      HStack(spacing: 8) {
-        if let value = row.value {
-          Text(value).font(.system(size: 10)).foregroundStyle(palette.secondaryText)
-        }
-        if !row.destructive {
-          rowIcon(row.id)
-        }
+      if !row.destructive {
+        rowIcon(row.id)
       }
     }
   }
@@ -406,8 +449,8 @@ struct SettingsView: View {
     case "review": requestReview()
     case "share-app": showingShareSheet = true
     case "feedback": openURL(feedbackURL)
-    case "terms": openURL(termsURL)
-    case "privacy": openURL(privacyURL)
+    case "terms": webViewURL = termsURL; showingWebView = true
+    case "privacy": webViewURL = privacyURL; showingWebView = true
     #if DEBUG
     case "debug-tools": showingDebugSheet = true
     #endif

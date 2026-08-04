@@ -1,37 +1,39 @@
 import SwiftUI
 
-/// Bottom tab bar: Home/Calendar/Report/Settings. RN's own FloatingTabBar
-/// only has 3 tabs (Home/Calendar/Statistics) plus a separate floating
-/// "My Page" button for Settings — this app folds Settings into the tab bar
-/// as a 4th tab instead, per explicit direction, using a standard system
-/// TabView rather than reproducing RN's custom floating-pill chrome (this
-/// migration's established pattern of adapting to native platform
-/// conventions rather than copying RN's bespoke UI verbatim).
+private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
+
 struct ContentView: View {
+  @State private var selectedTab = 0
+
   var body: some View {
-    TabView {
+    TabView(selection: $selectedTab) {
       NavigationStack {
         RecordListView()
       }
+      .tag(0)
       .tabItem {
-        HugeIconTabLabel(icon: HugeIcons.home05, title: "Home")
+        Label("Home", image: selectedTab == 0 ? "Home Active" : "Home")
       }
 
       CalendarView()
+        .tag(1)
         .tabItem {
-          HugeIconTabLabel(icon: HugeIcons.calendar03, title: "Calendar")
+          Label("Calendar", image: selectedTab == 1 ? "Calendar Active" : "Calendar")
         }
 
       StatisticsView()
+        .tag(2)
         .tabItem {
-          HugeIconTabLabel(icon: HugeIcons.gridView, title: "Report")
+          Label("Report", image: selectedTab == 2 ? "Chart Active" : "Chart")
         }
 
       SettingsView()
+        .tag(3)
         .tabItem {
-          HugeIconTabLabel(icon: HugeIcons.settings03, title: "Settings")
+          Label("Setting", image: selectedTab == 3 ? "Setting Active" : "Setting")
         }
     }
+    .tint(accentPurple)
   }
 }
 

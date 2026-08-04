@@ -79,22 +79,22 @@ struct RecordDetailView: View {
     .sheet(isPresented: $showingShareSheet) {
       ShareSheetView(record: record)
     }
-    .alert("Delete this ticket?", isPresented: $showingDeleteConfirmation) {
-      Button("Delete", role: .destructive) { deleteRecord() }
-      Button("Cancel", role: .cancel) {}
+    .alert("このチケットを削除しますか？", isPresented: $showingDeleteConfirmation) {
+      Button("削除", role: .destructive) { deleteRecord() }
+      Button("キャンセル", role: .cancel) {}
     } message: {
-      Text("This cannot be undone.")
+      Text("この操作は元に戻せません。")
     }
     .confirmationDialog(
-      "Couldn't play in the app",
+      "アプリ内で再生できません",
       isPresented: Binding(get: { fallbackItem != nil }, set: { if !$0 { fallbackItem = nil } }),
       presenting: fallbackItem
     ) { item in
-      Button("Open in Spotify") { openInSpotify(item) }
-      Button("Open in Apple Music") { openInAppleMusic(item) }
-      Button("Cancel", role: .cancel) {}
+      Button("Spotifyで開く") { openInSpotify(item) }
+      Button("Apple Musicで開く") { openInAppleMusic(item) }
+      Button("キャンセル", role: .cancel) {}
     } message: { item in
-      Text(item.songName ?? "This song")
+      Text(item.songName ?? "この曲")
     }
   }
 
@@ -415,13 +415,13 @@ struct RecordDetailView: View {
 
   private var footerTab: some View {
     HStack(spacing: 8) {
-      footerButton(icon: HugeIcons.share01, color: Color(white: 0.365)) {
+      footerButton(imageName: "Share", color: Color(white: 0.365)) {
         showingShareSheet = true
       }
-      footerButton(icon: HugeIcons.pencilEdit01, color: Color(white: 0.365)) {
+      footerButton(imageName: "Edit", color: Color(white: 0.365)) {
         showingEditSheet = true
       }
-      footerButton(icon: HugeIcons.delete02, color: Color(red: 0.961, green: 0.337, blue: 0.196)) {
+      footerButton(imageName: "Confounded", color: Color(red: 0.961, green: 0.337, blue: 0.196)) {
         showingDeleteConfirmation = true
       }
     }
@@ -436,9 +436,13 @@ struct RecordDetailView: View {
     .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 2)
   }
 
-  private func footerButton(icon: HugeIcon, color: Color, action: @escaping () -> Void) -> some View {
+  private func footerButton(imageName: String, color: Color, action: @escaping () -> Void) -> some View {
     Button(action: action) {
-      HugeIconView(icon: icon, size: 18, weight: 1.75)
+      Image(imageName)
+        .renderingMode(.template)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 22, height: 22)
         .foregroundStyle(color)
         .frame(width: 44, height: 44)
     }

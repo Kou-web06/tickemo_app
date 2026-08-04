@@ -54,7 +54,7 @@ struct ProfileEditView: View {
       }
       .ignoresSafeArea()
     }
-    .alert("Input Error", isPresented: $showingAlert) {
+    .alert("入力エラー", isPresented: $showingAlert) {
       Button("OK", role: .cancel) {}
     } message: {
       Text(alertMessage)
@@ -124,7 +124,11 @@ struct ProfileEditView: View {
         Button {
           showingImagePicker = true
         } label: {
-          HugeIconView(icon: HugeIcons.pencilEdit01, size: 13, weight: 2)
+          Image("Edit")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 13, height: 13)
             .foregroundStyle(palette.editIcon)
             .frame(width: 28, height: 28)
             .background(palette.avatarBackground)
@@ -217,7 +221,7 @@ struct ProfileEditView: View {
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .onChange(of: name) { _, newValue in
           if newValue.trimmingCharacters(in: .whitespaces).count > 8 {
-            displayNameError = "Display name must be 8 characters or fewer"
+            displayNameError = "表示名は8文字以内で入力してください"
           } else {
             displayNameError = nil
           }
@@ -272,16 +276,16 @@ struct ProfileEditView: View {
     while normalizedUsername.hasPrefix("@") { normalizedUsername.removeFirst() }
 
     guard !trimmedName.isEmpty else {
-      alertMessage = "Please enter a display name"
+      alertMessage = "表示名を入力してください"
       showingAlert = true
       return
     }
     guard trimmedName.count <= 8 else {
-      displayNameError = "Display name must be 8 characters or fewer"
+      displayNameError = "表示名は8文字以内で入力してください"
       return
     }
     guard !normalizedUsername.isEmpty else {
-      alertMessage = "Please enter a username"
+      alertMessage = "ユーザー名を入力してください"
       showingAlert = true
       return
     }

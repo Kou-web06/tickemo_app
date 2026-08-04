@@ -223,9 +223,9 @@ struct StatisticsView: View {
     for name in names {
       let key = name.lowercased()
       if artistImageBackfill[key] != nil { continue }
-      guard let result = try? await appleMusicService.searchArtists(term: name).first,
-            !result.imageUrl.isEmpty else { continue }
-      artistImageBackfill[key] = result.imageUrl
+      if let url = await appleMusicService.bestMatchArtistImageUrl(for: name) {
+        artistImageBackfill[key] = AppleMusicService.resolvedArtworkURL(url, size: 800)
+      }
     }
     musicAuthorizationStatus = MusicAuthorization.currentStatus
   }

@@ -17,9 +17,29 @@ struct CalendarView: View {
   @FetchRequest(sortDescriptors: []) private var records: FetchedResults<CD_ChekiRecord>
 
   @State private var displayedMonth = CalendarMonth.current
-  @State private var selectedDay: SelectedCalendarDay?
+  @State private var selectedDay: SelectedCalendarDay? = SelectedCalendarDay(
+    dateString: DateFormatting.string(from: DateFormatting.utcCalendar.startOfDay(for: Date()))
+  )
 
-  private static let weekdayAbbreviations = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+  private var useJapanese: Bool {
+    switch LanguagePreferenceStore.load() {
+    case .en: return false
+    case .ja: return true
+    case .system: return Locale.preferredLanguages.first?.hasPrefix("ja") ?? true
+    }
+  }
+
+  private var weekdayLabels: [String] {
+    useJapanese
+      ? ["日", "月", "火", "水", "木", "金", "土"]
+      : ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+  }
+
+  private var monthTitle: String {
+    useJapanese
+      ? "\(displayedMonth.year)年\(displayedMonth.month)月"
+      : displayedMonth.monthTitle
+  }
 
   private var eventsByDate: [String: CalendarDayEvent] {
     let today = DateFormatting.utcCalendar.startOfDay(for: Date())
@@ -32,18 +52,26 @@ struct CalendarView: View {
 
   var body: some View {
     NavigationStack {
-      VStack(spacing: 16) {
-        header
-        weekdayRow
-        grid
-        Spacer(minLength: 0)
+      ScrollView {
+        VStack(spacing: 16) {
+          header
+          weekdayRow
+          grid
+
+          if let day = selectedDay, !(recordsByDate[day.dateString] ?? []).isEmpty {
+            dayEventsSection(day: day)
+              .transition(.opacity.combined(with: .move(edge: .bottom)))
+          }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 24)
+        .animation(.spring(duration: 0.3), value: selectedDay?.dateString)
       }
-      .padding(.horizontal, 16)
-      .padding(.top, 8)
-      .navigationTitle("Calendar")
+      .navigationTitle(useJapanese ? "カレンダー" : "Calendar")
       .navigationBarTitleDisplayMode(.inline)
-      .sheet(item: $selectedDay) { day in
-        CalendarDayEventsView(dateString: day.dateString, records: recordsByDate[day.dateString] ?? [])
+      .navigationDestination(for: CD_ChekiRecord.self) { record in
+        RecordDetailView(record: record)
       }
     }
   }
@@ -52,6 +80,7 @@ struct CalendarView: View {
     HStack {
       Button {
         displayedMonth = displayedMonth.adding(months: -1)
+        selectedDay = nil
       } label: {
         HugeIconView(icon: HugeIcons.arrowLeft01, size: 20)
       }
@@ -59,11 +88,14 @@ struct CalendarView: View {
       Spacer()
 
       VStack(spacing: 2) {
-        Text(displayedMonth.monthTitle)
+        Text(monthTitle)
           .font(.system(size: 18, weight: .bold))
         if !displayedMonth.isCurrentMonth {
-          Button("Today") {
+          Button(useJapanese ? "今日" : "Today") {
             displayedMonth = .current
+            selectedDay = SelectedCalendarDay(
+              dateString: DateFormatting.string(from: DateFormatting.utcCalendar.startOfDay(for: Date()))
+            )
           }
           .font(.system(size: 12, weight: .semibold))
           .foregroundStyle(accentPurple)
@@ -74,6 +106,7 @@ struct CalendarView: View {
 
       Button {
         displayedMonth = displayedMonth.adding(months: 1)
+        selectedDay = nil
       } label: {
         HugeIconView(icon: HugeIcons.arrowRight01, size: 20)
       }
@@ -82,7 +115,7 @@ struct CalendarView: View {
 
   private var weekdayRow: some View {
     HStack {
-      ForEach(Array(Self.weekdayAbbreviations.enumerated()), id: \.offset) { index, label in
+      ForEach(Array(weekdayLabels.enumerated()), id: \.offset) { index, label in
         Text(label)
           .font(.system(size: 11, weight: .semibold))
           .foregroundStyle(index == 0 || index == 6 ? Color.secondary : Color.primary)
@@ -109,18 +142,26 @@ struct CalendarView: View {
     if let date = cell.date, let dateString = cell.dateString {
       let event = eventsByDate[dateString]
       let isToday = DateFormatting.utcCalendar.isDate(date, inSameDayAs: DateFormatting.utcCalendar.startOfDay(for: Date()))
+      let isSelected = selectedDay?.dateString == dateString
       let dayNumber = DateFormatting.utcCalendar.component(.day, from: date)
 
       Button {
         guard event != nil else { return }
-        selectedDay = SelectedCalendarDay(dateString: dateString)
+        selectedDay = (selectedDay?.dateString == dateString) ? nil : SelectedCalendarDay(dateString: dateString)
       } label: {
         VStack(spacing: 4) {
           Text("\(dayNumber)")
-            .font(.system(size: 14, weight: isToday ? .bold : .regular))
-            .foregroundStyle(isToday ? accentPurple : (isWeekend ? Color.secondary : Color.primary))
+            .font(.system(size: 14, weight: (isToday || isSelected) ? .bold : .regular))
+            .foregroundStyle(
+              isSelected ? .white :
+              isToday ? accentPurple :
+              isWeekend ? Color.secondary : Color.primary
+            )
             .frame(width: 28, height: 28)
-            .background(isToday ? accentPurple.opacity(0.15) : Color.clear)
+            .background(
+              isSelected ? accentPurple :
+              isToday ? accentPurple.opacity(0.15) : Color.clear
+            )
             .clipShape(Circle())
 
           thumbnailOrDot(for: event)
@@ -155,6 +196,36 @@ struct CalendarView: View {
         .frame(height: 20)
     case nil:
       Color.clear.frame(width: 20, height: 20)
+    }
+  }
+
+  // MARK: - Inline day events
+
+  private func formattedDayHeader(_ dateString: String) -> String {
+    guard useJapanese, let date = DateFormatting.date(from: dateString) else { return dateString }
+    let cal = DateFormatting.utcCalendar
+    let month = cal.component(.month, from: date)
+    let day = cal.component(.day, from: date)
+    let weekdayIndex = cal.component(.weekday, from: date) - 1
+    let jpWeekdays = ["日", "月", "火", "水", "木", "金", "土"]
+    return "\(month)月\(day)日（\(jpWeekdays[weekdayIndex])）"
+  }
+
+  private func dayEventsSection(day: SelectedCalendarDay) -> some View {
+    let dayRecords = recordsByDate[day.dateString] ?? []
+    return VStack(alignment: .leading, spacing: 12) {
+      Text(formattedDayHeader(day.dateString))
+        .font(.system(size: 12, weight: .heavy))
+        .foregroundStyle(Color.secondary)
+        .tracking(0.5)
+        .padding(.top, 4)
+
+      ForEach(dayRecords, id: \.objectID) { record in
+        NavigationLink(value: record) {
+          RecordRowView(record: record)
+        }
+        .buttonStyle(.plain)
+      }
     }
   }
 }

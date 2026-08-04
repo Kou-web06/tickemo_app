@@ -59,7 +59,7 @@
 	<key>NSAppleMusicUsageDescription</key>
 	<string>アーティストの楽曲を再生するために、Apple Musicへのアクセスが必要です。</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your camera</string>
+	<string>セットリストを撮影して自動読み取りするために使用します。</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Allow $(PRODUCT_NAME) to access your microphone</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

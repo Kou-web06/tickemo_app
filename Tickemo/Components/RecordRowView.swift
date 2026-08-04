@@ -43,7 +43,7 @@ struct RecordRowView: View {
           )
 
         infoColumn
-          .frame(width: infoWidth * scale, height: height, alignment: .leading)
+          .frame(width: infoWidth * scale, height: height - 24 * scale, alignment: .leading)
           .position(x: (infoX + infoWidth / 2) * scale, y: height / 2)
       }
       .frame(width: width, height: height)
@@ -54,7 +54,7 @@ struct RecordRowView: View {
   // Right column starts just past the perforation notch (padding 16 + QR
   // width + its 16pt margin), matching contentContainer's flex flow in the
   // RN source.
-  private var infoX: CGFloat { 16 + Self.imageSize * 1.2 + 16 }
+  private var infoX: CGFloat { 16 + Self.imageSize * 1.2 + 24 }
   private var infoWidth: CGFloat { Self.baseSize.width - infoX - 16 }
 
   @ViewBuilder
