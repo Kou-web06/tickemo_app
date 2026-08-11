@@ -80,16 +80,11 @@ final class AppleMusicService {
   // MARK: - Language
 
   // MusicCatalogSearchRequest uses Locale.current internally, which reflects
-  // the device language — not the app's LanguagePreference. Using MusicDataRequest
-  // with an explicit `l` parameter ensures results match the in-app language
-  // setting even when the device is in a different language.
+  // the device language. Using MusicDataRequest with an explicit `l`
+  // parameter keeps results in Japanese — the app dropped its language
+  // setting and is Japanese-only now — even on non-Japanese devices.
   private func preferredLanguageCode() -> String {
-    switch LanguagePreferenceStore.load() {
-    case .ja: return "ja"
-    case .en: return "en"
-    case .system:
-      return Locale.current.language.languageCode?.identifier ?? "en"
-    }
+    "ja"
   }
 
   // MARK: - Apple Music API Codable types

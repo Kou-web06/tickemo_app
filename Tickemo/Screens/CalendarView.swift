@@ -21,13 +21,8 @@ struct CalendarView: View {
     dateString: DateFormatting.string(from: DateFormatting.utcCalendar.startOfDay(for: Date()))
   )
 
-  private var useJapanese: Bool {
-    switch LanguagePreferenceStore.load() {
-    case .en: return false
-    case .ja: return true
-    case .system: return Locale.preferredLanguages.first?.hasPrefix("ja") ?? true
-    }
-  }
+  // 言語設定は廃止し日本語のみに絞った（設定画面の項目も削除済み）
+  private let useJapanese = true
 
   private var weekdayLabels: [String] {
     useJapanese

@@ -24,6 +24,7 @@ struct RecordFormView: View {
 
   @Environment(\.managedObjectContext) private var viewContext
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.requestReview) private var requestReview
 
   struct ArtistEntry: Identifiable {
     let id = UUID()
@@ -441,7 +442,20 @@ struct RecordFormView: View {
 
     try? viewContext.save()
     HapticsPreferenceService.shared.notify(.success)
+    // Ports utils/appReview.ts's trackTicketSaveForReview cadence (every
+    // other create/update) — the platform review sheet only, no custom
+    // pre-screening UI (see AppReviewTracker's doc comment). Apple's
+    // guidance is to call requestReview() only once the app is back in a
+    // stable state, not mid-transition — StoreKit is free to silently drop
+    // the request otherwise — so this fires after the dismiss animation
+    // has had time to finish rather than in the same tick as `dismiss()`.
+    let shouldPromptForReview = AppReviewTracker.shouldPromptAfterSave()
     dismiss()
+    if shouldPromptForReview {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+        requestReview()
+      }
+    }
   }
 
   // Sports never has a setlist (matches RN, which hides the whole section

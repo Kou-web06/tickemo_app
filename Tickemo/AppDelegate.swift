@@ -25,6 +25,8 @@ struct TickemoApp: App {
           // After migration, not before: the widget should reflect the
           // imported records rather than the empty store they replaced.
           WidgetReloaderService.startObserving()
+          LiveNotificationService.requestAuthorizationIfNeeded()
+          LiveNotificationService.startObserving()
         }
     }
   }

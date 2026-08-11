@@ -22,8 +22,8 @@ struct SettingsView: View {
   @State private var legacyReimportResult: String?
   @State private var isReimportingLegacy = false
   @State private var showingMusicProvider = false
-  @State private var showingLanguage = false
   @State private var showingICloudSync = false
+  @State private var showingNotificationSettings = false
   @State private var showingFAQ = false
   @State private var showingShareSheet = false
   @State private var showingWebView = false
@@ -35,7 +35,6 @@ struct SettingsView: View {
 
   @State private var isHapticsEnabled = HapticsPreferenceService.shared.isEnabled
   @State private var musicProviderValue = MusicProviderPreferenceStore.load()
-  @State private var languageValue = LanguagePreferenceStore.load()
 
   private var profile: CD_UserProfile? {
     profiles.first ?? resolvedProfile
@@ -93,11 +92,11 @@ struct SettingsView: View {
     .sheet(isPresented: $showingMusicProvider) {
       MusicProviderPickerView(selection: $musicProviderValue)
     }
-    .sheet(isPresented: $showingLanguage) {
-      LanguagePickerView(selection: $languageValue)
-    }
     .sheet(isPresented: $showingICloudSync) {
       ICloudSyncStatusView()
+    }
+    .sheet(isPresented: $showingNotificationSettings) {
+      NotificationSettingsView()
     }
     .sheet(isPresented: $showingFAQ) {
       FAQView()
@@ -284,8 +283,8 @@ struct SettingsView: View {
         Row(id: "dark-mode", label: "ダークモード"),
         Row(id: "haptics", label: "触覚フィードバック"),
         Row(id: "music-provider", label: "音楽プロバイダー", value: musicProviderValue == .spotify ? "Spotify" : "Apple Music"),
-        Row(id: "language", label: "言語", value: languageValueLabel),
         Row(id: "icloud-sync", label: "iCloud同期", value: icloudSyncStatusText),
+        Row(id: "notifications", label: "通知"),
       ]),
       RowSection(id: "about", title: "アプリについて", rows: [
         Row(id: "terms", label: "利用規約"),
@@ -312,14 +311,6 @@ struct SettingsView: View {
     ]))
     #endif
     return sections
-  }
-
-  private var languageValueLabel: String {
-    switch languageValue {
-    case .system: "システムデフォルト"
-    case .ja: "日本語"
-    case .en: "English"
-    }
   }
 
   private var sectionsView: some View {
@@ -414,10 +405,12 @@ struct SettingsView: View {
       } else {
         settingsIcon("Itunes", color: palette.iconColor)
       }
-    case "language":
-      settingsIcon("language", color: palette.iconColor)
     case "icloud-sync":
       settingsIcon("Cloud", color: palette.iconColor)
+    case "notifications":
+      HugeIconView(icon: HugeIcons.notification03, size: 20)
+        .foregroundStyle(palette.iconColor)
+        .frame(width: 24, height: 24)
     case "terms":
       settingsIcon("Palm", color: palette.iconColor)
     case "privacy":
@@ -463,7 +456,7 @@ struct SettingsView: View {
   @ViewBuilder
   private func rowIcon(_ id: String) -> some View {
     switch id {
-    case "faq", "icloud-sync", "music-provider", "language", "debug-tools", "reimport-legacy":
+    case "faq", "icloud-sync", "music-provider", "debug-tools", "reimport-legacy", "notifications":
       HugeIconView(icon: HugeIcons.arrowRight01, size: 15)
         .foregroundStyle(palette.iconColor)
     default:
@@ -475,8 +468,8 @@ struct SettingsView: View {
   private func handleRowTap(_ id: String) {
     switch id {
     case "icloud-sync": showingICloudSync = true
+    case "notifications": showingNotificationSettings = true
     case "music-provider": showingMusicProvider = true
-    case "language": showingLanguage = true
     case "faq": showingFAQ = true
     case "delete": showingDeleteConfirmation = true
     case "reimport-legacy":

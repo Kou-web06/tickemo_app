@@ -9,7 +9,12 @@ struct CloudKitInventory {
   var localRecordCount: Int = 0
   var error: String?
 
-  var serverChekiRecordCount: Int { recordCountsByType["CD_ChekiRecord"] ?? 0 }
+  // NSPersistentCloudKitContainer prefixes every CloudKit record type with
+  // "CD_" on top of the entity's own name — since this model's entities are
+  // themselves named "CD_ChekiRecord" etc., the record type CloudKit
+  // actually uses is double-prefixed ("CD_CD_ChekiRecord"), confirmed via
+  // CloudKit Console's Production schema view.
+  var serverChekiRecordCount: Int { recordCountsByType["CD_CD_ChekiRecord"] ?? 0 }
 }
 
 /// Reads the CloudKit private database directly, so "did that save actually
