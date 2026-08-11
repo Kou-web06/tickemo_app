@@ -26,4 +26,24 @@ enum ImageCropping {
     }
     return square.jpegData(compressionQuality: quality)
   }
+
+  /// Downscales without cropping, preserving the original aspect ratio —
+  /// for game photos (`allowsEditing: false` on the RN side, unlike the
+  /// square-cropped cover/player photo), so a snapshot's framing isn't
+  /// altered, only its resolution when it's larger than needed for a
+  /// thumbnail grid.
+  static func downsizedJPEGData(from data: Data, maxDimension: CGFloat = 1600, quality: CGFloat = 0.85) -> Data? {
+    guard let image = UIImage(data: data) else { return nil }
+
+    let longestSide = max(image.size.width, image.size.height)
+    guard longestSide > maxDimension else { return image.jpegData(compressionQuality: quality) }
+
+    let scale = maxDimension / longestSide
+    let targetSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+    let renderer = UIGraphicsImageRenderer(size: targetSize)
+    let resized = renderer.image { _ in
+      image.draw(in: CGRect(origin: .zero, size: targetSize))
+    }
+    return resized.jpegData(compressionQuality: quality)
+  }
 }

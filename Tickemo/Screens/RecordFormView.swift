@@ -14,9 +14,11 @@ private let ticketPricePresets: [Int] = [3000, 5000, 8000, 10000, 15000]
 /// Save is blocked (button disabled) unless every named, non-sports artist
 /// has a photo picked from search — RN enforces the same "must select from
 /// the catalog, no free-typed artist" rule via `hasDictionaryRegistered`.
-/// RN's own dual "Player/Team Photo" + up-to-6 "Game Photos" gallery for
-/// sports is deliberately not reproduced — this form keeps the single
-/// cover-image mechanism used by every other live type, just relabeled.
+/// Sports lives get RN's dual photo treatment: the single cover-image slot
+/// (orderIndex 0) doubles as "Player / Team Photo", just relabeled, and a
+/// separate up-to-6 "Game Photos" gallery (orderIndex 1...6) ports
+/// `LiveEditScreen.tsx`'s sports-only `imageUrls` grid — both ride the same
+/// `CD_LiveImage`/CloudKit CKAsset sync path, no schema change needed.
 struct RecordFormView: View {
   private let record: CD_ChekiRecord?
 
@@ -45,6 +47,8 @@ struct RecordFormView: View {
 
   @State private var selectedPhotoItem: PhotosPickerItem?
   @State private var coverImageData: Data?
+  @State private var selectedGamePhotoItem: PhotosPickerItem?
+  @State private var gamePhotosData: [Data]
   @State private var showingDiscardConfirmation = false
 
   init(record: CD_ChekiRecord?) {
@@ -64,7 +68,10 @@ struct RecordFormView: View {
     _memo = State(initialValue: record?.memo ?? "")
     _qrCode = State(initialValue: record?.qrCode ?? "")
     _coverImageData = State(initialValue: record?.coverImageData)
+    _gamePhotosData = State(initialValue: record?.galleryImages.compactMap(\.data) ?? [])
   }
+
+  private static let maxGamePhotos = 6
 
   private static func setlistDraftItems(from record: CD_ChekiRecord?) -> [SetlistDraftItem] {
     guard let record else { return [] }
@@ -144,7 +151,12 @@ struct RecordFormView: View {
           TextField("Live name", text: $liveName)
           Picker("Live type", selection: $liveType) {
             ForEach(LiveType.allCases) { type in
-              HugeIconLabel(icon: type.hugeIcon) { Text(type.label) }.tag(type)
+              Label {
+                Text(type.label)
+              } icon: {
+                Image(type.imageName).renderingMode(.template)
+              }
+              .tag(type)
             }
           }
           .onChange(of: liveType) { _, newValue in
@@ -152,6 +164,9 @@ struct RecordFormView: View {
             if !stillMulti && artistEntries.count > 1 {
               let keep = artistEntries.first { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty } ?? artistEntries[0]
               artistEntries = [keep]
+            }
+            if newValue != .sports {
+              gamePhotosData = []
             }
           }
           DatePicker("Date", selection: $date, displayedComponents: .date)
@@ -186,7 +201,13 @@ struct RecordFormView: View {
 
         if !isSportsLive && !isMultiArtistLive {
           Section("Setlist") {
-            SetlistDraftEditorView(items: $setlistItems, showsOcrButton: true)
+            SetlistDraftEditorView(
+              items: $setlistItems,
+              showsOcrButton: true,
+              artistHint: artistEntries.first {
+                !$0.name.trimmingCharacters(in: .whitespaces).isEmpty
+              }?.name
+            )
           }
         }
 
@@ -195,6 +216,12 @@ struct RecordFormView: View {
           PhotosPicker("Choose Photo", selection: $selectedPhotoItem, matching: .images)
           if coverImageData != nil {
             Button("Remove Photo", role: .destructive) { coverImageData = nil }
+          }
+        }
+
+        if isSportsLive {
+          Section("Game Photos") {
+            gamePhotosGrid
           }
         }
 
@@ -233,6 +260,15 @@ struct RecordFormView: View {
         Task {
           guard let newItem, let data = try? await newItem.loadTransferable(type: Data.self) else { return }
           coverImageData = ImageCropping.squareCroppedJPEGData(from: data) ?? data
+        }
+      }
+      .onChange(of: selectedGamePhotoItem) { _, newItem in
+        Task {
+          guard let newItem, gamePhotosData.count < Self.maxGamePhotos,
+                let data = try? await newItem.loadTransferable(type: Data.self)
+          else { return }
+          gamePhotosData.append(ImageCropping.downsizedJPEGData(from: data) ?? data)
+          selectedGamePhotoItem = nil
         }
       }
     }
@@ -336,6 +372,46 @@ struct RecordFormView: View {
     }
   }
 
+  // MARK: - Game photos (sports lives only, up to 6)
+
+  private var gamePhotosGrid: some View {
+    LazyVGrid(columns: [GridItem(.adaptive(minimum: 84, maximum: 96), spacing: 8)], spacing: 8) {
+      ForEach(Array(gamePhotosData.enumerated()), id: \.offset) { index, data in
+        if let uiImage = UIImage(data: data) {
+          ZStack(alignment: .topTrailing) {
+            Image(uiImage: uiImage)
+              .resizable()
+              .scaledToFill()
+              .frame(width: 88, height: 88)
+              .clipShape(RoundedRectangle(cornerRadius: 8))
+            Button {
+              gamePhotosData.remove(at: index)
+            } label: {
+              HugeIconView(icon: HugeIcons.cancelCircle, size: 20)
+                .foregroundStyle(.red)
+                .background(Circle().fill(.white))
+            }
+            .buttonStyle(.plain)
+            .offset(x: 6, y: -6)
+          }
+        }
+      }
+
+      if gamePhotosData.count < Self.maxGamePhotos {
+        PhotosPicker(selection: $selectedGamePhotoItem, matching: .images) {
+          RoundedRectangle(cornerRadius: 8)
+            .strokeBorder(Color.secondary.opacity(0.35), lineWidth: 1)
+            .frame(width: 88, height: 88)
+            .overlay {
+              HugeIconView(icon: HugeIcons.add01, size: 22)
+                .foregroundStyle(.secondary)
+            }
+        }
+      }
+    }
+    .padding(.vertical, 4)
+  }
+
   // MARK: - Save
 
   private func save() {
@@ -361,6 +437,7 @@ struct RecordFormView: View {
     target.qrCode = qrCode.isEmpty ? nil : qrCode
 
     applyCoverImage(to: target)
+    applyGamePhotos(to: target)
 
     try? viewContext.save()
     dismiss()
@@ -437,5 +514,23 @@ struct RecordFormView: View {
     image.orderIndex = 0
     image.data = coverImageData
     image.record = target
+  }
+
+  // Delete-then-recreate, matching applySetlist's approach to the same
+  // to-many-relationship-as-ordered-list problem: simpler than diffing
+  // against the previous set, and correct here because orderIndex is only
+  // ever assigned from this array's current order.
+  private func applyGamePhotos(to target: CD_ChekiRecord) {
+    for existing in target.galleryImages {
+      viewContext.delete(existing)
+    }
+    guard isSportsLive else { return }
+    for (index, data) in gamePhotosData.enumerated() {
+      let image = CD_LiveImage(context: viewContext)
+      image.id = UUID()
+      image.orderIndex = Int16(index + 1)
+      image.data = data
+      image.record = target
+    }
   }
 }
