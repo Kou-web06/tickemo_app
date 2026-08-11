@@ -353,7 +353,10 @@ struct SettingsView: View {
       if row.id == "dark-mode" {
         Toggle("", isOn: Binding(
           get: { isDarkMode },
-          set: { _ in ThemePreferenceService.shared.setManualDarkMode(!isDarkMode) }
+          set: { _ in
+            HapticsPreferenceService.shared.impact(.light)
+            ThemePreferenceService.shared.setManualDarkMode(!isDarkMode)
+          }
         ))
         .labelsHidden()
         .tint(settingsAccentPurple)
