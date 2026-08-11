@@ -49,6 +49,10 @@ struct RecordRowView: View {
       .frame(width: width, height: height)
     }
     .aspectRatio(Self.baseSize.width / Self.baseSize.height, contentMode: .fit)
+    .task(id: record.coverImageData) {
+      // 詳細画面の背景色を先読みしておき、開いた瞬間に白背景が見えるのを防ぐ
+      DominantColorCache.shared.prewarm(record.coverImageData)
+    }
   }
 
   // Right column starts just past the perforation notch (padding 16 + QR

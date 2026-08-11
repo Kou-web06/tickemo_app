@@ -70,6 +70,12 @@ struct StatisticsView: View {
       .navigationDestination(for: ArtistRoute.self) { route in
         ArtistDetailView(artistName: route.name)
       }
+      // ArtistDetailView 内の各ライブ行（NavigationLink(value: record)）の
+      // 遷移先。Collection タブと違いこのスタックには未登録だったため、
+      // Report 経由で開いたアーティスト画面から詳細に飛べなかった。
+      .navigationDestination(for: CD_ChekiRecord.self) { record in
+        RecordDetailView(record: record)
+      }
       .onChange(of: availableYears) { _, years in
         if let year = selectedYear, !years.contains(year) {
           selectedYear = nil
@@ -180,6 +186,11 @@ struct StatisticsView: View {
       }
     }
     .task(id: missingNames) {
+      // ArtistDetailView の背景色を先読み（ヒーローと同じ 800px URL）。
+      // バックフィルで埋まる分は backfillArtistImages 側で先読みする。
+      for item in items {
+        DominantColorCache.shared.prewarm(urlString: item.artistImageUrl, mode: .dominant)
+      }
       await backfillArtistImages(names: missingNames)
     }
   }
@@ -204,6 +215,9 @@ struct StatisticsView: View {
       }
     }
     .task(id: missingNames) {
+      for entry in items {
+        DominantColorCache.shared.prewarm(urlString: entry.artistImageUrl, mode: .dominant)
+      }
       await backfillArtistImages(names: missingNames)
     }
   }
@@ -224,7 +238,10 @@ struct StatisticsView: View {
       let key = name.lowercased()
       if artistImageBackfill[key] != nil { continue }
       if let url = await appleMusicService.bestMatchArtistImageUrl(for: name) {
-        artistImageBackfill[key] = AppleMusicService.resolvedArtworkURL(url, size: 800)
+        let resolved = AppleMusicService.resolvedArtworkURL(url, size: 800)
+        artistImageBackfill[key] = resolved
+        // ArtistDetailView も同じ URL に解決するので、背景色をここで先読み
+        DominantColorCache.shared.prewarm(urlString: resolved, mode: .dominant)
       }
     }
     musicAuthorizationStatus = MusicAuthorization.currentStatus

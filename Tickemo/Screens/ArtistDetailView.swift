@@ -14,6 +14,20 @@ struct ArtistDetailView: View {
   @State private var backfillImageUrl: String?
   private let appleMusicService = AppleMusicService()
 
+  // RecordDetailView と同じ動的カラー背景。ヒーロー画像はリモート URL なので
+  // ダウンロード完了後に抽出する（AsyncImage と同じ URLCache に乗るため
+  // 画像の二重取得にはならない）。
+  @State private var dominantColor: Color = DominantColorExtractor.fallback.color
+  @State private var backgroundIsDark: Bool = DominantColorExtractor.fallback.isDark
+
+  private var primaryTextColor: Color {
+    backgroundIsDark ? .white : Color(red: 0.188, green: 0.188, blue: 0.212)
+  }
+  // メインテキストと同じ黒/白に連動させ、透明度だけで主従の差をつける
+  private var secondaryTextColor: Color {
+    primaryTextColor.opacity(0.7)
+  }
+
   @FetchRequest(
     sortDescriptors: [
       NSSortDescriptor(keyPath: \CD_ChekiRecord.date, ascending: false),
@@ -54,12 +68,51 @@ struct ArtistDetailView: View {
           .padding(.bottom, 32)
       }
     }
+    .coordinateSpace(name: "scroll")
     .navigationTitle(artistName)
     .navigationBarTitleDisplayMode(.inline)
+    // RecordDetailView と同じ没入型ヘッダー: 画像を画面最上部まで届かせる
+    .toolbarBackground(.hidden, for: .navigationBar)
+    .ignoresSafeArea(edges: .top)
+    // 画像の最支配色でベタ塗りし、ヘッダー下端のフェードがそのまま
+    // 背景に溶け込むようにする（白ミックスすると色がずれて境目が見える）
+    .background(dominantColor.ignoresSafeArea())
     .task(id: artistName) {
       guard heroImageUrl == nil, backfillImageUrl == nil else { return }
       guard let url = await appleMusicService.bestMatchArtistImageUrl(for: artistName) else { return }
-      backfillImageUrl = AppleMusicService.resolvedArtworkURL(url, size: 900)
+      // 800px はグリッドタイル・Report 行と同じ解像度。URL 文字列が一致する
+      // ことで DominantColorCache の先読み結果（URL キー）がここでも当たる
+      backfillImageUrl = AppleMusicService.resolvedArtworkURL(url, size: 800)
+    }
+    .onAppear {
+      // .task より先（初回描画前）に同期でキャッシュを引き、入口で先読み済み
+      // なら初回フレームから抽出色で塗る。ミス時は下の .task が追いつく。
+      if let urlString = resolvedHeroImageUrl,
+         let cached = DominantColorCache.shared.cachedColor(forURL: urlString, mode: .dominant) {
+        dominantColor = cached.color
+        backgroundIsDark = cached.isDark
+      }
+    }
+    .task(id: resolvedHeroImageUrl) {
+      guard let urlString = resolvedHeroImageUrl else {
+        withAnimation(.easeInOut(duration: 0.4)) {
+          dominantColor = DominantColorExtractor.fallback.color
+          backgroundIsDark = DominantColorExtractor.fallback.isDark
+        }
+        return
+      }
+      // 先読み済み・再訪ならアニメーション無しで即確定
+      if let cached = DominantColorCache.shared.cachedColor(forURL: urlString, mode: .dominant) {
+        dominantColor = cached.color
+        backgroundIsDark = cached.isDark
+        return
+      }
+      // 取得失敗時は現在の背景色（フォールバック）を維持する
+      guard let extracted = await DominantColorCache.shared.color(forURL: urlString, mode: .dominant) else { return }
+      withAnimation(.easeInOut(duration: 0.5)) {
+        dominantColor = extracted.color
+        backgroundIsDark = extracted.isDark
+      }
     }
   }
 
@@ -85,36 +138,68 @@ struct ArtistDetailView: View {
     heroImageUrl ?? backfillImageUrl
   }
 
+  // RecordDetailView.header と同じストレッチヘッダー: オーバースクロール量
+  // (pullDown) だけ画像を伸ばし、offset で引き戻して上端を画面最上部に固定する。
   @ViewBuilder
   private var hero: some View {
-    ZStack(alignment: .bottomLeading) {
-      Group {
-        if let urlString = resolvedHeroImageUrl, let url = URL(string: urlString) {
-          AsyncImage(url: url) { image in
-            image.resizable().scaledToFill()
-          } placeholder: {
+    GeometryReader { geo in
+      let pullDown = max(0, geo.frame(in: .named("scroll")).minY)
+      let h = geo.size.height
+      // 画像高さが (h + pullDown) に伸びるため、下端フェードの開始位置を
+      // 画像座標系に変換し、見た目の位置を常に下端から h*0.5 付近に固定する
+      let botFadeStart = (pullDown + h * 0.5) / (h + pullDown)
+
+      ZStack(alignment: .bottomLeading) {
+        Group {
+          if let urlString = resolvedHeroImageUrl, let url = URL(string: urlString) {
+            AsyncImage(url: url) { image in
+              image.resizable().scaledToFill()
+            } placeholder: {
+              Color(red: 0.839, green: 0.839, blue: 0.839)
+            }
+          } else {
             Color(red: 0.839, green: 0.839, blue: 0.839)
           }
-        } else {
-          Color(red: 0.839, green: 0.839, blue: 0.839)
         }
+        .frame(width: geo.size.width, height: h + pullDown)
+        .clipped()
+        .mask(
+          LinearGradient(
+            stops: pullDown > 0 ? [
+              // オーバースクロール中: 上端フェードなし（伸びた画像がきれいに見える）
+              .init(color: .black, location: 0),
+              .init(color: .black, location: botFadeStart),
+              .init(color: .clear, location: 1),
+            ] : [
+              // 通常時: 上端も軽くフェード
+              .init(color: .clear, location: 0),
+              .init(color: .black, location: 0.12),
+              .init(color: .black, location: botFadeStart),
+              .init(color: .clear, location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+        // offset はレイアウト位置を変えないため、mask より後に置かないと
+        // 上に伸ばした画像の上端がマスクに切られる（RecordDetailView と同じ）
+        .offset(y: -pullDown)
+        // レイアウト高さを h に固定し、bottomLeading 揃えのスクリムと
+        // アーティスト名が「伸びた画像の下端」に自然と追従するようにする
+        .frame(width: geo.size.width, height: h, alignment: .top)
+
+        // 黒スクリムは画像下端のフェードを覆い隠して背景との境目を
+        // 作ってしまうため廃止。名前の可読性は背景色の明暗連動で確保する。
+        Text(artistName)
+          .font(.system(size: 26, weight: .black))
+          .foregroundStyle(primaryTextColor)
+          .padding(16)
       }
-      .frame(height: 260)
-      .frame(maxWidth: .infinity)
-      .clipped()
-
-      LinearGradient(
-        colors: [Color.black.opacity(0.65), Color.black.opacity(0)],
-        startPoint: .bottom,
-        endPoint: .top
-      )
-      .frame(height: 140)
-
-      Text(artistName)
-        .font(.system(size: 26, weight: .black))
-        .foregroundStyle(.white)
-        .padding(16)
     }
+    // 340pt: 従来の 260pt からの拡大分に加え、ignoresSafeArea で画像が
+    // ステータスバー裏まで届くようになった分の視覚的な目減りも補う
+    .frame(height: 340)
+    .frame(maxWidth: .infinity)
   }
 
   // MARK: - Stats
@@ -133,11 +218,11 @@ struct ArtistDetailView: View {
     VStack(alignment: .leading, spacing: 4) {
       Text(label)
         .font(.system(size: 12, weight: .bold))
-        .foregroundStyle(Color(white: 0.557))
+        .foregroundStyle(secondaryTextColor)
         .tracking(1)
       Text(value)
         .font(.system(size: 17, weight: .heavy))
-        .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
+        .foregroundStyle(primaryTextColor)
     }
   }
 
@@ -166,7 +251,7 @@ struct ArtistDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
           Text(year == 0 ? "-" : String(year))
             .font(.system(size: 14, weight: .heavy))
-            .foregroundStyle(Color(white: 0.557))
+            .foregroundStyle(secondaryTextColor)
 
           ForEach(groups[year] ?? [], id: \.objectID) { record in
             NavigationLink(value: record) {

@@ -47,8 +47,15 @@ struct ArtistGridItemView: View {
     .aspectRatio(1, contentMode: .fit)
     .clipShape(RoundedRectangle(cornerRadius: 24))
     .shadow(color: .black.opacity(0.14), radius: 18, x: 0, y: 6)
-    .task(id: tile.id) {
-      guard tile.artistImageUrl == nil, backfillImageUrl == nil else { return }
+    .task(id: resolvedArtistImageUrl) {
+      // ArtistDetailView のヒーローと同じ URL（800px 解決済み）なので、
+      // ここで dominant モードの背景色を先読みしておくと詳細画面を
+      // ラグなしで開ける。URL 未解決のタイルはまずバックフィル検索し、
+      // URL が入ると task(id:) が再実行されて先読みに到達する。
+      if let urlString = resolvedArtistImageUrl {
+        DominantColorCache.shared.prewarm(urlString: urlString, mode: .dominant)
+        return
+      }
       guard let url = await appleMusicService.bestMatchArtistImageUrl(for: tile.name) else { return }
       backfillImageUrl = AppleMusicService.resolvedArtworkURL(url, size: 800)
     }

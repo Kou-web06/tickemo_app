@@ -23,16 +23,6 @@ enum RecordViewMode {
 /// Matches CollectionScreen.tsx's FREE_TICKET_LIMIT.
 private let freeTicketLimit = 3
 
-/// Ports screens/CollectionScreen.tsx. This is the "Home" tab's root
-/// screen (see ContentView's TabView) — Settings/Calendar/Statistics moved
-/// out to their own tabs, so this view's toolbar now only keeps the
-/// actions that are specific to the Home tab itself (view-mode toggle,
-/// add-ticket FAB). RN's own All/Upcoming/Past filter dropdown is kept
-/// too, but as this screen's existing working segmented Picker: migration
-/// research found RN's real filter dropdown UI has no reachable way to
-/// open it (dead code), so its filtering logic exists in RN but is never
-/// actually usable — replacing a working control with an unreachable one
-/// would be a pure regression for zero fidelity benefit.
 struct RecordListView: View {
   @Environment(\.managedObjectContext) private var viewContext
   @Environment(\.colorScheme) private var systemColorScheme
@@ -48,6 +38,8 @@ struct RecordListView: View {
   @State private var viewMode: RecordViewMode = .list
   @State private var showingCreateSheet = false
   @State private var showingPaywall = false
+
+  private let filterAccent = Color(red: 0.604, green: 0.486, blue: 0.973)
 
   private var isDarkMode: Bool {
     ThemePreferenceService.shared.effectiveIsDark(systemIsDark: systemColorScheme == .dark)
@@ -81,9 +73,6 @@ struct RecordListView: View {
 
   private var todayJST: Date { Self.jstCalendar.startOfDay(for: Date()) }
 
-  // Upcoming events sorted ascending (most imminent first),
-  // past events sorted descending (most recent first), concatenated.
-  // Both boundaries use JST so a Japanese user's "today" is always correct.
   private var filteredRecords: [CD_ChekiRecord] {
     let today = todayJST
     let source: [CD_ChekiRecord]
@@ -119,10 +108,6 @@ struct RecordListView: View {
     return upcoming + past
   }
 
-  // Ports RN's `nextLiveRecord` — always derived from ALL records, not the
-  // current filter selection, so the card keeps showing the true next/last
-  // live regardless of which segment is picked. Hidden entirely in Grid
-  // mode, matching RN's `!isGridLayout`.
   private var nextLiveRecord: CD_ChekiRecord? {
     guard viewMode == .list else { return nil }
     return NextLiveCardData.nextLiveRecord(from: Array(records))
@@ -143,6 +128,8 @@ struct RecordListView: View {
       return date < today
     }?.objectID
   }
+
+  private var ticketWord: String { records.count == 1 ? "Ticket" : "Tickets" }
 
   var body: some View {
     Group {
@@ -175,39 +162,27 @@ struct RecordListView: View {
         }
       }
     }
-    .safeAreaInset(edge: .top) {
-      Picker("Filter", selection: $filter) {
-        ForEach(RecordFilter.allCases, id: \.self) { filter in
-          Text(filter.label).tag(filter)
+    // 大タイトル → スクロールで自動的にナビバー中央へコンパクト収縮
+    .navigationTitle("\(records.count) \(ticketWord)")
+    .navigationBarTitleDisplayMode(.large)
+    .toolbar {
+      ToolbarItem(placement: .primaryAction) {
+        Button {
+          requestAddTicket()
+        } label: {
+          Image("Ticket add")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 28, height: 28)
         }
       }
-      .pickerStyle(.segmented)
-      .padding(.horizontal)
-      .padding(.vertical, 6)
     }
-    .navigationTitle("Collection")
-    .navigationBarTitleDisplayMode(.inline)
     .navigationDestination(for: CD_ChekiRecord.self) { record in
       RecordDetailView(record: record)
     }
     .navigationDestination(for: ArtistRoute.self) { route in
       ArtistDetailView(artistName: route.name)
-    }
-    .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        Button {
-          viewMode = (viewMode == .list) ? .grid : .list
-        } label: {
-          HugeIconView(icon: viewMode == .list ? HugeIcons.userMultiple02 : HugeIcons.ticket01, size: 18)
-        }
-      }
-      ToolbarItem(placement: .primaryAction) {
-        Button {
-          requestAddTicket()
-        } label: {
-          HugeIconView(icon: HugeIcons.add01, size: 18, weight: 2)
-        }
-      }
     }
     .sheet(isPresented: $showingCreateSheet) {
       RecordFormView(record: nil)
@@ -222,12 +197,46 @@ struct RecordListView: View {
     .onChange(of: records.count) { _, _ in
       WidgetReloaderService.sync(records: Array(records))
     }
+    .onReceive(NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave, object: viewContext)) { _ in
+      WidgetReloaderService.sync(records: Array(records))
+    }
   }
 
   // MARK: - List mode
 
   private var listContent: some View {
     List {
+      // ── フィルタータブ ──
+      HStack(spacing: 8) {
+        ForEach(RecordFilter.allCases, id: \.self) { f in
+          Button {
+            filter = f
+          } label: {
+            Text(f.label)
+              .font(.system(size: 13, weight: .semibold))
+              .foregroundStyle(filter == f ? .white : palette.primaryText)
+              .padding(.horizontal, 16)
+              .padding(.vertical, 7)
+              .background {
+                Capsule()
+                  .fill(filter == f ? filterAccent : .clear)
+                  .overlay {
+                    if filter != f {
+                      Capsule()
+                        .stroke(palette.primaryText.opacity(isDarkMode ? 0.3 : 0.2), lineWidth: 1)
+                    }
+                  }
+              }
+          }
+          .buttonStyle(.plain)
+          .animation(.easeInOut(duration: 0.15), value: filter)
+        }
+      }
+      .listRowSeparator(.hidden)
+      .listRowInsets(EdgeInsets(top: -12, leading: 16, bottom: 12, trailing: 16))
+      .listRowBackground(Color.clear)
+
+      // ── NextLiveCard ──
       if let nextLiveRecord {
         NextLiveCardView(record: nextLiveRecord)
           .listRowInsets(EdgeInsets())
@@ -242,6 +251,7 @@ struct RecordListView: View {
         }
       }
 
+      // ── レコード一覧 ──
       ForEach(filteredRecords, id: \.objectID) { record in
         VStack(alignment: .leading, spacing: 8) {
           if record.objectID == firstUpNextRecordID {
@@ -255,7 +265,9 @@ struct RecordListView: View {
           }
         }
         .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+        // チケットは幅からアスペクト比で高さが決まるので、左右インセットを
+        // 広げるだけで比率を保ったままひと回り小さく表示される
+        .listRowInsets(EdgeInsets(top: 6, leading: 24, bottom: 6, trailing: 24))
         .listRowBackground(Color.clear)
         .swipeActions(edge: .trailing) {
           Button(role: .destructive) {
@@ -268,6 +280,7 @@ struct RecordListView: View {
     }
     .listStyle(.plain)
     .scrollContentBackground(.hidden)
+    .scrollIndicators(.hidden)
   }
 
   private func sectionLeadLabel(_ text: String) -> some View {
@@ -279,9 +292,6 @@ struct RecordListView: View {
 
   // MARK: - Empty state
 
-  // RN's renderEmptyState shows this exact same copy/image/button whenever
-  // filteredRecords is empty — there's no separate "no results for this
-  // filter" variant, unlike this view's earlier (pre-parity) behavior.
   @ViewBuilder
   private var emptyState: some View {
     VStack(spacing: 0) {
@@ -291,11 +301,6 @@ struct RecordListView: View {
         .frame(width: 120, height: 120)
         .padding(.bottom, 24)
 
-      // RN hardcodes this text to a fixed light-mode color even in dark
-      // mode (buildCollectionPalette defines an adaptive `emptyText` key
-      // that the empty-state JSX never actually references) — judged an
-      // oversight rather than a deliberate design choice, so this uses the
-      // adaptive palette colors instead of replicating the miss.
       Text("Your collection\nis empty")
         .font(.system(size: 22, weight: .heavy))
         .foregroundStyle(palette.primaryText)

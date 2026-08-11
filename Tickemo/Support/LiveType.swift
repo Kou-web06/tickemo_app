@@ -24,14 +24,15 @@ enum LiveType: String, CaseIterable, Identifiable {
     }
   }
 
-  var hugeIcon: HugeIcon {
+  /// Images.xcassets 内の SVG アイコン名（テンプレートレンダリングで着色する）
+  var imageName: String {
     switch self {
-    case .oneMan: HugeIcons.user
-    case .twoMan: HugeIcons.userMultiple02
-    case .festival: HugeIcons.userGroup03
-    case .fcOnly: HugeIcons.starCircle
-    case .streaming: HugeIcons.radio
-    case .sports: HugeIcons.football
+    case .oneMan: "one-man"
+    case .twoMan: "two-man"
+    case .festival: "festival"
+    case .fcOnly: "fc"
+    case .streaming: "streaming"
+    case .sports: "Baseball"
     }
   }
 

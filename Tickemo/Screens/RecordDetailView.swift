@@ -31,6 +31,27 @@ struct RecordDetailView: View {
   @State private var nowPlayingSongId: String?
   @State private var loadingSongId: String?
 
+  @State private var dominantColor: Color
+  @State private var backgroundIsDark: Bool
+
+  init(record: CD_ChekiRecord) {
+    self.record = record
+    // 一覧の行（RecordRowView）表示時に DominantColorCache へ先読みしてある
+    // ため、通常はここでキャッシュに当たり、初回フレームから抽出色の背景で
+    // 描画できる（開いた瞬間に白背景が見えるのを防ぐ）。
+    let cached = record.coverImageData.flatMap { DominantColorCache.shared.cachedColor(for: $0) }
+    _dominantColor = State(initialValue: cached?.color ?? DominantColorExtractor.fallback.color)
+    _backgroundIsDark = State(initialValue: cached?.isDark ?? DominantColorExtractor.fallback.isDark)
+  }
+
+  private var primaryTextColor: Color {
+    backgroundIsDark ? .white : Color(red: 0.169, green: 0.169, blue: 0.180)
+  }
+  // メインテキストと同じ黒/白に連動させ、透明度だけで主従の差をつける
+  private var secondaryTextColor: Color {
+    primaryTextColor.opacity(0.7)
+  }
+
   private var liveType: LiveType { LiveType.normalized(record.liveType) }
 
   var body: some View {
@@ -41,7 +62,7 @@ struct RecordDetailView: View {
         VStack(alignment: .leading, spacing: 0) {
           Text(record.liveName ?? "-")
             .font(.system(size: 26, weight: .black))
-            .foregroundStyle(Color(red: 0.169, green: 0.169, blue: 0.180))
+            .foregroundStyle(primaryTextColor)
             .padding(.top, 26)
 
           artistPriceRow
@@ -59,17 +80,66 @@ struct RecordDetailView: View {
           }
         }
         .padding(.horizontal, 22)
-        .padding(.bottom, 110)
+        .padding(.bottom, 40)
       }
     }
-    .background(Color(red: 0.976, green: 0.976, blue: 0.976))
+    .coordinateSpace(name: "scroll")
+    .background(
+      ZStack {
+        Color.white
+        dominantColor.opacity(0.75)
+      }
+      .ignoresSafeArea()
+    )
     .ignoresSafeArea(edges: .top)
-    .overlay(alignment: .bottomTrailing) {
-      footerTab
-        .padding(.trailing, 12)
-        .padding(.bottom, 28)
+    .task(id: record.coverImageData) {
+      guard let data = record.coverImageData else {
+        withAnimation(.easeInOut(duration: 0.4)) {
+          dominantColor = DominantColorExtractor.fallback.color
+          backgroundIsDark = DominantColorExtractor.fallback.isDark
+        }
+        return
+      }
+      // キャッシュ済みなら init で反映済みのはずなので、アニメーション無しで
+      // 即確定する（フェードによるちらつきを出さない）
+      if let cached = DominantColorCache.shared.cachedColor(for: data) {
+        dominantColor = cached.color
+        backgroundIsDark = cached.isDark
+        return
+      }
+      let extracted = await DominantColorCache.shared.color(for: data)
+      withAnimation(.easeInOut(duration: 0.5)) {
+        dominantColor = extracted.color
+        backgroundIsDark = extracted.isDark
+      }
     }
     .navigationBarTitleDisplayMode(.inline)
+    .toolbarBackground(.hidden, for: .navigationBar)
+    .toolbar {
+      // ToolbarItemGroup だと 1 つのグループにまとめて表示されるため、
+      // 独立したボタンとして並ぶよう個別の ToolbarItem に分ける
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          showingShareSheet = true
+        } label: {
+          toolbarIcon("Share", color: .black)
+        }
+      }
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          showingEditSheet = true
+        } label: {
+          toolbarIcon("Edit", color: .black)
+        }
+      }
+      ToolbarItem(placement: .topBarTrailing) {
+        Button(role: .destructive) {
+          showingDeleteConfirmation = true
+        } label: {
+          toolbarIcon("Confounded", color: .red)
+        }
+      }
+    }
     .sheet(isPresented: $showingEditSheet) {
       RecordFormView(record: record)
     }
@@ -101,35 +171,73 @@ struct RecordDetailView: View {
   // MARK: - Header
 
   private var header: some View {
-    ZStack(alignment: .bottomTrailing) {
-      Group {
-        if let data = record.coverImageData, let uiImage = UIImage(data: data) {
-          Image(uiImage: uiImage)
-            .resizable()
-            .scaledToFill()
-        } else {
-          ZStack {
-            Color(red: 0.839, green: 0.839, blue: 0.839)
-            Text("NO IMAGE")
-              .font(.system(size: 16, weight: .bold))
-              .foregroundStyle(Color(white: 0.5))
-              .tracking(0.6)
+    GeometryReader { geo in
+      let pullDown = max(0, geo.frame(in: .named("scroll")).minY)
+      let h = geo.size.height
+      // 画像高さが (h + pullDown) になるため、視覚上の下端フェード開始位置を
+      // 画像座標系に変換して補正する。これで pullDown が増えても
+      // フェードが始まる「見た目の位置」は常に下端から h*0.5 付近に固定される。
+      let botFadeStart = (pullDown + h * 0.5) / (h + pullDown)
+
+      ZStack(alignment: .bottomTrailing) {
+        Group {
+          if let data = record.coverImageData, let uiImage = UIImage(data: data) {
+            Image(uiImage: uiImage)
+              .resizable()
+              .scaledToFill()
+          } else {
+            ZStack {
+              Color(red: 0.839, green: 0.839, blue: 0.839)
+              Text("NO IMAGE")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Color(white: 0.5))
+                .tracking(0.6)
+            }
           }
         }
-      }
-      .aspectRatio(1.11, contentMode: .fill)
-      .frame(maxWidth: .infinity)
-      .clipped()
+        .frame(width: geo.size.width, height: h + pullDown)
+        .clipped()
+        .mask(
+          LinearGradient(
+            stops: pullDown > 0 ? [
+              // オーバースクロール中: 上端フェードなし（伸びた画像がきれいに見える）
+              .init(color: .black, location: 0),
+              .init(color: .black, location: botFadeStart),
+              .init(color: .clear, location: 1),
+            ] : [
+              // 通常時: 上端も軽くフェード
+              .init(color: .clear, location: 0),
+              .init(color: .black, location: 0.12),
+              .init(color: .black, location: botFadeStart),
+              .init(color: .clear, location: 1),
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+          )
+        )
+        // .offset はレイアウト位置を変えないため、後段に置いた mask は元の位置に
+        // 残ってしまい、上に伸ばした画像の上端が切れる。mask の後に offset を
+        // 適用することで、マスクごと画像を引き上げて上端を画面最上部に固定する。
+        .offset(y: -pullDown)
+        // 画像のレイアウト高さは h + pullDown のままなので、そのままだと
+        // ZStack ごと成長して bottomTrailing 揃えの QR が下へ流れてしまう。
+        // 高さ h に固定して QR の基準位置をオーバースクロールから切り離す。
+        .frame(width: geo.size.width, height: h, alignment: .top)
 
-      QRCodeView(value: record.qrCode)
-        .frame(width: 56, height: 56)
-        .padding(8)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 7))
-        .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
-        .padding(.trailing, 12)
-        .padding(.bottom, 14)
+        QRCodeView(value: record.qrCode)
+          .frame(width: 56, height: 56)
+          .padding(8)
+          .background(Color.white)
+          .clipShape(RoundedRectangle(cornerRadius: 7))
+          .padding(.trailing, 12)
+          .padding(.bottom, 14)
+          // ヘッダー自体はオーバースクロールで下に動くため、画像と同様に
+          // 引き戻して QR を画面上の定位置に固定する
+          .offset(y: -pullDown)
+      }
     }
+    .aspectRatio(1.11, contentMode: .fill)
+    .frame(maxWidth: .infinity)
   }
 
   // MARK: - Artist / price row
@@ -139,22 +247,29 @@ struct RecordDetailView: View {
       VStack(alignment: .leading, spacing: 6) {
         Text(displayArtistsText)
           .font(.system(size: 17, weight: .semibold))
-          .foregroundStyle(Color(white: 0.557))
+          .foregroundStyle(secondaryTextColor)
           .lineLimit(2)
 
-        HugeIconLabel(icon: liveType.hugeIcon, size: 12) { Text(liveType.label) }
-          .font(.system(size: 12, weight: .bold))
-          .foregroundStyle(Color(white: 0.486))
+        HStack(spacing: 6) {
+          Image(liveType.imageName)
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 14, height: 14)
+          Text(liveType.label)
+        }
+        .font(.system(size: 14, weight: .bold))
+        .foregroundStyle(secondaryTextColor)
       }
 
       Spacer(minLength: 0)
 
       HStack(spacing: 7) {
-        HugeIconView(icon: HugeIcons.wallet01, size: 17)
-          .foregroundStyle(Color(white: 0.616))
+        Image("Wallet")
+          .foregroundStyle(secondaryTextColor)
         Text(priceText)
           .font(.system(size: 17, weight: .heavy))
-          .foregroundStyle(Color(white: 0.541))
+          .foregroundStyle(secondaryTextColor)
       }
     }
   }
@@ -178,23 +293,23 @@ struct RecordDetailView: View {
       VStack(alignment: .leading, spacing: 2) {
         Text(yearText)
           .font(.system(size: 14, weight: .bold))
-          .foregroundStyle(Color(white: 0.561))
+          .foregroundStyle(secondaryTextColor)
           .tracking(1.2)
         HStack(alignment: .top, spacing: 8) {
           Text(monthDayText)
             .font(.system(size: 52, weight: .bold))
-            .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
+            .foregroundStyle(primaryTextColor)
           if !weekdayText.isEmpty {
             Text(weekdayText)
               .font(.system(size: 12, weight: .bold))
-              .foregroundStyle(Color(white: 0.557))
+              .foregroundStyle(secondaryTextColor)
               .padding(.top, 10)
               .tracking(1.1)
           }
         }
         Text(record.venue?.isEmpty == false ? record.venue! : "-")
           .font(.system(size: 16, weight: .heavy))
-          .foregroundStyle(Color(red: 0.184, green: 0.184, blue: 0.204))
+          .foregroundStyle(primaryTextColor)
       }
 
       VStack(alignment: .leading, spacing: 16) {
@@ -210,11 +325,11 @@ struct RecordDetailView: View {
     HStack(alignment: .lastTextBaseline, spacing: 14) {
       Text(label)
         .font(.system(size: 14, weight: .heavy))
-        .foregroundStyle(Color(white: 0.557))
+        .foregroundStyle(secondaryTextColor)
         .tracking(1)
       Text(value?.isEmpty == false ? value! : "--:--")
         .font(.system(size: 22, weight: .bold))
-        .foregroundStyle(Color(red: 0.180, green: 0.180, blue: 0.200))
+        .foregroundStyle(primaryTextColor)
     }
   }
 
@@ -253,7 +368,7 @@ struct RecordDetailView: View {
       HStack {
         Text("#set list")
           .font(.system(size: 18, weight: .black))
-          .foregroundStyle(Color(red: 0.180, green: 0.180, blue: 0.196))
+          .foregroundStyle(primaryTextColor)
         Spacer()
         Button(record.sortedSetlistItems.isEmpty ? "Add Setlist" : "Edit") {
           showingSetlistEditor = true
@@ -398,54 +513,28 @@ struct RecordDetailView: View {
     VStack(alignment: .leading, spacing: 12) {
       Text("#memo")
         .font(.system(size: 18, weight: .black))
-        .foregroundStyle(Color(red: 0.180, green: 0.180, blue: 0.196))
+        .foregroundStyle(primaryTextColor)
 
       HStack(alignment: .top, spacing: 8) {
         HugeIconView(icon: HugeIcons.quoteUp, size: 17)
-          .foregroundStyle(Color(white: 0.608))
+          .foregroundStyle(secondaryTextColor)
         Text(memo)
           .font(.system(size: 16, weight: .medium))
-          .foregroundStyle(Color(red: 0.235, green: 0.235, blue: 0.251))
+          .foregroundStyle(primaryTextColor)
           .lineSpacing(6)
       }
     }
   }
 
-  // MARK: - Footer
+  // MARK: - Toolbar
 
-  private var footerTab: some View {
-    HStack(spacing: 8) {
-      footerButton(imageName: "Share", color: Color(white: 0.365)) {
-        showingShareSheet = true
-      }
-      footerButton(imageName: "Edit", color: Color(white: 0.365)) {
-        showingEditSheet = true
-      }
-      footerButton(imageName: "Confounded", color: Color(red: 0.961, green: 0.337, blue: 0.196)) {
-        showingDeleteConfirmation = true
-      }
-    }
-    .padding(.horizontal, 10)
-    .frame(height: 56)
-    .background(.white.opacity(0.88))
-    .clipShape(RoundedRectangle(cornerRadius: 28))
-    .overlay(
-      RoundedRectangle(cornerRadius: 28)
-        .stroke(Color(white: 0.541).opacity(0.25), lineWidth: 1)
-    )
-    .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 2)
-  }
-
-  private func footerButton(imageName: String, color: Color, action: @escaping () -> Void) -> some View {
-    Button(action: action) {
-      Image(imageName)
-        .renderingMode(.template)
-        .resizable()
-        .scaledToFit()
-        .frame(width: 22, height: 22)
-        .foregroundStyle(color)
-        .frame(width: 44, height: 44)
-    }
+  private func toolbarIcon(_ imageName: String, color: Color) -> some View {
+    Image(imageName)
+      .renderingMode(.template)
+      .resizable()
+      .scaledToFit()
+      .frame(width: 22, height: 22)
+      .foregroundStyle(color)
   }
 
   private func deleteRecord() {
@@ -453,4 +542,5 @@ struct RecordDetailView: View {
     try? viewContext.save()
     dismiss()
   }
+
 }
