@@ -126,9 +126,7 @@ struct LanguagePickerView: View {
   private func select(_ value: LanguagePreference) {
     selection = value
     LanguagePreferenceStore.save(value)
-    if HapticsPreferenceService.shared.isEnabled {
-      UINotificationFeedbackGenerator().notificationOccurred(.success)
-    }
+    HapticsPreferenceService.shared.notify(.success)
     dismiss()
   }
 }

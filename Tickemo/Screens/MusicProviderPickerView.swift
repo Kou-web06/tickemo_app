@@ -120,9 +120,7 @@ struct MusicProviderPickerView: View {
   private func select(_ value: MusicProviderPreference) {
     selection = value
     MusicProviderPreferenceStore.save(value)
-    if HapticsPreferenceService.shared.isEnabled {
-      UINotificationFeedbackGenerator().notificationOccurred(.success)
-    }
+    HapticsPreferenceService.shared.notify(.success)
     dismiss()
   }
 }

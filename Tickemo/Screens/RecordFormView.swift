@@ -440,6 +440,7 @@ struct RecordFormView: View {
     applyGamePhotos(to: target)
 
     try? viewContext.save()
+    HapticsPreferenceService.shared.notify(.success)
     dismiss()
   }
 

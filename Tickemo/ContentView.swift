@@ -6,6 +6,21 @@ struct ContentView: View {
   @State private var selectedTab = 0
 
   var body: some View {
+    // Bound inside `body` rather than stored: `MigrationCoordinator` is
+    // main-actor isolated, and a stored-property initializer would run
+    // outside that isolation.
+    let migration = MigrationCoordinator.shared
+
+    tabs
+      .overlay {
+        if migration.isBusy {
+          MigrationOverlayView(phase: migration.phase)
+        }
+      }
+      .animation(.easeInOut(duration: 0.2), value: migration.isBusy)
+  }
+
+  private var tabs: some View {
     TabView(selection: $selectedTab) {
       NavigationStack {
         RecordListView()
@@ -34,6 +49,10 @@ struct ContentView: View {
         }
     }
     .tint(accentPurple)
+    // Ports FloatingTabBar.tsx's medium-impact haptic on tab switches.
+    .onChange(of: selectedTab) { _, _ in
+      HapticsPreferenceService.shared.impact(.medium)
+    }
   }
 }
 

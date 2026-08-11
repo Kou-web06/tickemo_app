@@ -12,7 +12,6 @@ struct NextLiveCardView: View {
   @State private var now = Date()
   @State private var isFlipped = false
   @State private var todaySong: TodaySongResult?
-  @State private var showingProviderDialog = false
   @State private var showingInvalidQrAlert = false
 
   private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -296,14 +295,14 @@ struct NextLiveCardView: View {
     return String(format: "%04d.%02d.%02d", year, month, day)
   }
 
-  // Reuses RecordDetailView's "always ask which provider" confirmationDialog
-  // pattern (a documented, intentional improvement over RN's single
-  // persisted `musicProvider` preference) rather than reading
-  // MusicProviderPreference — keeps this app's two nearly-identical
-  // "open this song externally" actions consistent with each other.
+  // Opens directly in the user's Settings-saved provider — no per-tap
+  // "which provider?" prompt, matching RN's single persisted
+  // `musicProvider` preference (RecordDetailView's setlist tap-to-play
+  // fallback does the same via MusicProviderPreference.open).
   private var providerButton: some View {
     Button {
-      showingProviderDialog = true
+      HapticsPreferenceService.shared.impact(.light)
+      openInPreferredProvider()
     } label: {
       HStack(spacing: 6) {
         HugeIconView(icon: HugeIcons.musicNote01, size: 11)
@@ -320,27 +319,11 @@ struct NextLiveCardView: View {
     }
     .buttonStyle(.plain)
     .disabled(todaySong == nil)
-    .confirmationDialog("この曲を開く", isPresented: $showingProviderDialog) {
-      Button("Spotifyで開く") { openInSpotify() }
-      Button("Apple Musicで開く") { openInAppleMusic() }
-      Button("キャンセル", role: .cancel) {}
-    }
   }
 
-  private func openInSpotify() {
+  private func openInPreferredProvider() {
     let query = "\(todaySong?.title ?? "") \(todaySong?.artist ?? (record.artist ?? ""))"
       .trimmingCharacters(in: .whitespaces)
-    guard !query.isEmpty, let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
-
-    if let deepLink = URL(string: "spotify:search:\(encoded)"), UIApplication.shared.canOpenURL(deepLink) {
-      UIApplication.shared.open(deepLink)
-    } else if let webURL = URL(string: "https://open.spotify.com/search/\(encoded)") {
-      UIApplication.shared.open(webURL)
-    }
-  }
-
-  private func openInAppleMusic() {
-    guard let urlString = todaySong?.appleMusicUrl, let url = URL(string: urlString) else { return }
-    UIApplication.shared.open(url)
+    MusicProviderPreferenceStore.load().open(query: query, appleMusicURL: todaySong?.appleMusicUrl)
   }
 }
