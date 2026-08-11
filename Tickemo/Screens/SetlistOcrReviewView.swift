@@ -1,51 +1,42 @@
 import SwiftUI
 
-/// Ports LiveEditScreen.tsx's full-screen OCR review UI: a reorderable,
-/// inline-editable list of cleaned-up text lines, with suspicious lines
-/// (see SetlistOcrCleanup.isSuspicious) flagged in red rather than dropped
-/// — recomputed live on every edit, matching RN's own re-check-on-change
-/// behavior. Reordering uses drag handles (always-active edit mode); deletion
-/// uses a single-tap trash button in each row instead of swipe-to-delete to
-/// reduce interaction steps. Confirming re-cleans the (possibly hand-edited)
-/// text one more time before handing it back — matching RN's
-/// `handleConfirmOcrDraft`, which re-runs `formatSetlistText` right before merging.
+/// OCR後の確認・編集画面。認識済み曲名を1行1曲のプレーンテキストで表示し、
+/// ユーザーが自由に編集・並び替え・ENCORE/MC挿入できる。
+/// MusicKit検索は行わず、テキストをそのまま SetlistDraftItem に変換して返す。
 struct SetlistOcrReviewView: View {
   var onConfirm: ([String]) -> Void
   var onCancel: () -> Void
 
-  @State private var items: [SetlistOcrCleanup.ReviewItem]
+  @State private var text: String
   @State private var showingEmptyAlert = false
+  @FocusState private var isEditorFocused: Bool
   @Environment(\.dismiss) private var dismiss
 
   init(lines: [String], onConfirm: @escaping ([String]) -> Void, onCancel: @escaping () -> Void) {
     self.onConfirm = onConfirm
     self.onCancel = onCancel
-    _items = State(initialValue: SetlistOcrCleanup.reviewItems(from: lines))
+    _text = State(initialValue: lines.joined(separator: "\n"))
   }
 
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
-        VStack(spacing: 2) {
-          Text("\(items.count)曲を認識しました")
-            .font(.system(size: 14, weight: .semibold))
-          Text("タップして編集できます")
-            .font(.system(size: 12))
-            .foregroundStyle(.secondary)
-        }
-        .padding(.top, 8)
-        .padding(.bottom, 4)
+        if #available(iOS 18.0, *) {
+          CursorMarkerEditor(text: $text, focus: $isEditorFocused)
+        } else {
+          // iOS 17 は TextEditor からカーソル位置を取得できないため従来どおり末尾に追加
+          TextEditor(text: $text)
+            .font(.system(size: 15))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .focused($isEditorFocused)
 
-        List {
-          ForEach($items) { $item in
-            row(for: $item)
-          }
-          .onMove { items.move(fromOffsets: $0, toOffset: $1) }
+          Divider()
+
+          MarkerInsertionBar { appendMarker($0) }
         }
-        .listStyle(.plain)
-        .environment(\.editMode, .constant(.active))
       }
-      .navigationTitle("認識結果を確認")
+      .navigationTitle("セットリストを確認")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
@@ -55,6 +46,9 @@ struct SetlistOcrReviewView: View {
           } label: {
             HugeIconView(icon: HugeIcons.cancel01, size: 17)
           }
+        }
+        ToolbarItem(placement: .keyboard) {
+          Button("完了") { isEditorFocused = false }
         }
       }
       .safeAreaInset(edge: .bottom) {
@@ -77,37 +71,101 @@ struct SetlistOcrReviewView: View {
     }
   }
 
-  private func row(for item: Binding<SetlistOcrCleanup.ReviewItem>) -> some View {
-    let isSuspicious = SetlistOcrCleanup.isSuspicious(item.wrappedValue.text)
-    return HStack(spacing: 8) {
-      TextField("曲名", text: item.text)
-        .font(.system(size: 16))
-        .foregroundStyle(isSuspicious ? Color.red : Color.primary)
-      if isSuspicious {
-        HugeIconView(icon: HugeIcons.alert01, size: 16)
-          .foregroundStyle(.red)
-      }
-      Spacer(minLength: 4)
-      Button(role: .destructive) {
-        let id = item.wrappedValue.id
-        items.removeAll { $0.id == id }
-      } label: {
-        HugeIconView(icon: HugeIcons.delete02, size: 16)
-          .foregroundStyle(.secondary)
-      }
-      .buttonStyle(.plain)
-    }
-    .padding(.vertical, 6)
-    .listRowBackground(isSuspicious ? Color.red.opacity(0.08) : Color.clear)
+  // 末尾に改行してマーカーを追加（iOS 17 フォールバック）
+  private func appendMarker(_ marker: String) {
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    text = trimmed.isEmpty ? marker : trimmed + "\n" + marker
   }
 
   private func confirm() {
-    let finalLines = SetlistOcrCleanup.cleanedLines(from: items.map(\.text).joined(separator: "\n"))
-    guard !finalLines.isEmpty else {
+    let lines = text
+      .components(separatedBy: "\n")
+      .map { $0.trimmingCharacters(in: .whitespaces) }
+      .filter { !$0.isEmpty }
+    guard !lines.isEmpty else {
       showingEmptyAlert = true
       return
     }
-    onConfirm(finalLines)
+    onConfirm(lines)
     dismiss()
+  }
+}
+
+// MARK: - 挿入バー（ENCORE / MC）
+
+private struct MarkerInsertionBar: View {
+  var onInsert: (String) -> Void
+
+  var body: some View {
+    HStack(spacing: 10) {
+      Text("挿入：")
+        .font(.system(size: 13))
+        .foregroundStyle(.secondary)
+      Button("ENCORE") { onInsert("ENCORE") }
+        .buttonStyle(.bordered)
+        .font(.system(size: 13, weight: .bold))
+      Button("MC") { onInsert("MC") }
+        .buttonStyle(.bordered)
+        .font(.system(size: 13, weight: .bold))
+      Spacer()
+    }
+    .padding(.horizontal, 16)
+    .padding(.vertical, 10)
+    .background(Color(.systemGroupedBackground))
+  }
+}
+
+/// iOS 18 の TextEditor(text:selection:) でカーソル位置を追跡し、
+/// ENCORE/MC マーカーをカーソルのある行の直後に独立した行として挿入する。
+@available(iOS 18.0, *)
+private struct CursorMarkerEditor: View {
+  @Binding var text: String
+  var focus: FocusState<Bool>.Binding
+
+  @State private var selection: TextSelection?
+
+  var body: some View {
+    TextEditor(text: $text, selection: $selection)
+      .font(.system(size: 15))
+      .padding(.horizontal, 12)
+      .padding(.vertical, 8)
+      .focused(focus)
+
+    Divider()
+
+    MarkerInsertionBar { insertMarker($0) }
+  }
+
+  private func insertMarker(_ marker: String) {
+    guard !text.isEmpty else {
+      text = marker
+      selection = TextSelection(insertionPoint: text.endIndex)
+      return
+    }
+
+    // カーソル位置（範囲選択中はその末尾側）。未フォーカスなどで選択が
+    // 取れない場合は従来どおり文末扱いにする。
+    var cursor = text.endIndex
+    if let indices = selection?.indices {
+      switch indices {
+      case .selection(let range):
+        cursor = min(range.upperBound, text.endIndex)
+      case .multiSelection(let ranges):
+        cursor = ranges.ranges.last.map { min($0.upperBound, text.endIndex) } ?? text.endIndex
+      @unknown default:
+        break
+      }
+    }
+
+    // 曲名の行を分断しないよう、カーソルのある行の末尾に「改行 + マーカー」を挿入
+    let lineEnd = text[cursor...].firstIndex(of: "\n") ?? text.endIndex
+    let lineEndOffset = text.distance(from: text.startIndex, to: lineEnd)
+    let insertion = "\n" + marker
+    text.insert(contentsOf: insertion, at: lineEnd)
+
+    // 連続タップで下に積んでいけるよう、カーソルを挿入したマーカーの末尾へ移す
+    selection = TextSelection(
+      insertionPoint: text.index(text.startIndex, offsetBy: lineEndOffset + insertion.count)
+    )
   }
 }

@@ -3,6 +3,9 @@ import SwiftUI
 struct SetlistDraftEditorView: View {
   @Binding var items: [SetlistDraftItem]
   var showsOcrButton: Bool = false
+  /// OCR 一括登録後のメタデータ補完検索に添えるアーティスト名。
+  /// 曲名だけの検索より正しい曲（＝正しいジャケ写）に当たりやすくなる。
+  var artistHint: String? = nil
 
   @State private var searchText = ""
   @State private var searchResults: [AppleMusicService.SongResult] = []
@@ -62,7 +65,7 @@ struct SetlistDraftEditorView: View {
         .ignoresSafeArea()
       case .ocrReview(let wrapper):
         SetlistOcrReviewView(lines: wrapper.lines) { confirmedLines in
-          Task { await addWithMusicKit(lines: confirmedLines) }
+          addOcrLines(confirmedLines)
         } onCancel: {}
       }
     }
@@ -183,34 +186,53 @@ struct SetlistDraftEditorView: View {
     }
   }
 
-  // MARK: - OCR → MusicKit enrichment
+  // MARK: - OCR confirm → plain-text parse
 
-  // Searches each confirmed line via MusicKit in parallel (preserving order).
-  // Songs found get artwork/metadata; unmatched songs fall back to text-only.
-  private func addWithMusicKit(lines: [String]) async {
-    isRecognizing = true
-    defer { isRecognizing = false }
-
-    let enriched: [SetlistDraftItem] = await withTaskGroup(of: (Int, SetlistDraftItem).self) { group in
-      for (i, line) in lines.enumerated() {
-        group.addTask {
-          if let result = try? await AppleMusicService().searchSongs(term: line).first {
-            return (i, SetlistDraftItem(
-              id: UUID(), kind: .song,
-              songId: result.id, songName: result.title,
-              artistName: result.artistName, albumName: result.albumName,
-              artworkUrl: result.artworkUrl
-            ))
-          }
-          return (i, SetlistDraftItem(id: UUID(), kind: .song, songName: line))
-        }
+  // Converts confirmed text lines to SetlistDraftItems.
+  // Lines starting with "ENCORE" → encore marker; "MC" → MC row; else → song (text only).
+  private func addOcrLines(_ lines: [String]) {
+    var addedSongIDs: [UUID] = []
+    for line in lines {
+      let upper = line.uppercased()
+      if upper == "ENCORE" || upper.hasPrefix("ENCORE ") || upper.hasPrefix("ENCORE\t") {
+        items.append(SetlistDraftItem(id: UUID(), kind: .encore, title: "ENCORE"))
+      } else if upper == "MC" || upper.hasPrefix("MC ") || upper.hasPrefix("MC\t") {
+        let talk = line.count > 2 ? String(line.dropFirst(2)).trimmingCharacters(in: .whitespaces) : ""
+        items.append(SetlistDraftItem(id: UUID(), kind: .mc, title: talk))
+      } else {
+        let item = SetlistDraftItem(id: UUID(), kind: .song, songName: line)
+        items.append(item)
+        addedSongIDs.append(item.id)
       }
-      var pairs: [(Int, SetlistDraftItem)] = []
-      for await pair in group { pairs.append(pair) }
-      return pairs.sorted { $0.0 < $1.0 }.map { $0.1 }
     }
+    guard !addedSongIDs.isEmpty else { return }
+    Task { await backfillSongMetadata(ids: addedSongIDs) }
+  }
 
-    items.append(contentsOf: enriched)
+  /// OCR で追加した曲はテキストしか持たずジャケ写が空になるため、
+  /// Apple Music 検索の先頭ヒットから artworkUrl などのメタデータを補完する。
+  /// songName は OCR レビューでユーザーが確認したテキストなので上書きしない。
+  private func backfillSongMetadata(ids: [UUID]) async {
+    let hint = artistHint?.trimmingCharacters(in: .whitespaces) ?? ""
+    for id in ids {
+      guard let name = items.first(where: { $0.id == id })?.songName, !name.isEmpty else { continue }
+
+      var match = hint.isEmpty
+        ? nil
+        : (try? await appleMusicService.searchSongs(term: "\(name) \(hint)", limit: 1))?.first
+      if match == nil {
+        // アーティスト名込みでヒットしない場合（表記ゆれ等）は曲名だけで再検索
+        match = (try? await appleMusicService.searchSongs(term: name, limit: 1))?.first
+      }
+      guard let match else { continue }
+
+      // 検索中に並べ替え・削除されている可能性があるので ID で引き直す
+      guard let index = items.firstIndex(where: { $0.id == id }) else { continue }
+      items[index].songId = match.id
+      items[index].artistName = match.artistName
+      items[index].albumName = match.albumName
+      items[index].artworkUrl = match.artworkUrl
+    }
   }
 
   // MARK: - OCR pipeline
