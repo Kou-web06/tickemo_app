@@ -1,12 +1,49 @@
 import SwiftUI
 import RevenueCat
 
-private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
+private let accentPurple = Color(hex: "#8B5CF6")
+private let termsURL = URL(string: "https://traveling-fahrenheit-b9b.notion.site/Tickemo-Terms-of-Use-2f65fd5d3e2d80ba8abcda85615cde4a?source=copy_link")!
+private let privacyURL = URL(string: "https://traveling-fahrenheit-b9b.notion.site/Tickemo-Privacy-Policy-2f85fd5d3e2d809b912dfc4ec2a2ed6a?source=copy_link")!
+private let defaultLifetimePriceValue = 480
+private let defaultOriginalPriceValue = 980
 
-/// Ports screens/PaywallScreen.tsx: a single lifetime one-time-purchase
-/// product ("Tickemo Plus"), no subscription tiers. Presented as a plain
-/// SwiftUI .sheet (rounded top corners + backdrop come for free, no custom
-/// modal chrome needed to match the RN bottom-sheet look).
+private enum PaywallPalette {
+  static let background = Color(hex: "#F8F8F8")
+  static let textDark = Color(hex: "#333333")
+  static let heroTitle = Color(hex: "#151515")
+  static let plusPillBackground = Color(hex: "#F5F3FF")
+  static let plusText = Color(hex: "#5B38B2")
+  static let heroSubtitle = Color(hex: "#7A7A7A")
+  static let earlyCountdown = Color(hex: "#C23A3A")
+  static let featureIconDefault = Color(hex: "#1F1F1F")
+  static let featureTitle = Color(hex: "#171717")
+  static let featureDescription = Color(hex: "#7D7D7D")
+  static let restoreText = Color(hex: "#4c4c4c")
+  static let planCardBackground = Color(hex: "#F5F3FF")
+  static let planTitle = Color(hex: "#111111")
+  static let planSubTitle = Color(hex: "#7A7A7A")
+  static let planOriginalPrice = Color(hex: "#9A9A9A")
+  static let planCurrentPrice = Color(hex: "#181817")
+  static let footerText = Color(hex: "#9A9A9A")
+  static let footerSeparator = Color(hex: "#B0B0B0")
+  static let patternRing = Color(hex: "#E6E6E6", opacity: 0.52)
+}
+
+private func formatJPYFallback(_ value: Int) -> String {
+  let formatter = NumberFormatter()
+  formatter.numberStyle = .decimal
+  formatter.groupingSeparator = ","
+  return "￥" + (formatter.string(from: NSNumber(value: value)) ?? "\(value)")
+}
+
+/// Ports screens/PaywallScreen.tsx as closely as SwiftUI allows: same
+/// concentric background rings, VIP pass illustration, hero/benefits copy,
+/// and — the part most visibly missing before — a floating frosted "island"
+/// bottom panel (blurred glass, rounded 38pt, drop shadow) holding the plan
+/// card + CTA, instead of a flat edge-to-edge `.regularMaterial` bar.
+/// Presented as a plain SwiftUI `.sheet` from callers; the
+/// `.presentation*` modifiers below reproduce RN's 95%-height, 28pt
+/// rounded-top bottom sheet without any custom modal chrome.
 struct PaywallView: View {
   @Environment(\.dismiss) private var dismiss
 
@@ -15,125 +52,280 @@ struct PaywallView: View {
   @State private var isPurchasing = false
   @State private var isRestoring = false
   @State private var alertMessage: String?
+  @State private var remainingSeconds: TimeInterval = EarlyOfferService.remainingSeconds()
+  @State private var webViewURL: PaywallWebViewURL?
+
+  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+  private var isEarlyWindow: Bool { remainingSeconds > 0 }
 
   private let benefits: [(icon: HugeIcon, title: String, description: String)] = [
-    (HugeIcons.infinity01, "Unlimited Tickets", "Add as many live tickets as you want."),
-    (HugeIcons.playList, "Full Setlist Access", "Save and edit setlists for every show."),
-    (HugeIcons.favourite, "Support Development", "Help keep Tickemo growing."),
+    (HugeIcons.infinity01, "無制限のアーカイブ", "過去のチケットも写真もすべて保存。"),
+    (HugeIcons.cd, "シェアカードの拡張", "ストーリーズで映える限定画像を無制限に生成。"),
+    (HugeIcons.favourite, "開発者を応援", "今後のアップデートと新機能の開発をサポート"),
   ]
 
-  var body: some View {
-    NavigationStack {
-      ScrollView {
-        VStack(spacing: 24) {
-          VStack(spacing: 8) {
-            HStack(spacing: 8) {
-              Text("Tickemo")
-                .font(.system(size: 28, weight: .heavy))
-              Text("Plus")
-                .font(.system(size: 15, weight: .bold))
-                .foregroundStyle(accentPurple)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .overlay(Capsule().stroke(accentPurple, lineWidth: 1.5))
-            }
-            Text("Unlock everything Tickemo has to offer.")
-              .font(.system(size: 13, weight: .semibold))
-              .foregroundStyle(.secondary)
-              .multilineTextAlignment(.center)
-          }
-          .padding(.top, 12)
+  private var currentPriceText: String {
+    package?.storeProduct.localizedPriceString ?? formatJPYFallback(defaultLifetimePriceValue)
+  }
 
-          VStack(spacing: 16) {
-            ForEach(benefits, id: \.title) { benefit in
-              HStack(spacing: 12) {
-                HugeIconView(icon: benefit.icon, size: 20)
-                  .foregroundStyle(.primary)
-                  .frame(width: 32)
-                VStack(alignment: .leading, spacing: 3) {
-                  Text(benefit.title).font(.system(size: 15, weight: .bold))
-                  Text(benefit.description)
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 0)
-              }
-            }
-          }
-          .padding(.horizontal, 8)
+  var body: some View {
+    ZStack {
+      PaywallPalette.background.ignoresSafeArea()
+
+      GeometryReader { proxy in
+        backgroundPattern(width: proxy.size.width)
+      }
+      .allowsHitTesting(false)
+
+      ScrollView {
+        VStack(spacing: 0) {
+          Image("PaywallPass")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(height: 300)
+            .padding(.bottom, 24)
+
+          heroSection
+            .padding(.bottom, 18)
+
+          benefitsSection
         }
-        .padding(.horizontal, 22)
-        .padding(.bottom, 24)
+        .padding(.bottom, 260)
       }
-      .safeAreaInset(edge: .bottom) {
-        bottomPanel
-      }
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) {
-          Button {
-            dismiss()
-          } label: {
-            HugeIconView(icon: HugeIcons.cancel01, size: 17)
-          }
-        }
-        ToolbarItem(placement: .primaryAction) {
-          Button(isRestoring ? "Restoring…" : "Restore") {
-            Task { await handleRestore() }
-          }
-          .disabled(isRestoring)
-          .font(.system(size: 13, weight: .semibold))
-        }
-      }
-      .task {
-        await loadOfferings()
-      }
-      .alert("お知らせ", isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
-        Button("OK") {}
-      } message: {
-        Text(alertMessage ?? "")
-      }
+    }
+    .overlay(alignment: .topLeading) {
+      closeButton.padding(.leading, 8).padding(.top, 8)
+    }
+    .overlay(alignment: .topTrailing) {
+      restoreButton.padding(.trailing, 12).padding(.top, 8)
+    }
+    .overlay(alignment: .bottom) {
+      bottomIslandPanel
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+    }
+    .presentationDetents([.fraction(0.95)])
+    .presentationCornerRadius(28)
+    .presentationDragIndicator(.hidden)
+    .presentationBackground(PaywallPalette.background)
+    .task {
+      await loadOfferings()
+    }
+    .onReceive(timer) { _ in
+      remainingSeconds = EarlyOfferService.remainingSeconds()
+    }
+    .sheet(item: $webViewURL) { wrapper in
+      SafariView(url: wrapper.url)
+    }
+    .alert("お知らせ", isPresented: Binding(get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } })) {
+      Button("OK") {}
+    } message: {
+      Text(alertMessage ?? "")
     }
   }
 
-  private var bottomPanel: some View {
-    VStack(spacing: 10) {
-      HStack(alignment: .lastTextBaseline) {
-        VStack(alignment: .leading, spacing: 2) {
-          Text("Lifetime Access").font(.system(size: 14, weight: .bold))
-          Text("One-time purchase, no subscription").font(.system(size: 10)).foregroundStyle(.secondary)
-        }
-        Spacer()
-        if let priceString = package?.storeProduct.localizedPriceString {
-          Text(priceString).font(.system(size: 18, weight: .heavy))
-        }
-      }
-      .padding(.horizontal, 16)
-      .padding(.vertical, 14)
-      .background(accentPurple.opacity(0.08))
-      .overlay(RoundedRectangle(cornerRadius: 20).stroke(accentPurple, lineWidth: 2))
-      .clipShape(RoundedRectangle(cornerRadius: 20))
+  // MARK: - Background
 
-      Button {
-        Task { await handlePurchase() }
-      } label: {
-        HStack {
-          if isPurchasing {
-            ProgressView().tint(.white)
-          }
-          Text(isPurchasing ? "処理中…" : "購入する")
-            .font(.system(size: 16, weight: .bold))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-      }
-      .background(accentPurple)
-      .foregroundStyle(.white)
-      .clipShape(Capsule())
-      .disabled(isPurchasing || isLoadingOfferings || package == nil)
+  private func backgroundPattern(width: CGFloat) -> some View {
+    let patternSize = max(width * 1.35, 500)
+    let patternStroke = max(width * 0.08, 48)
+    return ZStack {
+      Circle()
+        .stroke(PaywallPalette.patternRing, lineWidth: patternStroke)
+        .frame(width: patternSize, height: patternSize)
+        .offset(x: patternSize * 0.80, y: -patternSize * 0.37)
+      Circle()
+        .stroke(PaywallPalette.patternRing, lineWidth: patternStroke)
+        .frame(width: patternSize * 0.90, height: patternSize * 0.90)
+        .offset(x: patternSize * 0.54, y: -patternSize * 0.56)
     }
-    .padding(16)
-    .background(.regularMaterial)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+    .clipped()
+  }
+
+  // MARK: - Top controls
+
+  private var closeButton: some View {
+    Button {
+      dismiss()
+    } label: {
+      HugeIconView(icon: HugeIcons.cancel01, size: 20, weight: 2.2)
+        .foregroundStyle(PaywallPalette.textDark)
+        .padding(8)
+        .contentShape(Rectangle())
+    }
+  }
+
+  private var restoreButton: some View {
+    Button {
+      Task { await handleRestore() }
+    } label: {
+      Text(isRestoring ? "復元中…" : "購入を復元")
+        .font(.system(size: 12, weight: .bold))
+        .foregroundStyle(PaywallPalette.restoreText)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background {
+          Capsule()
+            .fill(.ultraThinMaterial)
+            .overlay(Capsule().fill(Color.white.opacity(0.58)))
+            .overlay(Capsule().stroke(Color.white.opacity(0.84), lineWidth: 1))
+        }
+    }
+    .disabled(isRestoring)
+  }
+
+  // MARK: - Hero
+
+  private var heroSection: some View {
+    VStack(spacing: 0) {
+      HStack(spacing: 8) {
+        Text("Tickemo")
+          .font(.system(size: 34, weight: .heavy))
+          .foregroundStyle(PaywallPalette.heroTitle)
+          .tracking(0.3)
+        Text("Plus")
+          .font(.system(size: 17, weight: .bold))
+          .foregroundStyle(PaywallPalette.plusText)
+          .padding(.horizontal, 12)
+          .padding(.vertical, 6)
+          .background(PaywallPalette.plusPillBackground)
+          .clipShape(Capsule())
+          .overlay(Capsule().stroke(accentPurple, lineWidth: 1.5))
+      }
+
+      Text("全てのライブにこだわりをプラス。制限なしですべての機能にアクセスしよう")
+        .font(.system(size: 13, weight: .bold))
+        .foregroundStyle(PaywallPalette.heroSubtitle)
+        .multilineTextAlignment(.center)
+        .lineSpacing(7)
+        .padding(.top, 10)
+
+      if isEarlyWindow {
+        Text("限定価格まで残り \(EarlyOfferService.format(remaining: remainingSeconds))")
+          .font(.system(size: 13, weight: .bold))
+          .foregroundStyle(PaywallPalette.earlyCountdown)
+          .padding(.top, 6)
+      }
+    }
+    .padding(.horizontal, 24)
+  }
+
+  // MARK: - Benefits
+
+  private var benefitsSection: some View {
+    VStack(spacing: 16) {
+      ForEach(Array(benefits.enumerated()), id: \.offset) { index, benefit in
+        HStack(alignment: .top, spacing: 12) {
+          HugeIconView(icon: benefit.icon, size: 22, weight: 2.0)
+            .foregroundStyle(index == 2 ? accentPurple : PaywallPalette.featureIconDefault)
+            .frame(width: 34)
+            .padding(.top, 1)
+
+          VStack(alignment: .leading, spacing: 3) {
+            Text(benefit.title)
+              .font(.system(size: 16, weight: .bold))
+              .foregroundStyle(PaywallPalette.featureTitle)
+            Text(benefit.description)
+              .font(.system(size: 12))
+              .foregroundStyle(PaywallPalette.featureDescription)
+              .lineSpacing(5)
+          }
+
+          Spacer(minLength: 0)
+        }
+      }
+    }
+    .padding(.horizontal, 30)
+  }
+
+  // MARK: - Bottom island
+
+  private var bottomIslandPanel: some View {
+    VStack(spacing: 10) {
+      planCard
+      purchaseButton
+      footerLinks
+    }
+    .padding(18)
+    .background {
+      RoundedRectangle(cornerRadius: 38, style: .continuous)
+        .fill(.ultraThinMaterial)
+        .overlay(RoundedRectangle(cornerRadius: 38, style: .continuous).fill(Color.white.opacity(0.72)))
+        .overlay(RoundedRectangle(cornerRadius: 38, style: .continuous).stroke(Color.white.opacity(0.92), lineWidth: 1))
+        .shadow(color: .black.opacity(0.1), radius: 18, x: 0, y: 8)
+    }
+  }
+
+  private var planCard: some View {
+    HStack(alignment: .center) {
+      VStack(alignment: .leading, spacing: 6) {
+        Text("買い切り")
+          .font(.system(size: 15, weight: .bold))
+          .foregroundStyle(PaywallPalette.planTitle)
+        Text("リリース記念価格・サブスクなし")
+          .font(.system(size: 10))
+          .foregroundStyle(PaywallPalette.planSubTitle)
+      }
+
+      Spacer(minLength: 10)
+
+      HStack(alignment: .lastTextBaseline, spacing: 6) {
+        Text(formatJPYFallback(defaultOriginalPriceValue))
+          .font(.system(size: 14, weight: .bold))
+          .foregroundStyle(PaywallPalette.planOriginalPrice)
+          .strikethrough()
+        Text(currentPriceText)
+          .font(.system(size: 20, weight: .heavy))
+          .foregroundStyle(PaywallPalette.planCurrentPrice)
+      }
+    }
+    .padding(.vertical, 17)
+    .padding(.horizontal, 17)
+    .background(PaywallPalette.planCardBackground)
+    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+    .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(accentPurple, lineWidth: 2))
+  }
+
+  private var purchaseButton: some View {
+    Button {
+      Task { await handlePurchase() }
+    } label: {
+      HStack(spacing: 8) {
+        if isPurchasing {
+          ProgressView().tint(.white)
+        }
+        Text(isPurchasing ? "購入処理中..." : "続ける")
+          .font(.system(size: 17, weight: .bold))
+          .foregroundStyle(.white)
+      }
+      .frame(maxWidth: .infinity)
+      .padding(.vertical, 18)
+      .background(accentPurple)
+      .clipShape(Capsule())
+    }
+    .opacity(isPurchasing ? 0.7 : 1)
+    .disabled(isPurchasing || isLoadingOfferings || package == nil)
+  }
+
+  private var footerLinks: some View {
+    HStack(spacing: 8) {
+      Button { webViewURL = PaywallWebViewURL(url: termsURL) } label: {
+        Text("利用規約")
+          .font(.system(size: 10))
+          .foregroundStyle(PaywallPalette.footerText)
+      }
+      Text("・")
+        .font(.system(size: 10))
+        .foregroundStyle(PaywallPalette.footerSeparator)
+      Button { webViewURL = PaywallWebViewURL(url: privacyURL) } label: {
+        Text("プライバシーポリシー")
+          .font(.system(size: 10))
+          .foregroundStyle(PaywallPalette.footerText)
+      }
+    }
+    .padding(.top, 4)
   }
 
   // MARK: - Offerings
@@ -169,7 +361,7 @@ struct PaywallView: View {
         dismiss()
         return
       }
-      alertMessage = "購入処理中です。しばらくしてからご確認ください。"
+      alertMessage = "購入確認を処理中です\nApple側の反映が遅れている可能性があります。数分後に「購入を復元」をお試しください。"
     } catch let error as ErrorCode where error == .purchaseCancelledError {
       return
     } catch let error as ErrorCode where error == .invalidReceiptError {
@@ -178,9 +370,9 @@ struct PaywallView: View {
         dismiss()
         return
       }
-      alertMessage = "購入処理中です。しばらくしてからご確認ください。"
+      alertMessage = "購入確認を処理中です\nApple側の反映が遅れている可能性があります。数分後に「購入を復元」をお試しください。"
     } catch {
-      alertMessage = "購入を完了できませんでした。もう一度お試しください。"
+      alertMessage = "購入処理に失敗しました。時間をおいて再度お試しください。"
     }
   }
 
@@ -202,13 +394,17 @@ struct PaywallView: View {
     do {
       _ = try await PurchasesService.shared.restorePurchases()
       if PurchasesService.shared.isPremium {
-        alertMessage = "購入が復元されました。"
         dismiss()
       } else {
-        alertMessage = "以前の購入が見つかりませんでした。"
+        alertMessage = "購入の復元に失敗しました"
       }
     } catch {
-      alertMessage = "以前の購入が見つかりませんでした。"
+      alertMessage = "購入の復元に失敗しました"
     }
   }
+}
+
+private struct PaywallWebViewURL: Identifiable {
+  let url: URL
+  var id: String { url.absoluteString }
 }
