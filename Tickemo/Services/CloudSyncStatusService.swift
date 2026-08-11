@@ -15,6 +15,37 @@ struct SyncEventSnapshot {
   let type: NSPersistentCloudKitContainer.EventType
   let endDate: Date?
   let succeeded: Bool
+  var startDate: Date?
+  var errorDescription: String?
+}
+
+/// One completed (or in-flight) mirroring event, kept so a failure can be
+/// read after the fact.
+///
+/// `CloudSyncStatusService` deliberately does *not* regress its headline
+/// status on a transient failure, which is right for the UI but means an
+/// export that never succeeds looks identical to one that hasn't happened
+/// yet. Without the error text there is no way to tell "CloudKit is
+/// working" from "every export is being rejected" — the exact ambiguity an
+/// undeployed Production schema creates.
+struct SyncEventLogEntry: Identifiable, Equatable {
+  let id = UUID()
+  let typeLabel: String
+  let startDate: Date?
+  let endDate: Date?
+  let succeeded: Bool
+  let errorDescription: String?
+
+  var isFinished: Bool { endDate != nil }
+
+  static func label(for type: NSPersistentCloudKitContainer.EventType) -> String {
+    switch type {
+    case .setup: "setup"
+    case .import: "import"
+    case .export: "export"
+    @unknown default: "unknown"
+    }
+  }
 }
 
 /// Monitors real CloudKit sync activity via
@@ -35,6 +66,15 @@ final class CloudSyncStatusService {
   private(set) var status: CloudSyncStatus = .notSyncedYet
   private(set) var lastSuccessfulSyncDate: Date?
 
+  /// Most recent first. Bounded — this is a diagnostic aid, not a record
+  /// worth growing without limit.
+  private(set) var recentEvents: [SyncEventLogEntry] = []
+  static let maximumLoggedEvents = 30
+
+  var lastFailure: SyncEventLogEntry? {
+    recentEvents.first { $0.isFinished && !$0.succeeded }
+  }
+
   private var observerToken: NSObjectProtocol?
 
   private init() {
@@ -48,7 +88,15 @@ final class CloudSyncStatusService {
         let event = notification.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey]
           as? NSPersistentCloudKitContainer.Event
       else { return }
-      self.apply(event: SyncEventSnapshot(type: event.type, endDate: event.endDate, succeeded: event.succeeded))
+      self.apply(
+        event: SyncEventSnapshot(
+          type: event.type,
+          endDate: event.endDate,
+          succeeded: event.succeeded,
+          startDate: event.startDate,
+          errorDescription: event.error.map { "\($0)" }
+        )
+      )
     }
   }
 
@@ -62,6 +110,20 @@ final class CloudSyncStatusService {
     let next = Self.reduce(current: (status, lastSuccessfulSyncDate), event: event)
     status = next.status
     lastSuccessfulSyncDate = next.lastSuccess
+
+    recentEvents.insert(
+      SyncEventLogEntry(
+        typeLabel: SyncEventLogEntry.label(for: event.type),
+        startDate: event.startDate,
+        endDate: event.endDate,
+        succeeded: event.succeeded,
+        errorDescription: event.errorDescription
+      ),
+      at: 0
+    )
+    if recentEvents.count > Self.maximumLoggedEvents {
+      recentEvents.removeLast(recentEvents.count - Self.maximumLoggedEvents)
+    }
   }
 
   /// Pure decision logic, exercised directly in

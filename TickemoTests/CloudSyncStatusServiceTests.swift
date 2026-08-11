@@ -36,4 +36,41 @@ final class CloudSyncStatusServiceTests: XCTestCase {
     XCTAssertEqual(result.status, .notSyncedYet)
     XCTAssertNil(result.lastSuccess)
   }
+
+  // MARK: - Event log
+
+  /// A failed export deliberately doesn't regress the headline status, so
+  /// the log is the only place the failure survives. If it didn't, "sync
+  /// works" and "every export is rejected" would look identical.
+  func testFailedEventKeepsStatusButIsStillDistinguishable() {
+    let failure = SyncEventSnapshot(
+      type: .export,
+      endDate: Date(),
+      succeeded: false,
+      startDate: Date(),
+      errorDescription: "schema not deployed"
+    )
+    let result = CloudSyncStatusService.reduce(current: (.synced, nil), event: failure)
+
+    XCTAssertEqual(result.status, .synced, "status should not regress on a transient failure")
+    XCTAssertEqual(failure.errorDescription, "schema not deployed")
+  }
+
+  func testEventLabelsCoverEveryMirroringType() {
+    XCTAssertEqual(SyncEventLogEntry.label(for: .setup), "setup")
+    XCTAssertEqual(SyncEventLogEntry.label(for: .import), "import")
+    XCTAssertEqual(SyncEventLogEntry.label(for: .export), "export")
+  }
+
+  func testUnfinishedEntryIsReportedAsInProgress() {
+    let entry = SyncEventLogEntry(
+      typeLabel: "export",
+      startDate: Date(),
+      endDate: nil,
+      succeeded: false,
+      errorDescription: nil
+    )
+
+    XCTAssertFalse(entry.isFinished)
+  }
 }

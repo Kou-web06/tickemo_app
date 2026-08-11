@@ -1,6 +1,7 @@
 import WidgetKit
 import SwiftUI
 import UIKit
+import os
 
 // lib/widgetLiveData.ts の WidgetLiveData と対応
 struct ArtistInfo: Codable {
@@ -36,16 +37,22 @@ private func targetDate(from live: WidgetLiveData) -> Date? {
   let formatter = DateFormatter()
   formatter.locale = Locale(identifier: "en_US_POSIX")
   formatter.timeZone = jst
-  for fmt in ["yyyy-MM-dd", "yyyy/MM/dd"] {
+  // "yyyy.MM.dd" is RN's persisted spelling, which every migrated record
+  // still carries — see DateFormatting.date(from:) in the app target.
+  var cal = Calendar(identifier: .gregorian)
+  cal.timeZone = jst
+  for fmt in ["yyyy-MM-dd", "yyyy.MM.dd", "yyyy/MM/dd"] {
     formatter.dateFormat = fmt
     if let day = formatter.date(from: live.liveDate) {
-      guard let timeStr = live.liveTime, !timeStr.isEmpty else { return day }
-      let parts = timeStr.split(separator: ":").compactMap { Int($0) }
-      guard let hour = parts.first else { return day }
-      let minute = parts.count > 1 ? parts[1] : 0
-      var cal = Calendar(identifier: .gregorian)
-      cal.timeZone = jst
-      return cal.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+      if let timeStr = live.liveTime, !timeStr.isEmpty {
+        let parts = timeStr.split(separator: ":").compactMap { Int($0) }
+        if let hour = parts.first {
+          let minute = parts.count > 1 ? parts[1] : 0
+          return cal.date(bySettingHour: hour, minute: minute, second: 0, of: day) ?? day
+        }
+      }
+      // 時刻不明の場合は23:59にしておくことで、ライブ当日の終わりまでカウントダウンを維持する
+      return cal.date(bySettingHour: 23, minute: 59, second: 0, of: day) ?? day
     }
   }
   return nil
@@ -69,7 +76,7 @@ private func formattedDate(_ raw: String) -> String {
   let parser = DateFormatter()
   parser.locale = Locale(identifier: "en_US_POSIX")
   parser.timeZone = jst
-  for fmt in ["yyyy-MM-dd", "yyyy/MM/dd"] {
+  for fmt in ["yyyy-MM-dd", "yyyy.MM.dd", "yyyy/MM/dd"] {
     parser.dateFormat = fmt
     if let date = parser.date(from: raw) {
       let display = DateFormatter()
@@ -94,14 +101,30 @@ struct SimpleEntry: TimelineEntry {
 
 // MARK: - Provider
 
+private let widgetLog = Logger(subsystem: "com.anonymous.Tickemo.LiveWidget", category: "WidgetSync")
+
 struct Provider: TimelineProvider {
   func loadData() -> WidgetLiveData? {
-    guard
-      let defaults = UserDefaults(suiteName: appGroup),
-      let json = defaults.string(forKey: dataKey),
-      let data = json.data(using: .utf8)
-    else { return nil }
-    return try? JSONDecoder().decode(WidgetLiveData.self, from: data)
+    guard let defaults = UserDefaults(suiteName: appGroup) else {
+      widgetLog.error("loadData: UserDefaults(suiteName:) returned nil — App Group not accessible")
+      return nil
+    }
+    guard let json = defaults.string(forKey: dataKey) else {
+      widgetLog.warning("loadData: key '\(dataKey)' not found in App Group defaults")
+      return nil
+    }
+    guard let data = json.data(using: .utf8) else {
+      widgetLog.error("loadData: failed to convert JSON string to Data")
+      return nil
+    }
+    do {
+      let result = try JSONDecoder().decode(WidgetLiveData.self, from: data)
+      widgetLog.info("loadData: decoded live '\(result.liveTitle, privacy: .public)' on \(result.liveDate, privacy: .public)")
+      return result
+    } catch {
+      widgetLog.error("loadData: JSON decode failed — \(error.localizedDescription, privacy: .public) | raw: \(json, privacy: .public)")
+      return nil
+    }
   }
 
   func loadCoverImage() -> UIImage? {
@@ -125,9 +148,11 @@ struct Provider: TimelineProvider {
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> Void) {
+    widgetLog.info("getTimeline: called")
     let liveData = loadData()
     let coverImage = loadCoverImage()
     let now = Date()
+    widgetLog.info("getTimeline: liveData=\(liveData?.liveTitle ?? "nil", privacy: .public)")
 
     // 今の表示エントリ
     var entries: [SimpleEntry] = [makeEntry(at: now, liveData: liveData, coverImage: coverImage)]
@@ -156,7 +181,17 @@ struct Provider: TimelineProvider {
     }
 
     let target = liveData.flatMap { targetDate(from: $0) }
-    let policy: TimelineReloadPolicy = target.map { .after($0) } ?? .after(nextMidnight())
+    // `.after(past_date)` causes RBSAssertionErrorDomain Code=2 — the system
+    // can't acquire a process assertion for a deadline already in the past.
+    // If the target has passed, fall back to next midnight so WidgetKit doesn't
+    // spin in a tight retry loop.
+    let policy: TimelineReloadPolicy
+    if let target, target > now {
+      policy = .after(target)
+    } else {
+      policy = .after(nextMidnight())
+    }
+    widgetLog.info("getTimeline: policy=\(target.map { "after \($0)" } ?? "nextMidnight", privacy: .public)")
     completion(Timeline(entries: entries, policy: policy))
   }
 }

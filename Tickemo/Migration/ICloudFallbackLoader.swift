@@ -8,14 +8,31 @@ import Foundation
 struct ICloudFallbackLoader {
   static let containerIdentifier = PersistenceController.cloudKitContainerIdentifier
 
+  static let candidateFilenames = ["tickemo_data.json", "tickemo_kvs.json"]
+
   func loadRawStoreJSON() async -> String? {
     guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: Self.containerIdentifier) else {
       return nil
     }
-    if let dataJSON = await readDownloadedFile(at: containerURL.appendingPathComponent("tickemo_data.json")) {
-      return dataJSON
+    for filename in Self.candidateFilenames {
+      if let json = await readDownloadedFile(at: containerURL.appendingPathComponent(filename)) {
+        return json
+      }
     }
-    return await readDownloadedFile(at: containerURL.appendingPathComponent("tickemo_kvs.json"))
+    return nil
+  }
+
+  /// Whether a sync file is *listed* in the ubiquity container, without
+  /// triggering or waiting on a download. Used as a fast pre-check so a
+  /// brand new user isn't held behind migration UI; `loadRawStoreJSON()`
+  /// remains the authoritative read.
+  func hasCandidateFile() -> Bool {
+    guard let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: Self.containerIdentifier) else {
+      return false
+    }
+    return Self.candidateFilenames.contains {
+      FileManager.default.fileExists(atPath: containerURL.appendingPathComponent($0).path)
+    }
   }
 
   /// Ensures an iCloud file is actually materialized locally before reading

@@ -18,6 +18,9 @@ struct SettingsView: View {
 
   @State private var showingProfileEdit = false
   @State private var showingDeleteConfirmation = false
+  @State private var showingLegacyReimportConfirmation = false
+  @State private var legacyReimportResult: String?
+  @State private var isReimportingLegacy = false
   @State private var showingMusicProvider = false
   @State private var showingLanguage = false
   @State private var showingICloudSync = false
@@ -110,6 +113,26 @@ struct SettingsView: View {
       Button("キャンセル", role: .cancel) {}
     } message: {
       Text("すべての記録と設定が削除されます。この操作は取り消せません。")
+    }
+    .alert("以前のデータを取り込みますか？", isPresented: $showingLegacyReimportConfirmation) {
+      Button("取り込む") { reimportLegacyData() }
+      Button("キャンセル", role: .cancel) {}
+    } message: {
+      // Not destructive, and worth saying so plainly: the importer only
+      // adds rows it can't already find, so a user who taps this out of
+      // worry can't make their situation worse.
+      Text("旧バージョンのアプリに残っている記録のうち、まだ取り込まれていないものだけを追加します。今ある記録が変更・削除されることはありません。")
+    }
+    .alert(
+      "取り込み結果",
+      isPresented: Binding(
+        get: { legacyReimportResult != nil },
+        set: { if !$0 { legacyReimportResult = nil } }
+      )
+    ) {
+      Button("OK", role: .cancel) { legacyReimportResult = nil }
+    } message: {
+      Text(legacyReimportResult ?? "")
     }
     #if DEBUG
     .sheet(isPresented: $showingDebugSheet) {
@@ -275,6 +298,11 @@ struct SettingsView: View {
         Row(id: "feedback", label: "フィードバック"),
       ]),
       RowSection(id: "account", title: "アカウント", rows: [
+        Row(
+          id: "reimport-legacy",
+          label: "以前のバージョンのデータを取り込む",
+          value: isReimportingLegacy ? "実行中…" : nil
+        ),
         Row(id: "delete", label: "データをすべて削除", destructive: true),
       ]),
     ]
@@ -402,6 +430,8 @@ struct SettingsView: View {
       settingsIcon("question", color: palette.iconColor)
     case "feedback":
       settingsIcon("email", color: palette.iconColor)
+    case "reimport-legacy":
+      settingsIcon("Download", color: palette.iconColor)
     case "delete":
       settingsIcon("Confounded", color: palette.destructiveText)
     default:
@@ -433,7 +463,7 @@ struct SettingsView: View {
   @ViewBuilder
   private func rowIcon(_ id: String) -> some View {
     switch id {
-    case "faq", "icloud-sync", "music-provider", "language", "debug-tools":
+    case "faq", "icloud-sync", "music-provider", "language", "debug-tools", "reimport-legacy":
       HugeIconView(icon: HugeIcons.arrowRight01, size: 15)
         .foregroundStyle(palette.iconColor)
     default:
@@ -449,6 +479,9 @@ struct SettingsView: View {
     case "language": showingLanguage = true
     case "faq": showingFAQ = true
     case "delete": showingDeleteConfirmation = true
+    case "reimport-legacy":
+      guard !isReimportingLegacy else { return }
+      showingLegacyReimportConfirmation = true
     case "review": requestReview()
     case "share-app": showingShareSheet = true
     case "feedback": openURL(feedbackURL)
@@ -480,6 +513,27 @@ struct SettingsView: View {
 
   private var appVersionText: String {
     Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-"
+  }
+
+  private func reimportLegacyData() {
+    isReimportingLegacy = true
+    Task {
+      let summary = await MigrationCoordinator.shared.runManualImport()
+      isReimportingLegacy = false
+
+      if let error = summary.error {
+        legacyReimportResult = "取り込みに失敗しました。\n\(error)"
+      } else if summary.source == "none" {
+        legacyReimportResult = "取り込めるデータは見つかりませんでした。"
+      } else if summary.importedAnything {
+        legacyReimportResult = """
+        \(summary.recordCount)件の記録を追加しました。
+        セットリスト: \(summary.setlistItemCount)件 / 画像: \(summary.imageCount)件
+        """
+      } else {
+        legacyReimportResult = "すでにすべて取り込み済みでした。追加された記録はありません。"
+      }
+    }
   }
 
   private func deleteAllData() {

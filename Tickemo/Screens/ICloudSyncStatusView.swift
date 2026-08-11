@@ -24,14 +24,14 @@ struct ICloudSyncStatusView: View {
       VStack(alignment: .leading, spacing: 0) {
         statusCard
 
-        Text("iCloud sync is enabled, and your ticket/live records are kept up to date across all devices.")
+        Text("iCloud同期が有効になっています。チケット・ライブの記録はすべてのデバイス間で自動的に同期されます。")
           .font(.system(size: 14))
           .lineSpacing(6)
           .foregroundStyle(palette.descriptionText)
           .padding(.horizontal, 20)
           .padding(.bottom, 24)
 
-        Text("Last sync: \(lastSyncText)")
+        Text("最終同期: \(lastSyncText)")
           .font(.system(size: 13, weight: .medium))
           .foregroundStyle(palette.syncTimeText)
           .padding(.horizontal, 20)
@@ -109,9 +109,9 @@ struct ICloudSyncStatusView: View {
 
   private var statusText: String {
     switch syncService.status {
-    case .notSyncedYet: "Not synced yet"
-    case .syncing: "Syncing…"
-    case .synced: "Synced"
+    case .notSyncedYet: "未同期"
+    case .syncing: "同期中…"
+    case .synced: "同期済み"
     }
   }
 
@@ -123,7 +123,7 @@ struct ICloudSyncStatusView: View {
   }
 
   private var lastSyncText: String {
-    guard let date = syncService.lastSuccessfulSyncDate else { return "Not synced" }
+    guard let date = syncService.lastSuccessfulSyncDate else { return "未同期" }
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy/MM/dd HH:mm"
     return formatter.string(from: date)
@@ -138,10 +138,10 @@ struct ICloudSyncStatusView: View {
       HStack(spacing: 10) {
         if isManualSyncing || syncService.status == .syncing {
           ProgressView().tint(palette.indicatorColor)
-          Text("Syncing…")
+          Text("同期中…")
         } else {
           HugeIconView(icon: HugeIcons.cloudUpload, size: 16)
-          Text("Sync now")
+          Text("今すぐ同期")
         }
       }
       .font(.system(size: 15, weight: .semibold))

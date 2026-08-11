@@ -55,6 +55,32 @@ enum NextLiveCardData {
     return cal
   }()
 
+  /// Selects the soonest record that hasn't finished *its day* yet, ordered
+  /// by countdown target. Returns nil when every record is in the past —
+  /// intended for the widget, where showing a long-gone live makes no sense.
+  ///
+  /// The cutoff is end-of-day rather than `instant(for:) > now` on purpose.
+  /// Filtering on the instant makes the widget go blank the moment the live
+  /// starts, which is exactly when the user is most likely to look at it,
+  /// and it leaves the widget's own "see you next live !!" state
+  /// unreachable — `CountdownView` renders that for `remaining <= 0`, which
+  /// can only happen if a record whose instant has passed is still
+  /// selected. Keeping the live until midnight JST makes both behave.
+  // Selects the soonest upcoming record for the widget.
+  // Uses the same date >= today (JST) comparison as nextLiveRecord,
+  // sorted by countdown target so same-day lives order by showtime.
+  // Returns nil when every record is in the past (widget shows empty state).
+  static func nextUpcomingRecord(from records: [CD_ChekiRecord], now: Date = Date()) -> CD_ChekiRecord? {
+    let today = jstCalendar.startOfDay(for: now)
+    return records
+      .compactMap { record -> (record: CD_ChekiRecord, date: Date, countdownTarget: Date)? in
+        guard let date = DateFormatting.date(from: record.date), date >= today else { return nil }
+        return (record, date, instant(for: record) ?? date)
+      }
+      .min(by: { $0.countdownTarget < $1.countdownTarget })?
+      .record
+  }
+
   static func isPast(_ record: CD_ChekiRecord, now: Date = Date()) -> Bool {
     guard let instant = instant(for: record) else { return false }
     return instant.timeIntervalSince(now) <= 0

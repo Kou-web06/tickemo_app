@@ -26,6 +26,23 @@ enum DateFormatting {
     return formatter
   }()
 
+  /// RN's persisted spelling — see `date(from:)`.
+  private static let dottedDateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = timeZone
+    formatter.dateFormat = "yyyy.MM.dd"
+    return formatter
+  }()
+
+  private static let slashedDateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = timeZone
+    formatter.dateFormat = "yyyy/MM/dd"
+    return formatter
+  }()
+
   private static let timeFormatter: DateFormatter = {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -40,9 +57,32 @@ enum DateFormatting {
     return formatter
   }()
 
+  /// `ISO8601DateFormatter` is all-or-nothing about fractional seconds, and
+  /// legacy `createdAt` values aren't uniformly one or the other (RN wrote
+  /// most of them with `toISOString()`, but a few code paths didn't). Kept
+  /// as a second attempt rather than replacing the primary formatter so the
+  /// common case stays a single parse.
+  private static let isoFormatterWithoutFractionalSeconds: ISO8601DateFormatter = {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime]
+    return formatter
+  }()
+
+  /// Accepts the dotted and slashed spellings as well as the canonical
+  /// `yyyy-MM-dd`.
+  ///
+  /// This is not defensive padding: RN stored every date as `2025.01.12`
+  /// (`RecordsContext.tsx`'s `normalizeDateFormat` rewrites `-` to `.` on
+  /// both the read and write paths), so *all* migrated records arrive in
+  /// the dotted form. It happens to parse today only because ICU tolerates
+  /// a mismatched literal separator — undocumented behaviour that would
+  /// take every date-dependent screen down with it if it ever tightened.
+  /// Listing the formats explicitly makes the support deliberate.
   static func date(from string: String?) -> Date? {
     guard let string, !string.isEmpty else { return nil }
     return dateFormatter.date(from: string)
+      ?? dottedDateFormatter.date(from: string)
+      ?? slashedDateFormatter.date(from: string)
   }
 
   static func string(from date: Date) -> String {
@@ -70,6 +110,7 @@ enum DateFormatting {
   static func isoDate(from string: String?) -> Date? {
     guard let string, !string.isEmpty else { return nil }
     return isoFormatter.date(from: string)
+      ?? isoFormatterWithoutFractionalSeconds.date(from: string)
   }
 
   /// Shared UTC-anchored calendar for extracting components (year/month/
