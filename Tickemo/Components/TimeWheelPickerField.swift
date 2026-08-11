@@ -34,14 +34,14 @@ struct TimeWheelPickerField: View {
     .sheet(isPresented: $isPresented) {
       NavigationStack {
         HStack(spacing: 0) {
-          Picker("Hour", selection: $draftHour) {
+          Picker("時", selection: $draftHour) {
             ForEach(0..<24, id: \.self) { hour in
               Text(String(format: "%02d", hour)).tag(hour)
             }
           }
           .pickerStyle(.wheel)
 
-          Picker("Minute", selection: $draftMinute) {
+          Picker("分", selection: $draftMinute) {
             ForEach(Self.minuteOptions, id: \.self) { minute in
               Text(String(format: "%02d", minute)).tag(minute)
             }

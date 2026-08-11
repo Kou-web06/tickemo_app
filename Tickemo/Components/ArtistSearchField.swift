@@ -58,14 +58,14 @@ struct ArtistSearchField: View {
       HugeIconView(icon: HugeIcons.alert01, size: 17)
         .foregroundStyle(.orange)
       VStack(alignment: .leading, spacing: 2) {
-        Text("Apple Music access is off")
+        Text("Apple Musicへのアクセスがオフです")
           .font(.system(size: 13, weight: .semibold))
-        Text("Turn it on in Settings to search for artist photos.")
+        Text("アーティスト写真を検索するには設定でオンにしてください。")
           .font(.system(size: 12))
           .foregroundStyle(.secondary)
       }
       Spacer(minLength: 8)
-      Button("Settings") {
+      Button("設定を開く") {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
       }
@@ -99,7 +99,7 @@ struct ArtistSearchField: View {
     HStack(spacing: 8) {
       HugeIconView(icon: HugeIcons.search01, size: 18)
         .foregroundStyle(Color(white: 0.6))
-      TextField("Search artist", text: $searchTerm)
+      TextField("アーティストを検索", text: $searchTerm)
         .textInputAutocapitalization(.words)
         .autocorrectionDisabled()
         .onChange(of: searchTerm) { _, newValue in

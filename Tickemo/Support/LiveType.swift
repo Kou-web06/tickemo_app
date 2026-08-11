@@ -15,12 +15,12 @@ enum LiveType: String, CaseIterable, Identifiable {
 
   var label: String {
     switch self {
-    case .oneMan: "One-man"
-    case .twoMan: "Two-man"
-    case .festival: "Festival"
-    case .fcOnly: "FC Only"
-    case .streaming: "Streaming"
-    case .sports: "Sports"
+    case .oneMan: "ワンマン"
+    case .twoMan: "対バン"
+    case .festival: "フェス"
+    case .fcOnly: "FC限定"
+    case .streaming: "配信"
+    case .sports: "スポーツ観戦"
     }
   }
 

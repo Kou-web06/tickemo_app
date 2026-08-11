@@ -134,22 +134,22 @@ struct RecordFormView: View {
 
   private var venuePlaceholder: String {
     switch liveType {
-    case .streaming: "Platform / URL"
-    case .sports: "Stadium / Arena"
-    default: "Venue name"
+    case .streaming: "プラットフォーム / URL"
+    case .sports: "スタジアム / アリーナ"
+    default: "会場名"
     }
   }
 
   private var coverImageSectionTitle: String {
-    isSportsLive ? "Player / Team Photo" : "Cover Image"
+    isSportsLive ? "選手 / 球団の写真" : "カバーアート（表紙）"
   }
 
   var body: some View {
     NavigationStack {
       Form {
         Section {
-          TextField("Live name", text: $liveName)
-          Picker("Live type", selection: $liveType) {
+          TextField("ライブ名", text: $liveName)
+          Picker("ライブの種類", selection: $liveType) {
             ForEach(LiveType.allCases) { type in
               Label {
                 Text(type.label)
@@ -169,16 +169,16 @@ struct RecordFormView: View {
               gamePhotosData = []
             }
           }
-          DatePicker("Date", selection: $date, displayedComponents: .date)
+          DatePicker("日付", selection: $date, displayedComponents: .date)
         }
 
         Section {
           TextField(venuePlaceholder, text: $venue)
-          TextField("Seat (optional)", text: $seat)
+          TextField("座席（任意）", text: $seat)
         }
 
-        Section("Ticket Price") {
-          TextField("Price", text: $ticketPriceText)
+        Section("チケット料金") {
+          TextField("金額", text: $ticketPriceText)
             .keyboardType(.numberPad)
           ScrollView(.horizontal, showsIndicators: false) {
             HStack {
@@ -190,17 +190,17 @@ struct RecordFormView: View {
           }
         }
 
-        Section("Time") {
-          TimeWheelPickerField(label: "Doors open", value: $startTime)
-          TimeWheelPickerField(label: "Show start", value: $endTime)
+        Section("時間") {
+          TimeWheelPickerField(label: "開場", value: $startTime)
+          TimeWheelPickerField(label: "開演", value: $endTime)
         }
 
-        Section("Artist") {
+        Section("アーティスト") {
           artistSection
         }
 
         if !isSportsLive && !isMultiArtistLive {
-          Section("Setlist") {
+          Section("セットリスト") {
             SetlistDraftEditorView(
               items: $setlistItems,
               showsOcrButton: true,
@@ -213,31 +213,31 @@ struct RecordFormView: View {
 
         Section(coverImageSectionTitle) {
           coverImagePreview
-          PhotosPicker("Choose Photo", selection: $selectedPhotoItem, matching: .images)
+          PhotosPicker("写真を選択", selection: $selectedPhotoItem, matching: .images)
           if coverImageData != nil {
-            Button("Remove Photo", role: .destructive) { coverImageData = nil }
+            Button("写真を削除", role: .destructive) { coverImageData = nil }
           }
         }
 
         if isSportsLive {
-          Section("Game Photos") {
+          Section("観戦写真") {
             gamePhotosGrid
           }
         }
 
         Section {
-          TextField("Memo", text: $memo, axis: .vertical)
+          TextField("感想", text: $memo, axis: .vertical)
             .lineLimit(3...8)
         }
 
-        Section("URL") {
+        Section("QRコード") {
           TextField("https://...", text: $qrCode)
             .keyboardType(.URL)
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
         }
       }
-      .navigationTitle(record == nil ? "Add Ticket" : "Edit Ticket")
+      .navigationTitle(record == nil ? "チケットを追加" : "チケットを編集")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
@@ -246,7 +246,7 @@ struct RecordFormView: View {
           }
         }
         ToolbarItem(placement: .confirmationAction) {
-          Button("Save") { save() }
+          Button("保存") { save() }
             .disabled(!isValid)
         }
       }
@@ -291,12 +291,12 @@ struct RecordFormView: View {
   @ViewBuilder
   private var artistSection: some View {
     if isSportsLive {
-      TextField("Player / Team", text: artistNameBinding(0))
+      TextField("選手 / チーム", text: artistNameBinding(0))
     } else if isMultiArtistLive {
       ForEach(Array(artistEntries.enumerated()), id: \.element.id) { index, _ in
         VStack(alignment: .leading, spacing: 8) {
           HStack {
-            Text("Artist \(index + 1)")
+            Text("アーティスト\(index + 1)")
               .font(.system(size: 12, weight: .semibold))
               .foregroundStyle(.secondary)
             Spacer()
@@ -322,7 +322,7 @@ struct RecordFormView: View {
       Button {
         artistEntries.append(ArtistEntry(name: "", imageUrl: nil))
       } label: {
-        HugeIconLabel(icon: HugeIcons.add01) { Text("Add artist") }
+        HugeIconLabel(icon: HugeIcons.add01) { Text("アーティストを追加") }
       }
     } else {
       ArtistSearchField(name: artistNameBinding(0), imageUrl: artistImageUrlBinding(0))

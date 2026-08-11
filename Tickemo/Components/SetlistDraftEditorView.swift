@@ -85,7 +85,7 @@ struct SetlistDraftEditorView: View {
   private var searchSection: some View {
     VStack(alignment: .leading, spacing: 8) {
       HStack {
-        TextField("Search a song", text: $searchText)
+        TextField("曲名を検索", text: $searchText)
           .textFieldStyle(.roundedBorder)
 
         if showsOcrButton {
@@ -119,8 +119,8 @@ struct SetlistDraftEditorView: View {
         }
 
         Menu {
-          Button("Add Encore") { addEncore() }
-          Button("Add MC") { addMC() }
+          Button("📣 アンコール区切りを追加") { addEncore() }
+          Button("🎙️ MC / トークを追加") { addMC() }
         } label: {
           HugeIconView(icon: HugeIcons.plusSignCircle, size: 22)
         }
@@ -349,7 +349,7 @@ struct SetlistDraftEditorView: View {
     HStack(spacing: 10) {
       HugeIconView(icon: HugeIcons.mic01, size: 17)
         .foregroundStyle(Color(white: 0.5))
-      TextField("MC talk", text: item.title)
+      TextField("MCの内容を入力", text: item.title)
     }
   }
 }
