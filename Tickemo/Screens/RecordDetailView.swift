@@ -25,7 +25,6 @@ struct RecordDetailView: View {
   @State private var showingDeleteConfirmation = false
   @State private var showingSetlistEditor = false
   @State private var showingShareSheet = false
-  @State private var fallbackItem: CD_SetlistItem?
 
   private let appleMusicService = AppleMusicService()
   @State private var nowPlayingSongId: String?
@@ -120,6 +119,7 @@ struct RecordDetailView: View {
       // 独立したボタンとして並ぶよう個別の ToolbarItem に分ける
       ToolbarItem(placement: .topBarTrailing) {
         Button {
+          HapticsPreferenceService.shared.impact(.light)
           showingShareSheet = true
         } label: {
           toolbarIcon("Share", color: .black)
@@ -127,6 +127,7 @@ struct RecordDetailView: View {
       }
       ToolbarItem(placement: .topBarTrailing) {
         Button {
+          HapticsPreferenceService.shared.impact(.light)
           showingEditSheet = true
         } label: {
           toolbarIcon("Edit", color: .black)
@@ -134,6 +135,7 @@ struct RecordDetailView: View {
       }
       ToolbarItem(placement: .topBarTrailing) {
         Button(role: .destructive) {
+          HapticsPreferenceService.shared.impact(.light)
           showingDeleteConfirmation = true
         } label: {
           toolbarIcon("Confounded", color: .red)
@@ -154,17 +156,6 @@ struct RecordDetailView: View {
       Button("キャンセル", role: .cancel) {}
     } message: {
       Text("この操作は元に戻せません。")
-    }
-    .confirmationDialog(
-      "アプリ内で再生できません",
-      isPresented: Binding(get: { fallbackItem != nil }, set: { if !$0 { fallbackItem = nil } }),
-      presenting: fallbackItem
-    ) { item in
-      Button("Spotifyで開く") { openInSpotify(item) }
-      Button("Apple Musicで開く") { openInAppleMusic(item) }
-      Button("キャンセル", role: .cancel) {}
-    } message: { item in
-      Text(item.songName ?? "この曲")
     }
   }
 
@@ -447,11 +438,13 @@ struct RecordDetailView: View {
     }
   }
 
-  /// Tries real in-app playback first; falls back to the same external
-  /// Spotify/Apple Music links TicketDetail.tsx always used when playback
-  /// isn't possible (no subscription, unauthorized, song not found, etc.).
+  /// Tries real in-app playback first; falls back to opening the same
+  /// search query in the user's Settings-saved provider (no per-tap "which
+  /// provider?" prompt) when playback isn't possible (no subscription,
+  /// unauthorized, song not found, etc.).
   private func togglePlay(_ item: CD_SetlistItem) {
     guard let songId = item.songId, !songId.isEmpty else { return }
+    HapticsPreferenceService.shared.impact(.light)
 
     if nowPlayingSongId == songId {
       appleMusicService.pause()
@@ -465,7 +458,7 @@ struct RecordDetailView: View {
 
       if !appleMusicService.isAuthorized() {
         guard await appleMusicService.authorize() else {
-          fallbackItem = item
+          openExternally(item)
           return
         }
       }
@@ -475,36 +468,20 @@ struct RecordDetailView: View {
         nowPlayingSongId = songId
       } catch {
         nowPlayingSongId = nil
-        fallbackItem = item
+        openExternally(item)
       }
     }
   }
 
   // MARK: - External fallback (ports TicketDetail.tsx's openSpotifySearch /
-  // Apple Music web-search fallback)
+  // Apple Music web-search fallback, opened directly in the saved provider)
 
   private func searchQuery(for item: CD_SetlistItem) -> String {
     "\(item.songName ?? "") \(item.artistName ?? "")".trimmingCharacters(in: .whitespaces)
   }
 
-  private func openInSpotify(_ item: CD_SetlistItem) {
-    let query = searchQuery(for: item)
-    guard !query.isEmpty, let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else { return }
-
-    if let deepLink = URL(string: "spotify:search:\(encoded)"), UIApplication.shared.canOpenURL(deepLink) {
-      UIApplication.shared.open(deepLink)
-    } else if let webURL = URL(string: "https://open.spotify.com/search/\(encoded)") {
-      UIApplication.shared.open(webURL)
-    }
-  }
-
-  private func openInAppleMusic(_ item: CD_SetlistItem) {
-    let query = searchQuery(for: item)
-    guard !query.isEmpty,
-          let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-          let url = URL(string: "https://music.apple.com/search?term=\(encoded)")
-    else { return }
-    UIApplication.shared.open(url)
+  private func openExternally(_ item: CD_SetlistItem) {
+    MusicProviderPreferenceStore.load().open(query: searchQuery(for: item))
   }
 
   // MARK: - Memo
@@ -538,6 +515,7 @@ struct RecordDetailView: View {
   }
 
   private func deleteRecord() {
+    HapticsPreferenceService.shared.notify(.warning)
     viewContext.delete(record)
     try? viewContext.save()
     dismiss()
