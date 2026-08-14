@@ -4,6 +4,7 @@ private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 
 struct ContentView: View {
   @State private var selectedTab = 0
+  @Environment(\.openURL) private var openURL
 
   var body: some View {
     // Bound inside `body` rather than stored: `MigrationCoordinator` is
@@ -18,6 +19,15 @@ struct ContentView: View {
         }
       }
       .animation(.easeInOut(duration: 0.2), value: migration.isBusy)
+      // `initial: true` so a cold launch via the shortcut (flag already set
+      // before this view exists) is handled too, not just warm/background
+      // taps that flip the flag while the view is already on screen.
+      .onChange(of: ShortcutItemService.shared.pendingFeedbackRequest, initial: true) { _, isPending in
+        guard isPending else { return }
+        selectedTab = 3
+        openURL(feedbackURL)
+        ShortcutItemService.shared.clearPendingFeedbackRequest()
+      }
   }
 
   private var tabs: some View {

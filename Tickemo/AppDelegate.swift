@@ -1,7 +1,43 @@
 import SwiftUI
+import UIKit
+
+final class TickemoAppDelegate: NSObject, UIApplicationDelegate {
+  func application(
+    _ application: UIApplication,
+    configurationForConnecting connectingSceneSession: UISceneSession,
+    options: UIScene.ConnectionOptions
+  ) -> UISceneConfiguration {
+    let configuration = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+    configuration.delegateClass = TickemoSceneDelegate.self
+    return configuration
+  }
+}
+
+/// Only the UIKit scene delegate receives `UIApplicationShortcutItem` taps
+/// (cold launch via `willConnectTo`, warm/background via
+/// `performActionFor`); SwiftUI's `App` protocol has no equivalent hook, so
+/// this forwards both into `ShortcutItemService` for `ContentView` to react to.
+final class TickemoSceneDelegate: NSObject, UIWindowSceneDelegate {
+  func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+    if let shortcutItem = connectionOptions.shortcutItem {
+      ShortcutItemService.shared.handle(shortcutItem)
+    }
+  }
+
+  func windowScene(
+    _ windowScene: UIWindowScene,
+    performActionFor shortcutItem: UIApplicationShortcutItem,
+    completionHandler: @escaping (Bool) -> Void
+  ) {
+    ShortcutItemService.shared.handle(shortcutItem)
+    completionHandler(true)
+  }
+}
 
 @main
 struct TickemoApp: App {
+  @UIApplicationDelegateAdaptor(TickemoAppDelegate.self) private var appDelegate
+
   init() {
     Task { await PurchasesService.shared.configure() }
     // 起動直後から CloudKit の eventChangedNotification を受け取るために
