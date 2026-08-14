@@ -60,6 +60,16 @@ final class AppleMusicService {
     let id: String
     let name: String
     let imageUrl: String
+    // ArtistDetailView's genre stat column + editorial-notes section.
+    // MusicKit's Artist type has no formation-year field, so that's not
+    // sourced here.
+    let genreNames: [String]
+    let editorialNotes: EditorialNotes?
+
+    struct EditorialNotes {
+      let standard: String?
+      let short: String?
+    }
   }
 
   struct SongResult {
@@ -107,7 +117,14 @@ final class AppleMusicService {
     struct Attributes: Decodable {
       var name: String
       var artwork: AMArtwork?
+      var genreNames: [String]?
+      var editorialNotes: AMEditorialNotes?
     }
+  }
+
+  private struct AMEditorialNotes: Decodable {
+    var standard: String?
+    var short: String?
   }
 
   private struct AMSong: Decodable {
@@ -216,6 +233,14 @@ final class AppleMusicService {
     return url
   }
 
+  // ArtistDetailView's genre + editorial-notes lookup. Shares searchArtists'
+  // cache/in-flight de-dup, so this costs no extra network call when
+  // bestMatchArtistImageUrl already ran for the same name.
+  func bestMatchArtist(for name: String) async -> ArtistResult? {
+    let results = (try? await searchArtists(term: name, limit: 1)) ?? []
+    return results.first
+  }
+
   func searchArtists(term: String, limit: Int = 10) async throws -> [ArtistResult] {
     guard !term.isEmpty else { return [] }
     await ensureAuthorized()
@@ -235,7 +260,11 @@ final class AppleMusicService {
         return ArtistResult(
           id: item.id,
           name: attrs.name,
-          imageUrl: attrs.artwork?.url ?? ""
+          imageUrl: attrs.artwork?.url ?? "",
+          genreNames: attrs.genreNames ?? [],
+          editorialNotes: attrs.editorialNotes.map {
+            ArtistResult.EditorialNotes(standard: $0.standard, short: $0.short)
+          }
         )
       } ?? []
     }

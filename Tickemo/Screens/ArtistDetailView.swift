@@ -14,6 +14,12 @@ struct ArtistDetailView: View {
   @State private var backfillImageUrl: String?
   private let appleMusicService = AppleMusicService()
 
+  // Genre stat column + editorial-notes section, both from the same
+  // MusicKit catalog artist lookup (independent of the hero-image backfill
+  // above, which only runs when no record has a saved photo).
+  @State private var artistGenre: String?
+  @State private var editorialNote: String?
+
   // RecordDetailView と同じ動的カラー背景。ヒーロー画像はリモート URL なので
   // ダウンロード完了後に抽出する（AsyncImage と同じ URLCache に乗るため
   // 画像の二重取得にはならない）。
@@ -58,6 +64,10 @@ struct ArtistDetailView: View {
           .padding(.horizontal, 22)
           .padding(.top, 24)
 
+        editorialNoteSection
+          .padding(.horizontal, 22)
+          .padding(.top, 16)
+
         yearGroupedList
           .padding(.horizontal, 22)
           .padding(.top, 28)
@@ -83,6 +93,16 @@ struct ArtistDetailView: View {
       // 800px はグリッドタイル・Report 行と同じ解像度。URL 文字列が一致する
       // ことで DominantColorCache の先読み結果（URL キー）がここでも当たる
       backfillImageUrl = AppleMusicService.resolvedArtworkURL(url, size: 800)
+    }
+    .task(id: artistName) {
+      guard let details = await appleMusicService.bestMatchArtist(for: artistName) else { return }
+      artistGenre = details.genreNames.first
+      // 優先度は standard → short
+      if let standard = details.editorialNotes?.standard, !standard.isEmpty {
+        editorialNote = standard
+      } else if let short = details.editorialNotes?.short, !short.isEmpty {
+        editorialNote = short
+      }
     }
     .onAppear {
       // .task より先（初回描画前）に同期でキャッシュを引き、入口で先読み済み
@@ -204,13 +224,18 @@ struct ArtistDetailView: View {
 
   // MARK: - Stats
 
+  // 項目数が増えて画面幅をはみ出す場合があるため、Spacer で均等割りしていた
+  // 従来のレイアウトから、左揃え固定間隔 + 横スクロールに変更
   private var statsRow: some View {
-    HStack {
-      statColumn(label: "LIVE", value: "\(records.count)")
-      Spacer()
-      statColumn(label: "FIRST", value: firstShowText)
-      Spacer()
-      statColumn(label: "SPENT", value: spentText)
+    ScrollView(.horizontal, showsIndicators: false) {
+      HStack(alignment: .top, spacing: 28) {
+        statColumn(label: "LIVE", value: "\(records.count)")
+        statColumn(label: "FIRST", value: firstShowText)
+        statColumn(label: "SPENT", value: spentText)
+        if let genre = artistGenre {
+          statColumn(label: "GENRE", value: genre)
+        }
+      }
     }
   }
 
@@ -235,6 +260,18 @@ struct ArtistDetailView: View {
   private var spentText: String {
     let total = pastRecords.reduce(0.0) { $0 + $1.ticketPrice }
     return total.formatted(.currency(code: "JPY").precision(.fractionLength(0)))
+  }
+
+  // MARK: - Editorial notes
+
+  @ViewBuilder
+  private var editorialNoteSection: some View {
+    if let note = editorialNote {
+      Text(note)
+        .font(.system(size: 13))
+        .foregroundStyle(secondaryTextColor)
+        .fixedSize(horizontal: false, vertical: true)
+    }
   }
 
   // MARK: - Year-grouped list
