@@ -19,67 +19,53 @@ struct MusicProviderPickerView: View {
   private var palette: SettingsPalette { SettingsPalette(isDarkMode: isDarkMode) }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 0) {
-        Text("Preferred service for links")
-          .font(.system(size: 14, weight: .medium))
-          .foregroundStyle(palette.tertiaryText)
-          .padding(.leading, 8)
-          .padding(.bottom, 10)
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          Text("デフォルトで開くアプリ")
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(palette.tertiaryText)
+            .padding(.leading, 8)
+            .padding(.bottom, 10)
 
-        VStack(spacing: 0) {
-          optionRow(title: "Apple Music", tint: Color(hex: "#FA243C"), value: .apple)
-          Rectangle().fill(palette.rowBorder).frame(height: 0.5)
-          optionRow(title: "Spotify", tint: Color(hex: "#1DB954"), value: .spotify)
+          VStack(spacing: 0) {
+            optionRow(title: "Apple Music", tint: Color(hex: "#FA243C"), value: .apple)
+            Rectangle().fill(palette.rowBorder).frame(height: 0.5)
+            optionRow(title: "Spotify", tint: Color(hex: "#1DB954"), value: .spotify)
+          }
+          .background(palette.cardBackground)
+          .clipShape(RoundedRectangle(cornerRadius: 20))
+          .shadow(color: palette.sectionShadow.opacity(0.16), radius: 8, x: 0, y: 2)
+
+          Text("選択されたアプリは、楽曲のリンクやアーティストページの移動に使用されます。")
+            .font(.system(size: 12))
+            .lineSpacing(4)
+            .foregroundStyle(palette.secondaryText)
+            .padding(.top, 14)
+            .padding(.horizontal, 8)
         }
-        .background(palette.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: palette.sectionShadow.opacity(0.16), radius: 8, x: 0, y: 2)
-
-        Text("The selected service is used for song links and artist page navigation.")
-          .font(.system(size: 12))
-          .lineSpacing(4)
-          .foregroundStyle(palette.secondaryText)
-          .padding(.top, 14)
-          .padding(.horizontal, 8)
+        .padding(.horizontal, 20)
+        .padding(.top, 24)
+        .padding(.bottom, 36)
       }
-      .padding(.horizontal, 20)
-      .padding(.top, 24)
-      .padding(.bottom, 36)
-    }
-    .background(palette.screenBackground.ignoresSafeArea())
-    .safeAreaInset(edge: .top, spacing: 0) { header }
-  }
-
-  private var header: some View {
-    ZStack {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          HugeIconView(icon: HugeIcons.arrowLeft01, size: 22, weight: 2)
-            .foregroundStyle(palette.primaryText)
-            .frame(width: 44, height: 44)
+      .background(palette.screenBackground.ignoresSafeArea())
+      .navigationTitle("音楽プロバイダー")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            HugeIconView(icon: HugeIcons.arrowLeft01, size: 20, weight: 2)
+          }
         }
-        Spacer()
-        Color.clear.frame(width: 44, height: 44)
       }
-      Text("Music Provider")
-        .font(.system(size: 18, weight: .bold))
-        .foregroundStyle(palette.titleText)
     }
-    .padding(.horizontal, 12)
-    .padding(.top, 10)
-    .padding(.bottom, 16)
-    .background(
-      ZStack {
-        BlurEffectView(style: isDarkMode ? .systemMaterialDark : .systemMaterialLight)
-        palette.headerBackground
-      }
-    )
-    .overlay(alignment: .bottom) {
-      Rectangle().fill(palette.headerBorder).frame(height: 1)
-    }
+    // Two rows and a caption — showing this at full sheet height leaves a
+    // huge dead area below, so it gets its own tight-fitting detent instead
+    // of the default full-height sheet.
+    .presentationDetents([.height(360), .medium])
+    .presentationDragIndicator(.visible)
   }
 
   private func optionRow(title: String, tint: Color, value: MusicProviderPreference) -> some View {

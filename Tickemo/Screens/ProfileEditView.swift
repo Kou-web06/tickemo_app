@@ -38,78 +38,53 @@ struct ProfileEditView: View {
   private var isPremium: Bool { PurchasesService.shared.isPremium }
 
   var body: some View {
-    ScrollView {
-      VStack(spacing: 0) {
-        profileCard
-        formCard
+    NavigationStack {
+      ScrollView {
+        VStack(spacing: 0) {
+          profileCard
+          formCard
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 40)
       }
-      .padding(.horizontal, 20)
-      .padding(.bottom, 40)
-    }
-    .background(palette.screenBackground.ignoresSafeArea())
-    .safeAreaInset(edge: .top, spacing: 0) { header }
-    .sheet(isPresented: $showingImagePicker) {
-      ImagePickerRepresentable { data in
-        avatarImageData = data
-      }
-      .ignoresSafeArea()
-    }
-    .alert("入力エラー", isPresented: $showingAlert) {
-      Button("OK", role: .cancel) {}
-    } message: {
-      Text(alertMessage)
-    }
-  }
-
-  // MARK: - Header
-
-  private var header: some View {
-    HStack {
-      Button {
-        dismiss()
-      } label: {
-        HugeIconView(icon: HugeIcons.arrowLeft01, size: 20, weight: 2)
-          .foregroundStyle(palette.primaryText)
-          .frame(width: 36, height: 36)
-      }
-
-      Spacer()
-
-      Text("Edit Profile")
-        .font(.system(size: 18, weight: .bold))
-        .foregroundStyle(palette.primaryText)
-
-      Spacer()
-
-      Button {
-        save()
-      } label: {
-        ZStack {
-          Circle().fill(palette.saveButton)
-          if isSaving {
-            ProgressView().tint(.white)
-          } else {
-            HugeIconView(icon: HugeIcons.tick02, size: 15, weight: 2)
-              .foregroundStyle(.white)
+      .background(palette.screenBackground.ignoresSafeArea())
+      .navigationTitle("プロフィールを編集する")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            HugeIconView(icon: HugeIcons.arrowLeft01, size: 20, weight: 2)
           }
         }
-        .frame(width: 34, height: 34)
+        ToolbarItem(placement: .confirmationAction) {
+          Button {
+            save()
+          } label: {
+            if isSaving {
+              ProgressView()
+            } else {
+              HugeIconView(icon: HugeIcons.tick02, size: 17, weight: 2)
+            }
+          }
+          .disabled(isSaving)
+        }
       }
-      .disabled(isSaving)
-      .opacity(isSaving ? 0.6 : 1)
-    }
-    .padding(.horizontal, 16)
-    .padding(.top, 12)
-    .padding(.bottom, 8)
-    .background(
-      ZStack {
-        BlurEffectView(style: isDarkMode ? .systemMaterialDark : .systemMaterialLight)
-        palette.headerBackground
+      .sheet(isPresented: $showingImagePicker) {
+        ImagePickerRepresentable { data in
+          avatarImageData = data
+        }
+        .ignoresSafeArea()
       }
-    )
-    .overlay(alignment: .bottom) {
-      Rectangle().fill(palette.headerBorder).frame(height: 1)
+      .alert("入力エラー", isPresented: $showingAlert) {
+        Button("OK", role: .cancel) {}
+      } message: {
+        Text(alertMessage)
+      }
     }
+    .presentationDetents([.medium, .large])
+    .presentationDragIndicator(.visible)
   }
 
   // MARK: - Profile card
@@ -206,13 +181,13 @@ struct ProfileEditView: View {
 
   private var formCard: some View {
     VStack(alignment: .leading, spacing: 0) {
-      Text("Display Name")
+      Text("表示名")
         .font(.system(size: 12, weight: .bold))
         .foregroundStyle(palette.subText)
         .padding(.top, 8)
         .padding(.bottom, 10)
 
-      TextField("Display Name", text: $name)
+      TextField("例：チケモ太郎", text: $name)
         .font(.system(size: 14))
         .foregroundStyle(palette.inputText)
         .padding(.horizontal, 14)
@@ -234,7 +209,7 @@ struct ProfileEditView: View {
           .padding(.top, 8)
       }
 
-      Text("Username")
+      Text("ユーザーネーム")
         .font(.system(size: 12, weight: .bold))
         .foregroundStyle(palette.subText)
         .padding(.top, 18)
@@ -255,7 +230,7 @@ struct ProfileEditView: View {
       .background(palette.inputBackground)
       .clipShape(RoundedRectangle(cornerRadius: 14))
 
-      Text("Your username is shown on your public profile")
+      Text("ユーザー名は公開プロフィールに表示されます")
         .font(.system(size: 11))
         .foregroundStyle(palette.subText)
         .padding(.top, 10)

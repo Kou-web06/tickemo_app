@@ -21,78 +21,61 @@ struct NotificationSettingsView: View {
   private let accent = Color(hex: "#9A7CF8")
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 0) {
-        Text("下記の通知タイプを設定できます。新規登録時に自動でスケジュールされます。")
-          .font(.system(size: 12))
-          .lineSpacing(4)
-          .foregroundStyle(palette.secondaryText)
-          .padding(.horizontal, 8)
-          .padding(.bottom, 14)
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          Text("下記の通知タイプを設定できます。新規登録時に自動でスケジュールされます。")
+            .font(.system(size: 12))
+            .lineSpacing(4)
+            .foregroundStyle(palette.secondaryText)
+            .padding(.horizontal, 8)
+            .padding(.bottom, 14)
 
-        VStack(spacing: 0) {
-          toggleRow(
-            title: "ライブ前日リマインド",
-            desc: "ライブ前日の19時に通知します",
-            isOn: $beforeLive,
-            kind: .beforeLive
-          )
-          Rectangle().fill(palette.rowBorder).frame(height: 0.5)
-          toggleRow(
-            title: "ライブ当日リマインド",
-            desc: "ライブ開始15分前に通知します",
-            isOn: $onDay,
-            kind: .onDay
-          )
-          Rectangle().fill(palette.rowBorder).frame(height: 0.5)
-          toggleRow(
-            title: "ライブ翌日の振り返り",
-            desc: "ライブ翌日の10時に振り返り通知を送ります",
-            isOn: $nextDayReview,
-            kind: .nextDayReview
-          )
+          VStack(spacing: 0) {
+            toggleRow(
+              title: "ライブ前日リマインド",
+              desc: "ライブ前日の19時に通知します",
+              isOn: $beforeLive,
+              kind: .beforeLive
+            )
+            Rectangle().fill(palette.rowBorder).frame(height: 0.5)
+            toggleRow(
+              title: "ライブ当日リマインド",
+              desc: "ライブ開始15分前に通知します",
+              isOn: $onDay,
+              kind: .onDay
+            )
+            Rectangle().fill(palette.rowBorder).frame(height: 0.5)
+            toggleRow(
+              title: "ライブ翌日の振り返り",
+              desc: "ライブ翌日の10時に振り返り通知を送ります",
+              isOn: $nextDayReview,
+              kind: .nextDayReview
+            )
+          }
+          .background(palette.cardBackground)
+          .clipShape(RoundedRectangle(cornerRadius: 20))
+          .shadow(color: palette.sectionShadow.opacity(0.16), radius: 8, x: 0, y: 2)
         }
-        .background(palette.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .shadow(color: palette.sectionShadow.opacity(0.16), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 20)
+        .padding(.top, 24)
+        .padding(.bottom, 36)
       }
-      .padding(.horizontal, 20)
-      .padding(.top, 24)
-      .padding(.bottom, 36)
-    }
-    .background(palette.screenBackground.ignoresSafeArea())
-    .safeAreaInset(edge: .top, spacing: 0) { header }
-  }
-
-  private var header: some View {
-    ZStack {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          HugeIconView(icon: HugeIcons.arrowLeft01, size: 22, weight: 2)
-            .foregroundStyle(palette.primaryText)
-            .frame(width: 44, height: 44)
+      .background(palette.screenBackground.ignoresSafeArea())
+      .navigationTitle("通知設定")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            HugeIconView(icon: HugeIcons.arrowLeft01, size: 20, weight: 2)
+          }
         }
-        Spacer()
-        Color.clear.frame(width: 44, height: 44)
       }
-      Text("通知設定")
-        .font(.system(size: 18, weight: .bold))
-        .foregroundStyle(palette.titleText)
     }
-    .padding(.horizontal, 12)
-    .padding(.top, 10)
-    .padding(.bottom, 16)
-    .background(
-      ZStack {
-        BlurEffectView(style: isDarkMode ? .systemMaterialDark : .systemMaterialLight)
-        palette.headerBackground
-      }
-    )
-    .overlay(alignment: .bottom) {
-      Rectangle().fill(palette.headerBorder).frame(height: 1)
-    }
+    .presentationDetents([.height(420), .medium])
+    .presentationDragIndicator(.visible)
   }
 
   private func toggleRow(

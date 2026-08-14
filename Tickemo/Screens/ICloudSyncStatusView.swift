@@ -20,65 +20,45 @@ struct ICloudSyncStatusView: View {
   private var syncService: CloudSyncStatusService { CloudSyncStatusService.shared }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 0) {
-        statusCard
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          statusCard
 
-        Text("iCloud同期が有効になっています。チケット・ライブの記録はすべてのデバイス間で自動的に同期されます。")
-          .font(.system(size: 14))
-          .lineSpacing(6)
-          .foregroundStyle(palette.descriptionText)
-          .padding(.horizontal, 20)
-          .padding(.bottom, 24)
+          Text("iCloud同期が有効になっています。チケット・ライブの記録はすべてのデバイス間で自動的に同期されます。")
+            .font(.system(size: 14))
+            .lineSpacing(6)
+            .foregroundStyle(palette.descriptionText)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
 
-        Text("最終同期: \(lastSyncText)")
-          .font(.system(size: 13, weight: .medium))
-          .foregroundStyle(palette.syncTimeText)
-          .padding(.horizontal, 20)
-          .padding(.bottom, 32)
+          Text("最終同期: \(lastSyncText)")
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(palette.syncTimeText)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 32)
 
-        syncButton
-      }
-      .padding(.horizontal, 16)
-      .padding(.vertical, 20)
-    }
-    .background(palette.screenBackground.ignoresSafeArea())
-    .safeAreaInset(edge: .top, spacing: 0) { header }
-    .refreshable { await syncNow() }
-  }
-
-  // MARK: - Header
-
-  private var header: some View {
-    ZStack {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          HugeIconView(icon: HugeIcons.arrowLeft01, size: 28, weight: 2)
-            .foregroundStyle(palette.titleText)
-            .frame(width: 44, height: 44)
+          syncButton
         }
-        Spacer()
-        Color.clear.frame(width: 44, height: 44)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 20)
       }
-      Text("iCloud Sync")
-        .font(.system(size: 20, weight: .bold))
-        .tracking(-0.5)
-        .foregroundStyle(palette.titleText)
-    }
-    .padding(.horizontal, 16)
-    .padding(.top, 10)
-    .padding(.bottom, 12)
-    .background(
-      ZStack {
-        BlurEffectView(style: isDarkMode ? .systemMaterialDark : .systemMaterialLight)
-        palette.headerBackground
+      .background(palette.screenBackground.ignoresSafeArea())
+      .navigationTitle("iCloud Sync")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            HugeIconView(icon: HugeIcons.arrowLeft01, size: 20, weight: 2)
+          }
+        }
       }
-    )
-    .overlay(alignment: .bottom) {
-      Rectangle().fill(palette.headerBorder).frame(height: 1)
+      .refreshable { await syncNow() }
     }
+    .presentationDetents([.height(380), .medium])
+    .presentationDragIndicator(.visible)
   }
 
   // MARK: - Status card

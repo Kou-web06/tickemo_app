@@ -72,91 +72,74 @@ struct FAQView: View {
   private var palette: SettingsPalette { SettingsPalette(isDarkMode: isDarkMode) }
 
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: 0) {
-        ForEach(Array(categories.enumerated()), id: \.offset) { _, category in
-          VStack(alignment: .leading, spacing: 0) {
-            Text(category.title)
-              .font(.system(size: 20, weight: .heavy))
-              .foregroundStyle(palette.titleText)
-              .padding(.bottom, 16)
+    NavigationStack {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          ForEach(Array(categories.enumerated()), id: \.offset) { _, category in
+            VStack(alignment: .leading, spacing: 0) {
+              Text(category.title)
+                .font(.system(size: 20, weight: .heavy))
+                .foregroundStyle(palette.titleText)
+                .padding(.bottom, 16)
 
-            ForEach(Array(category.items.enumerated()), id: \.offset) { _, item in
-              VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .top, spacing: 8) {
-                  Text("Q.")
-                    .font(.system(size: 16, weight: .heavy))
-                    .foregroundStyle(palette.faqQuestionLabel)
-                  Text(item.question)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(palette.primaryText)
-                    .lineSpacing(6)
+              ForEach(Array(category.items.enumerated()), id: \.offset) { _, item in
+                VStack(alignment: .leading, spacing: 10) {
+                  HStack(alignment: .top, spacing: 8) {
+                    Text("Q.")
+                      .font(.system(size: 16, weight: .heavy))
+                      .foregroundStyle(palette.faqQuestionLabel)
+                    Text(item.question)
+                      .font(.system(size: 15, weight: .semibold))
+                      .foregroundStyle(palette.primaryText)
+                      .lineSpacing(6)
+                  }
+                  HStack(alignment: .top, spacing: 8) {
+                    Text("A.")
+                      .font(.system(size: 16, weight: .heavy))
+                      .foregroundStyle(palette.faqAnswerLabel)
+                    Text(item.answer)
+                      .font(.system(size: 14))
+                      .foregroundStyle(palette.subtleText)
+                      .lineSpacing(6)
+                  }
                 }
-                HStack(alignment: .top, spacing: 8) {
-                  Text("A.")
-                    .font(.system(size: 16, weight: .heavy))
-                    .foregroundStyle(palette.faqAnswerLabel)
-                  Text(item.answer)
-                    .font(.system(size: 14))
-                    .foregroundStyle(palette.subtleText)
-                    .lineSpacing(6)
-                }
+                .padding(16)
+                .background(palette.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.bottom, 20)
               }
-              .padding(16)
-              .background(palette.cardBackground)
-              .clipShape(RoundedRectangle(cornerRadius: 12))
-              .padding(.bottom, 20)
             }
+            .padding(.bottom, 32)
           }
-          .padding(.bottom, 32)
-        }
 
-        Text("その他ご不明な点は、設定画面の「フィードバック」からお問い合わせください。")
-          .font(.system(size: 13))
-          .foregroundStyle(palette.subtleText)
-          .lineSpacing(6)
-          .multilineTextAlignment(.center)
-          .frame(maxWidth: .infinity)
-          .padding(16)
-          .background(palette.mutedCardBackground)
-          .clipShape(RoundedRectangle(cornerRadius: 12))
-          .padding(.top, 10)
-          .padding(.bottom, 40)
-      }
-      .padding(20)
-    }
-    .background(palette.screenBackground.ignoresSafeArea())
-    .safeAreaInset(edge: .top, spacing: 0) { header }
-  }
-
-  private var header: some View {
-    ZStack {
-      HStack {
-        Button {
-          dismiss()
-        } label: {
-          HugeIconView(icon: HugeIcons.arrowLeft01, size: 22, weight: 2)
-            .foregroundStyle(palette.primaryText)
-            .frame(width: 44, height: 44)
+          Text("その他ご不明な点は、設定画面の「フィードバック」からお問い合わせください。")
+            .font(.system(size: 13))
+            .foregroundStyle(palette.subtleText)
+            .lineSpacing(6)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(16)
+            .background(palette.mutedCardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.top, 10)
+            .padding(.bottom, 40)
         }
-        Spacer()
-        Color.clear.frame(width: 44, height: 44)
+        .padding(20)
       }
-      Text("よくある質問")
-        .font(.system(size: 18, weight: .bold))
-        .foregroundStyle(palette.titleText)
-    }
-    .padding(.horizontal, 12)
-    .padding(.top, 10)
-    .padding(.bottom, 16)
-    .background(
-      ZStack {
-        BlurEffectView(style: isDarkMode ? .systemMaterialDark : .systemMaterialLight)
-        palette.headerBackground
+      .background(palette.screenBackground.ignoresSafeArea())
+      .navigationTitle("よくある質問")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        ToolbarItem(placement: .cancellationAction) {
+          Button {
+            dismiss()
+          } label: {
+            HugeIconView(icon: HugeIcons.arrowLeft01, size: 20, weight: 2)
+          }
+        }
       }
-    )
-    .overlay(alignment: .bottom) {
-      Rectangle().fill(palette.headerBorder).frame(height: 1)
     }
+    .presentationDetents([.medium, .large])
+    .presentationDragIndicator(.visible)
   }
 }

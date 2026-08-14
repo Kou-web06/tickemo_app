@@ -9,8 +9,6 @@ struct SettingsPalette {
   let screenBackground: Color
   let cardBackground: Color
   let mutedCardBackground: Color
-  let headerBackground: Color
-  let headerBorder: Color
   let titleText: Color
   let primaryText: Color
   let secondaryText: Color
@@ -41,8 +39,6 @@ struct SettingsPalette {
     screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F8F8F8")
     cardBackground = isDarkMode ? Color(hex: "#1A1A1A") : Color(hex: "#FFFFFF")
     mutedCardBackground = isDarkMode ? Color(hex: "#202024") : Color(hex: "#F0F0F0")
-    headerBackground = isDarkMode ? Color(hex: "#121212", opacity: 0.74) : Color(hex: "#F8F8F8", opacity: 0.62)
-    headerBorder = isDarkMode ? Color.white.opacity(0.10) : Color.white.opacity(0.45)
     titleText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#333333")
     primaryText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#000000")
     secondaryText = isDarkMode ? Color(hex: "#A1A1AA") : Color(hex: "#8E8E93")
@@ -76,8 +72,6 @@ struct SettingsPalette {
 /// (`#F8F8F8`), so this is intentionally a separate struct, not a subset.
 struct ICloudSyncPalette {
   let screenBackground: Color
-  let headerBackground: Color
-  let headerBorder: Color
   let titleText: Color
   let cardBackground: Color
   let shadowColor: Color
@@ -91,8 +85,6 @@ struct ICloudSyncPalette {
 
   init(isDarkMode: Bool) {
     screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F2F2F7")
-    headerBackground = isDarkMode ? Color(hex: "#121212", opacity: 0.74) : Color(hex: "#F8F8F8", opacity: 0.62)
-    headerBorder = isDarkMode ? Color.white.opacity(0.10) : Color.white.opacity(0.45)
     titleText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#000000")
     cardBackground = isDarkMode ? Color(hex: "#1A1A1A") : Color(hex: "#FFFFFF")
     shadowColor = isDarkMode ? Color(hex: "#000000") : Color(hex: "#5D5D5D")
@@ -109,8 +101,6 @@ struct ICloudSyncPalette {
 /// Ports screens/ProfileEditScreen.tsx's own `buildPalette`.
 struct ProfileEditPalette {
   let screenBackground: Color
-  let headerBackground: Color
-  let headerBorder: Color
   let primaryText: Color
   let cardBackground: Color
   let sectionShadow: Color
@@ -123,14 +113,11 @@ struct ProfileEditPalette {
   let inputBackground: Color
   let inputText: Color
   let placeholderText: Color
-  let saveButton: Color
   let editIcon: Color
   let loadingIndicator: Color
 
   init(isDarkMode: Bool) {
     screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F8F8F8")
-    headerBackground = isDarkMode ? Color(hex: "#121212", opacity: 0.74) : Color(hex: "#F8F8F8", opacity: 0.62)
-    headerBorder = isDarkMode ? Color.white.opacity(0.10) : Color.white.opacity(0.45)
     primaryText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#000000")
     cardBackground = isDarkMode ? Color(hex: "#1A1A1A") : Color(hex: "#FFFFFF")
     sectionShadow = isDarkMode ? Color(hex: "#000000") : Color(hex: "#D2D2D2")
@@ -143,7 +130,6 @@ struct ProfileEditPalette {
     inputBackground = isDarkMode ? Color(hex: "#26262C") : Color(hex: "#F5F5F5")
     inputText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#111111")
     placeholderText = isDarkMode ? Color(hex: "#8A8A94") : Color(hex: "#B8B8B8")
-    saveButton = Color(hex: "#8315B1")
     editIcon = Color(hex: "#FFFFFF")
     loadingIndicator = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#000000")
   }

@@ -4,7 +4,9 @@ import CoreData
 
 private let termsURL = URL(string: "https://traveling-fahrenheit-b9b.notion.site/Tickemo-Terms-of-Use-2f65fd5d3e2d80ba8abcda85615cde4a?source=copy_link")!
 private let privacyURL = URL(string: "https://traveling-fahrenheit-b9b.notion.site/Tickemo-Privacy-Policy-2f85fd5d3e2d809b912dfc4ec2a2ed6a?source=copy_link")!
-private let feedbackURL = URL(string: "https://forms.gle/Z6fQZZUM79WprPSk8")!
+// Not `private`: the home-screen Quick Action feedback shortcut
+// (`ShortcutItemService`, routed from `ContentView`) opens the same link.
+let feedbackURL = URL(string: "https://forms.gle/Z6fQZZUM79WprPSk8")!
 private let appStoreURL = URL(string: "https://apps.apple.com/ja/app/tickemo-%E3%83%A9%E3%82%A4%E3%83%96%E3%81%AE%E6%80%9D%E3%81%84%E5%87%BA%E3%82%92%E8%A8%98%E9%8C%B2/id6758604980")!
 
 private let settingsAccentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
@@ -408,9 +410,7 @@ struct SettingsView: View {
     case "icloud-sync":
       settingsIcon("Cloud", color: palette.iconColor)
     case "notifications":
-      HugeIconView(icon: HugeIcons.notification03, size: 20)
-        .foregroundStyle(palette.iconColor)
-        .frame(width: 24, height: 24)
+      settingsIcon("Notification", color: palette.iconColor)
     case "terms":
       settingsIcon("Palm", color: palette.iconColor)
     case "privacy":
