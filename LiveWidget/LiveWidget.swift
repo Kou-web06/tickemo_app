@@ -23,6 +23,10 @@ struct WidgetLiveData: Codable {
 private let appGroup = "group.com.anonymous.Tickemo.widget"
 private let dataKey = "liveWidgetData"
 private let coverImageFilename = "widget_cover.jpg"
+// Tickemo Plus: written by PurchasesService (main app target) every time
+// entitlement status resolves/changes. This extension never talks to
+// RevenueCat itself — it only ever reads this flag.
+private let isPremiumKey = "isPremium"
 
 // MARK: - Helpers
 
@@ -97,6 +101,7 @@ struct SimpleEntry: TimelineEntry {
   let coverImage: UIImage?
   let targetDate: Date?
   let daysRemaining: Int?
+  let isPremium: Bool
 }
 
 // MARK: - Provider
@@ -132,30 +137,38 @@ struct Provider: TimelineProvider {
     return UIImage(contentsOfFile: url.appendingPathComponent(coverImageFilename).path)
   }
 
-  func makeEntry(at date: Date, liveData: WidgetLiveData?, coverImage: UIImage?) -> SimpleEntry {
+  /// Defaults to `false` (locked) when the key is missing entirely — a
+  /// fresh install that hasn't launched the main app yet (and so never
+  /// wrote a resolved entitlement status) must never show live data.
+  func loadIsPremium() -> Bool {
+    UserDefaults(suiteName: appGroup)?.bool(forKey: isPremiumKey) ?? false
+  }
+
+  func makeEntry(at date: Date, liveData: WidgetLiveData?, coverImage: UIImage?, isPremium: Bool) -> SimpleEntry {
     let target = liveData.flatMap { targetDate(from: $0) }
     let days = target.map { daysFromEntryDate(date, toTarget: $0) }
-    return SimpleEntry(date: date, liveData: liveData, coverImage: coverImage, targetDate: target, daysRemaining: days)
+    return SimpleEntry(date: date, liveData: liveData, coverImage: coverImage, targetDate: target, daysRemaining: days, isPremium: isPremium)
   }
 
   func placeholder(in context: Context) -> SimpleEntry {
-    SimpleEntry(date: Date(), liveData: nil, coverImage: nil, targetDate: nil, daysRemaining: nil)
+    SimpleEntry(date: Date(), liveData: nil, coverImage: nil, targetDate: nil, daysRemaining: nil, isPremium: false)
   }
 
   func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> Void) {
     let live = loadData()
-    completion(makeEntry(at: Date(), liveData: live, coverImage: loadCoverImage()))
+    completion(makeEntry(at: Date(), liveData: live, coverImage: loadCoverImage(), isPremium: loadIsPremium()))
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<SimpleEntry>) -> Void) {
     widgetLog.info("getTimeline: called")
     let liveData = loadData()
     let coverImage = loadCoverImage()
+    let isPremium = loadIsPremium()
     let now = Date()
-    widgetLog.info("getTimeline: liveData=\(liveData?.liveTitle ?? "nil", privacy: .public)")
+    widgetLog.info("getTimeline: liveData=\(liveData?.liveTitle ?? "nil", privacy: .public) isPremium=\(isPremium, privacy: .public)")
 
     // 今の表示エントリ
-    var entries: [SimpleEntry] = [makeEntry(at: now, liveData: liveData, coverImage: coverImage)]
+    var entries: [SimpleEntry] = [makeEntry(at: now, liveData: liveData, coverImage: coverImage, isPremium: isPremium)]
 
     // 深夜0時ごとのエントリ（「X日」更新）＋24時間前エントリ（タイマー切り替え）
     if let target = liveData.flatMap({ targetDate(from: $0) }), target > now {
@@ -176,7 +189,7 @@ struct Provider: TimelineProvider {
 
       candidateDates.sort()
       for date in candidateDates {
-        entries.append(makeEntry(at: date, liveData: liveData, coverImage: coverImage))
+        entries.append(makeEntry(at: date, liveData: liveData, coverImage: coverImage, isPremium: isPremium))
       }
     }
 
@@ -329,6 +342,25 @@ struct MediumWidgetView: View {
   }
 }
 
+// MARK: - Locked content (Tickemo Plus)
+
+// The widget is a Plus-only feature end to end: a non-Plus user never sees
+// live data here, regardless of whether one's actually selected — this is
+// checked first, ahead of `entry.liveData`.
+private struct LockedWidgetView: View {
+  var body: some View {
+    VStack(spacing: 6) {
+      Image(systemName: "lock.fill")
+        .font(.title2)
+      Text("Tickemo Plusで\n使えるウィジェットです")
+        .font(.caption)
+        .multilineTextAlignment(.center)
+    }
+    .foregroundStyle(.white.opacity(0.7))
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+}
+
 // MARK: - Entry view
 
 struct LiveWidgetEntryView: View {
@@ -336,7 +368,9 @@ struct LiveWidgetEntryView: View {
   var entry: SimpleEntry
 
   var body: some View {
-    if let live = entry.liveData {
+    if !entry.isPremium {
+      LockedWidgetView()
+    } else if let live = entry.liveData {
       switch family {
       case .systemSmall:
         SmallWidgetView(entry: entry, live: live)
@@ -378,7 +412,7 @@ struct LiveWidget: Widget {
       }
     }
     .configurationDisplayName("次のライブ")
-    .description("次に参加するライブまでのカウントダウンを表示します。")
+    .description("次に参加するライブまでのカウントダウンを表示します。Tickemo Plus限定の機能です。")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
@@ -397,9 +431,11 @@ struct LiveWidget: Widget {
     ),
     coverImage: nil,
     targetDate: Calendar.current.date(byAdding: .day, value: 60, to: .now),
-    daysRemaining: 60
+    daysRemaining: 60,
+    isPremium: true
   )
-  SimpleEntry(date: .now, liveData: nil, coverImage: nil, targetDate: nil, daysRemaining: nil)
+  SimpleEntry(date: .now, liveData: nil, coverImage: nil, targetDate: nil, daysRemaining: nil, isPremium: true)
+  SimpleEntry(date: .now, liveData: nil, coverImage: nil, targetDate: nil, daysRemaining: nil, isPremium: false)
 }
 
 #Preview(as: .systemMedium) {
@@ -414,7 +450,9 @@ struct LiveWidget: Widget {
     ),
     coverImage: nil,
     targetDate: Calendar.current.date(byAdding: .day, value: 60, to: .now),
-    daysRemaining: 60
+    daysRemaining: 60,
+    isPremium: true
   )
-  SimpleEntry(date: .now, liveData: nil, coverImage: nil, targetDate: nil, daysRemaining: nil)
+  SimpleEntry(date: .now, liveData: nil, coverImage: nil, targetDate: nil, daysRemaining: nil, isPremium: true)
+  SimpleEntry(date: .now, liveData: nil, coverImage: nil, targetDate: nil, daysRemaining: nil, isPremium: false)
 }

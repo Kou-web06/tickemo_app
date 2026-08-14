@@ -27,6 +27,13 @@ final class PurchasesService {
   /// continue as the same RevenueCat customer instead of minting a new
   /// anonymous identity.
   private static let cachedAppUserIDKey = "com.revenuecat.userdefaults.appUserID.new"
+  // Tickemo Plus: LiveWidget is entirely gated on this flag. The widget
+  // extension can't check RevenueCat itself (no network/SDK init inside a
+  // WidgetKit timeline provider), so this app target is the single source
+  // of truth and pushes the flag through the App Group it already shares
+  // with the widget (see WidgetReloaderService).
+  private static let widgetAppGroup = "group.com.anonymous.Tickemo.widget"
+  private static let widgetIsPremiumKey = "isPremium"
 
   private(set) var isPremium = false
   private(set) var membershipType: MembershipType = .free
@@ -105,5 +112,8 @@ final class PurchasesService {
     self.isPremium = isPremium
     self.membershipType = membershipType
     self.activeEntitlementIds = activeEntitlementIds
+
+    UserDefaults(suiteName: Self.widgetAppGroup)?.set(isPremium, forKey: Self.widgetIsPremiumKey)
+    WidgetReloaderService.reloadTimelines()
   }
 }

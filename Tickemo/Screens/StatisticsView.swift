@@ -21,6 +21,7 @@ struct StatisticsView: View {
 
   @State private var selectedYear: Int?
   @State private var priceHidden = false
+  @State private var showingPaywall = false
 
   // Non-persisted, in-memory cache of live-searched artist photos for
   // records saved without one (e.g. typed before ArtistSearchField existed,
@@ -49,19 +50,39 @@ struct StatisticsView: View {
     StatisticsData.yearFiltered(attendedRecords, year: selectedYear)
   }
 
+  // Tickemo Plus: free users only get the current year's report — every
+  // other year chip and All-Time are blurred behind a paywall. Matches
+  // availableYears' own year derivation (DateFormatting.utcCalendar), never
+  // Calendar.current, so "this year" can't drift a day off from how those
+  // years were computed in the first place.
+  private var isPremium: Bool { PurchasesService.shared.isPremium }
+  private var currentYear: Int { DateFormatting.utcCalendar.component(.year, from: Date()) }
+  private var isLocked: Bool { !isPremium && selectedYear != currentYear }
+
   var body: some View {
     NavigationStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 28) {
           yearChips
           authorizationWarning
-          summarySection
-          topArtistsSection
-          allArtistsSection
-          monthlyChartSection
-          topVenuesSection
-          topSongsSection
-          spendingSection
+
+          ZStack {
+            VStack(alignment: .leading, spacing: 28) {
+              summarySection
+              topArtistsSection
+              allArtistsSection
+              monthlyChartSection
+              topVenuesSection
+              topSongsSection
+              spendingSection
+            }
+            .blur(radius: isLocked ? 14 : 0)
+            .allowsHitTesting(!isLocked)
+
+            if isLocked {
+              lockOverlay
+            }
+          }
         }
         .padding(16)
       }
@@ -81,7 +102,32 @@ struct StatisticsView: View {
           selectedYear = nil
         }
       }
+      .sheet(isPresented: $showingPaywall) {
+        PaywallView()
+      }
     }
+  }
+
+  // MARK: - Plus lock overlay
+
+  private var lockOverlay: some View {
+    Button {
+      showingPaywall = true
+    } label: {
+      VStack(spacing: 8) {
+        HugeIconView(icon: HugeIcons.squareLock02, size: 28)
+        Text("Upgrade to Plus")
+          .font(.system(size: 15, weight: .heavy))
+        Text("過去の年やAll-TimeのレポートはPlus限定です")
+          .font(.system(size: 12))
+          .multilineTextAlignment(.center)
+      }
+      .foregroundStyle(Color(white: 0.18))
+      .padding(.horizontal, 22)
+      .padding(.vertical, 14)
+      .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+    }
+    .buttonStyle(.plain)
   }
 
   // MARK: - Year chips
@@ -234,6 +280,10 @@ struct StatisticsView: View {
   /// per missing name, cached in `artistImageBackfill` so it only ever runs
   /// once per name per app session, never persisted back to the record.
   private func backfillArtistImages(names: [String]) async {
+    // Locked (blurred, Plus-gated) sections aren't legible anyway — skip
+    // the network search rather than spending it on content the free user
+    // can't read.
+    guard !isLocked else { return }
     for name in names {
       let key = name.lowercased()
       if artistImageBackfill[key] != nil { continue }
