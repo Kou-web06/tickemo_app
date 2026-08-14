@@ -1,5 +1,6 @@
 import SwiftUI
 import PhotosUI
+import CoreLocation
 
 private let ticketPricePresets: [Int] = [3000, 5000, 8000, 10000, 15000]
 
@@ -37,6 +38,8 @@ struct RecordFormView: View {
   @State private var liveType: LiveType
   @State private var date: Date
   @State private var venue: String
+  @State private var venueCoordinate: CLLocationCoordinate2D?
+  @State private var venueAddress: String?
   @State private var seat: String
   @State private var ticketPriceText: String
   @State private var startTime: String
@@ -58,6 +61,8 @@ struct RecordFormView: View {
     _liveType = State(initialValue: LiveType.normalized(record?.liveType))
     _date = State(initialValue: DateFormatting.date(from: record?.date) ?? Date())
     _venue = State(initialValue: record?.venue ?? "")
+    _venueCoordinate = State(initialValue: record?.venueCoordinate)
+    _venueAddress = State(initialValue: record?.venueAddress)
     _seat = State(initialValue: record?.seat ?? "")
     _ticketPriceText = State(initialValue: record.map { String(Int($0.ticketPrice)) } ?? "")
     _startTime = State(initialValue: record?.startTime ?? "18:00")
@@ -174,7 +179,7 @@ struct RecordFormView: View {
         }
 
         Section {
-          TextField(venuePlaceholder, text: $venue)
+          VenueSearchField(name: $venue, coordinate: $venueCoordinate, address: $venueAddress, placeholder: venuePlaceholder)
           TextField("座席（任意）", text: $seat)
         }
 
@@ -426,6 +431,9 @@ struct RecordFormView: View {
     target.liveType = liveType.rawValue
     target.date = DateFormatting.string(from: date)
     target.venue = venue
+    target.venueAddress = venueAddress
+    target.venueLatitude = venueCoordinate.map { NSNumber(value: $0.latitude) }
+    target.venueLongitude = venueCoordinate.map { NSNumber(value: $0.longitude) }
     target.seat = seat.isEmpty ? nil : seat
     target.ticketPrice = Double(ticketPriceText) ?? 0
     target.startTime = startTime

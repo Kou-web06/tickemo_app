@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		03F45438BC18A43EC09E3011 /* ShortcutItemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71099DBD07A050B1E2DA2893 /* ShortcutItemService.swift */; };
 		056EFB780FCB6E6FBFBCD546 /* ICloudFallbackLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */; };
 		06103D883AE95BBC14312886 /* CalendarEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A46977CD287EA4809AF52CF /* CalendarEvents.swift */; };
 		08596C0216AAB9F6583476E3 /* ShareSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96477F0BDC644C6585C10B98 /* ShareSheetView.swift */; };
+		09247DE84CF37FBB2AE7E496 /* ChekiRecordVenue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4874D2D96E89FA289584CF /* ChekiRecordVenue.swift */; };
 		0B05F35A0911333F8B607931 /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9AE9C35C5B074506951858 /* ProfileEditView.swift */; };
 		0B351B3E542B62E4389EFF54 /* PurchasesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC8097D167570A73C9B4DE5 /* PurchasesService.swift */; };
 		0C8BB93A1F456B2717A9886B /* CalendarMonthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC38A042A5BFB1CD699F666 /* CalendarMonthTests.swift */; };
@@ -22,6 +24,7 @@
 		18ACFC9FE7CB1D239DFE7094 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 56144CC32DB1572AE2544D93 /* RevenueCat */; };
 		18CB9921BAC0B482BAC0D230 /* NextLiveCardDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5749B839253A3F61FF46E6 /* NextLiveCardDataTests.swift */; };
 		19673B86D2DF9CA7B484ED19 /* DataMigrationImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C66560BFCA2CC19A3827E31 /* DataMigrationImporterTests.swift */; };
+		1CAE14C7B04539580F69D515 /* VenueMapCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */; };
 		1E392621BA8DC95BDDA0B36E /* DuplicateRecordSweeperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51A40ECAF43E50524930CFF0 /* DuplicateRecordSweeperTests.swift */; };
 		1FBF026431BD8FEAA1568620 /* ArtistGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */; };
 		1FF874666EB2D9903E52CE09 /* RecordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */; };
@@ -48,6 +51,7 @@
 		4479BC3D12C54FCBEA653D8D /* RecordFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC4EE21C788953536CB9E74 /* RecordFormView.swift */; };
 		47D8C4792678470A8E38150A /* EarlyOfferService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FD9F153931A7B6B67A5D6F /* EarlyOfferService.swift */; };
 		48791F21CDE4C7709A7CACB1 /* ShareBarcodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 689506127814433829517F37 /* ShareBarcodeView.swift */; };
+		4EE2FB6BEFD752624B67382F /* VenueSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48286B05F1D063AE48B1F1FD /* VenueSearchField.swift */; };
 		5537E6A5E456B4B4480D4644 /* TimeWheelPickerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B9B148649A239A0A0B4441 /* TimeWheelPickerField.swift */; };
 		55669622455D7387E7D09669 /* WidgetReloaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE6333409566700D88792880 /* WidgetReloaderService.swift */; };
 		572F296635A0179B978AE2DC /* StableLegacyID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DD0E97DD09B53EB4C062774 /* StableLegacyID.swift */; };
@@ -63,7 +67,6 @@
 		70B74607031E17F0EAA94433 /* ChekiRecordImages.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8CDC7BB5BA0E8406C7CE99F /* ChekiRecordImages.swift */; };
 		77E1B530265777E0D6E2B397 /* MusicKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AFC27233C7B2540CCA957DB /* MusicKitService.swift */; };
 		7901BF40FB3DF96C71D46422 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F2C15210F8E73A8598F6DA /* SettingsView.swift */; };
-		7A772A6DA83697C8EDC9771A /* BlurEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7AB15D7BE3D2FEE1716FAB6 /* BlurEffectView.swift */; };
 		7AD5D4777392CFBAAE88DF98 /* LiveNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688379EA05D924B86777F580 /* LiveNotificationService.swift */; };
 		7E69DF2997B495D6AB09A3E8 /* ShareCDCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1037AE172351A041EF4AA70F /* ShareCDCardView.swift */; };
 		8350EA9C52C193AE0FD77859 /* WidgetLiveSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B595D70CE5D5B21791B8B4 /* WidgetLiveSelectionTests.swift */; };
@@ -208,6 +211,7 @@
 		46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayTransformer.swift; sourceTree = "<group>"; };
 		472A3A7CC25C17955E6806FC /* ChekiRecordArtists.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordArtists.swift; sourceTree = "<group>"; };
 		47957EC4D30003911DDDFB11 /* SetlistOcrCleanup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistOcrCleanup.swift; sourceTree = "<group>"; };
+		48286B05F1D063AE48B1F1FD /* VenueSearchField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VenueSearchField.swift; sourceTree = "<group>"; };
 		4A46977CD287EA4809AF52CF /* CalendarEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarEvents.swift; sourceTree = "<group>"; };
 		4AFC27233C7B2540CCA957DB /* MusicKitService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MusicKitService.swift; sourceTree = "<group>"; };
 		510FEECDFBC712D8783FFC05 /* SetlistOcrReviewView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistOcrReviewView.swift; sourceTree = "<group>"; };
@@ -225,6 +229,7 @@
 		665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UbiquitousItemDownloader.swift; sourceTree = "<group>"; };
 		688379EA05D924B86777F580 /* LiveNotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveNotificationService.swift; sourceTree = "<group>"; };
 		689506127814433829517F37 /* ShareBarcodeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareBarcodeView.swift; sourceTree = "<group>"; };
+		71099DBD07A050B1E2DA2893 /* ShortcutItemService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShortcutItemService.swift; sourceTree = "<group>"; };
 		72645012E927C7402CB88893 /* CalendarDayEventsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarDayEventsView.swift; sourceTree = "<group>"; };
 		7272BF958059D2B824D1A453 /* EarlyOfferServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EarlyOfferServiceTests.swift; sourceTree = "<group>"; };
 		7344C32392056E497011A49C /* JoinedDateFormattingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JoinedDateFormattingTests.swift; sourceTree = "<group>"; };
@@ -244,6 +249,7 @@
 		97FDED7BBE313F4E2B85599A /* ICloudSyncStatusView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ICloudSyncStatusView.swift; sourceTree = "<group>"; };
 		9A44EAD7E3182AEE71372C12 /* StatisticsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 		9AE2706F569FFE252AC4593D /* CustomToggleSwitch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CustomToggleSwitch.swift; sourceTree = "<group>"; };
+		9C4874D2D96E89FA289584CF /* ChekiRecordVenue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordVenue.swift; sourceTree = "<group>"; };
 		A0C45BE9B9FDDAE7F4AFF6B2 /* ArtistSearchField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistSearchField.swift; sourceTree = "<group>"; };
 		A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
 		A2C810B48EA3C3D5F868D2A9 /* TicketStubShape.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TicketStubShape.swift; sourceTree = "<group>"; };
@@ -253,12 +259,12 @@
 		AE6333409566700D88792880 /* WidgetReloaderService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetReloaderService.swift; sourceTree = "<group>"; };
 		B4C429770E4C9FD6D42C2FEB /* HugeIconView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HugeIconView.swift; sourceTree = "<group>"; };
 		B50F6C3CEF28C0BADA509B18 /* ArtistGridItemView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGridItemView.swift; sourceTree = "<group>"; };
-		B7AB15D7BE3D2FEE1716FAB6 /* BlurEffectView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BlurEffectView.swift; sourceTree = "<group>"; };
 		B81D9B718DAFD8D51D108885 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = Tickemo/ContentView.swift; sourceTree = "<group>"; };
 		B9898BB21AD9937505C78DDA /* LegacyMigrationClaimTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyMigrationClaimTests.swift; sourceTree = "<group>"; };
 		BC5749B839253A3F61FF46E6 /* NextLiveCardDataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NextLiveCardDataTests.swift; sourceTree = "<group>"; };
 		C0B9B148649A239A0A0B4441 /* TimeWheelPickerField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimeWheelPickerField.swift; sourceTree = "<group>"; };
 		C40CE53D60FA2117638BFA16 /* LegacyDataBackup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyDataBackup.swift; sourceTree = "<group>"; };
+		C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VenueMapCardView.swift; sourceTree = "<group>"; };
 		CCB5B2FD867D3B5F862DB18E /* LiveType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveType.swift; sourceTree = "<group>"; };
 		D0B69313B8AB4D706F1A74A7 /* StatisticsRankingRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsRankingRowView.swift; sourceTree = "<group>"; };
 		D0F7B87F62C4B3D653726805 /* HapticsPreferenceService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HapticsPreferenceService.swift; sourceTree = "<group>"; };
@@ -417,6 +423,8 @@
 				C0B9B148649A239A0A0B4441 /* TimeWheelPickerField.swift */,
 				00774E102ED99EDEDD835E43 /* SetlistDraftEditorView.swift */,
 				2E5A1967DE1A194132F3A61E /* MigrationOverlayView.swift */,
+				C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */,
+				48286B05F1D063AE48B1F1FD /* VenueSearchField.swift */,
 			);
 			name = Components;
 			path = Tickemo/Components;
@@ -448,6 +456,7 @@
 				3A7183EAE651E93ED04EED5F /* CloudKitInspector.swift */,
 				15FA8C4E889A7B929FF4011A /* LiveNotificationSettings.swift */,
 				688379EA05D924B86777F580 /* LiveNotificationService.swift */,
+				71099DBD07A050B1E2DA2893 /* ShortcutItemService.swift */,
 			);
 			name = Services;
 			path = Tickemo/Services;
@@ -577,7 +586,6 @@
 				9AE2706F569FFE252AC4593D /* CustomToggleSwitch.swift */,
 				F43A867BF11EF2687DA006A7 /* PaywallBannerView.swift */,
 				F1F591D62D4319D60280E41F /* ImagePickerRepresentable.swift */,
-				B7AB15D7BE3D2FEE1716FAB6 /* BlurEffectView.swift */,
 				57F6AB66827543B4F22966F1 /* CollectionPalette.swift */,
 				39FE35494D7275C25C11EC3C /* NextLiveCardData.swift */,
 				419A547938484EA5ADAFBE45 /* TodaySongCache.swift */,
@@ -589,6 +597,7 @@
 				007042345632862053DEFEA7 /* SafariView.swift */,
 				E06ACB6030295CA1005FD9D3 /* DominantColorCache.swift */,
 				920F93E66DE069310797ABF2 /* AppReviewTracker.swift */,
+				9C4874D2D96E89FA289584CF /* ChekiRecordVenue.swift */,
 			);
 			name = Support;
 			path = Tickemo/Support;
@@ -824,7 +833,6 @@
 				9700137EC389EC549D55A792 /* CustomToggleSwitch.swift in Sources */,
 				33F12676F5CB54B827FA70FB /* PaywallBannerView.swift in Sources */,
 				ADE56C3827EFB477437A04A8 /* ImagePickerRepresentable.swift in Sources */,
-				7A772A6DA83697C8EDC9771A /* BlurEffectView.swift in Sources */,
 				228E26C34F43002D7FC684F0 /* ThemePreferenceService.swift in Sources */,
 				F4F42BCB9466361D0FB068C8 /* HapticsPreferenceService.swift in Sources */,
 				3C8DE8B2C9819C9D537BEA93 /* MusicProviderPreference.swift in Sources */,
@@ -856,6 +864,10 @@
 				F152BB5A871627E7BCD83CBB /* LiveNotificationSettings.swift in Sources */,
 				7AD5D4777392CFBAAE88DF98 /* LiveNotificationService.swift in Sources */,
 				914B8E8BB5A3D0E49B42A8B6 /* NotificationSettingsView.swift in Sources */,
+				03F45438BC18A43EC09E3011 /* ShortcutItemService.swift in Sources */,
+				1CAE14C7B04539580F69D515 /* VenueMapCardView.swift in Sources */,
+				4EE2FB6BEFD752624B67382F /* VenueSearchField.swift in Sources */,
+				09247DE84CF37FBB2AE7E496 /* ChekiRecordVenue.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import CoreLocation
 
 /// Ports components/TicketDetail.tsx's layout and styling (colors, type
 /// scale, section structure) to SwiftUI. Explicitly out of scope, same as
@@ -24,6 +25,7 @@ struct RecordDetailView: View {
   @State private var showingEditSheet = false
   @State private var showingDeleteConfirmation = false
   @State private var showingSetlistEditor = false
+  @State private var isSetlistExpanded = true
   @State private var showingShareSheet = false
 
   private let appleMusicService = AppleMusicService()
@@ -32,6 +34,14 @@ struct RecordDetailView: View {
 
   @State private var dominantColor: Color
   @State private var backgroundIsDark: Bool
+
+  // Countdown for an upcoming live, reusing NextLiveCardData (same pure
+  // logic/format as NextLiveCardView's home-screen card) rather than a
+  // second implementation of the same "D : HH : MM : SS" ticking text.
+  @State private var now = Date()
+  private let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+  private var isPast: Bool { NextLiveCardData.isPast(record, now: now) }
+  private var countdown: (text: String, isMessage: Bool) { NextLiveCardData.countdownText(for: record, now: now) }
 
   init(record: CD_ChekiRecord) {
     self.record = record
@@ -59,10 +69,15 @@ struct RecordDetailView: View {
         header
 
         VStack(alignment: .leading, spacing: 0) {
+          if !isPast {
+            countdownRow
+              .padding(.top, 26)
+          }
+
           Text(record.liveName ?? "-")
             .font(.system(size: 26, weight: .black))
             .foregroundStyle(primaryTextColor)
-            .padding(.top, 26)
+            .padding(.top, isPast ? 26 : 8)
 
           artistPriceRow
             .padding(.top, 10)
@@ -72,6 +87,11 @@ struct RecordDetailView: View {
 
           setlistSection
             .padding(.top, 60)
+
+          if let coordinate = record.venueCoordinate {
+            venueSection(coordinate: coordinate)
+              .padding(.top, 60)
+          }
 
           if let memo = record.memo, !memo.isEmpty {
             memoSection(memo)
@@ -83,6 +103,7 @@ struct RecordDetailView: View {
       }
     }
     .coordinateSpace(name: "scroll")
+    .onReceive(countdownTimer) { now = $0 }
     .background(
       ZStack {
         Color.white
@@ -231,6 +252,20 @@ struct RecordDetailView: View {
     .frame(maxWidth: .infinity)
   }
 
+  // MARK: - Countdown
+
+  private var countdownRow: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      Text("NEXT LIVE")
+        .font(.system(size: 12, weight: .bold))
+        .tracking(1.2)
+        .foregroundStyle(secondaryTextColor)
+      Text(countdown.text)
+        .font(.system(size: countdown.isMessage ? 20 : 28, weight: .bold, design: .monospaced))
+        .foregroundStyle(primaryTextColor)
+    }
+  }
+
   // MARK: - Artist / price row
 
   private var artistPriceRow: some View {
@@ -361,23 +396,55 @@ struct RecordDetailView: View {
           .font(.system(size: 18, weight: .black))
           .foregroundStyle(primaryTextColor)
         Spacer()
-        Button(record.sortedSetlistItems.isEmpty ? "Add Setlist" : "Edit") {
-          showingSetlistEditor = true
+        // 編集はツールバーの編集ボタン（RecordFormView）に一本化したので、
+        // ここには置かない。セトリが既にある場合だけ開閉トグルを出す —
+        // 空の場合はそもそも畳む中身がないので "Add Setlist" のまま。
+        if record.sortedSetlistItems.isEmpty {
+          Button("Add Setlist") {
+            showingSetlistEditor = true
+          }
+          .font(.system(size: 14, weight: .semibold))
+        } else {
+          collapseToggleButton
         }
-        .font(.system(size: 14, weight: .semibold))
       }
 
-      if !record.sortedSetlistItems.isEmpty {
+      if !record.sortedSetlistItems.isEmpty && isSetlistExpanded {
         VStack(spacing: 8) {
           ForEach(Array(record.sortedSetlistItems.enumerated()), id: \.element.objectID) { index, item in
             setlistRow(item, songNumber: songNumber(for: item))
           }
         }
         .padding(12)
-        .background(Color(white: 0.929))
+        .background(setlistCardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14))
       }
     }
+  }
+
+  // ジャケット抽出色に寄せた背景。曲行（songRowBackground）より薄い濃度に
+  // して、カード地と曲行カードの二層が視覚的に区別できるようにする。
+  private var setlistCardBackground: some View {
+    ZStack {
+      Color.white
+      dominantColor.opacity(0.35)
+    }
+  }
+
+  private var collapseToggleButton: some View {
+    Button {
+      withAnimation(.easeInOut(duration: 0.2)) {
+        isSetlistExpanded.toggle()
+      }
+    } label: {
+      Image(systemName: isSetlistExpanded ? "chevron.up" : "chevron.down")
+        .font(.system(size: 13, weight: .bold))
+        .foregroundStyle(primaryTextColor)
+        .frame(width: 30, height: 30)
+        .background(setlistCardBackground)
+        .clipShape(Circle())
+    }
+    .buttonStyle(.plain)
   }
 
   private func songNumber(for item: CD_SetlistItem) -> Int? {
@@ -400,14 +467,12 @@ struct RecordDetailView: View {
   }
 
   private func songRow(_ item: CD_SetlistItem, songNumber: Int) -> some View {
-    HStack(spacing: 10) {
-      Text(String(format: "%02d", songNumber))
-        .font(.system(size: 13, weight: .bold))
-        .foregroundStyle(Color(white: 0.545))
-        .frame(width: 28, alignment: .leading)
+    HStack(spacing: 12) {
+      songArtwork(item, songNumber: songNumber)
 
       Text(item.songName ?? "-")
         .font(.system(size: 15, weight: .bold))
+        .foregroundStyle(primaryTextColor)
         .lineLimit(1)
 
       Spacer(minLength: 8)
@@ -418,8 +483,57 @@ struct RecordDetailView: View {
     }
     .padding(.vertical, 8)
     .padding(.horizontal, 10)
-    .background(Color.white)
-    .clipShape(RoundedRectangle(cornerRadius: 8))
+    .background(songRowBackground)
+    .clipShape(RoundedRectangle(cornerRadius: 10))
+  }
+
+  // カード自体（setlistCardBackground）より一段濃く、白一色に見えないよう
+  // 曲行にもジャケット抽出色を乗せる。
+  private var songRowBackground: some View {
+    ZStack {
+      Color.white
+      dominantColor.opacity(0.55)
+    }
+  }
+
+  /// Jacket thumbnail with the running track number overlaid as a small
+  /// pill in the corner (rather than a separate text column) — the artwork
+  /// carries the number instead of competing with the title for width, the
+  /// same trick receipts use with QTY-per-line but adapted to art-forward
+  /// rows. Sizing/fallback mirrors `NextLiveCardView.todaySongArtwork`.
+  @ViewBuilder
+  private func songArtwork(_ item: CD_SetlistItem, songNumber: Int) -> some View {
+    ZStack(alignment: .topLeading) {
+      if let urlString = item.artworkUrl, let url = URL(string: urlString) {
+        AsyncImage(url: url) { image in
+          image.resizable().scaledToFill()
+        } placeholder: {
+          songArtworkFallback
+        }
+      } else {
+        songArtworkFallback
+      }
+    }
+    .frame(width: 48, height: 48)
+    .clipShape(RoundedRectangle(cornerRadius: 10))
+    .overlay(alignment: .topLeading) {
+      Text(String(format: "%02d", songNumber))
+        .font(.system(size: 9, weight: .bold))
+        .foregroundStyle(.white)
+        .padding(.horizontal, 5)
+        .padding(.vertical, 2)
+        .background(Color.black.opacity(0.55))
+        .clipShape(RoundedRectangle(cornerRadius: 5))
+        .padding(4)
+    }
+  }
+
+  private var songArtworkFallback: some View {
+    ZStack {
+      Color(white: 0.929)
+      HugeIconView(icon: HugeIcons.musicNote01, size: 18)
+        .foregroundStyle(Color(white: 0.686))
+    }
   }
 
   @ViewBuilder
@@ -433,7 +547,7 @@ struct RecordDetailView: View {
         togglePlay(item)
       } label: {
         HugeIconView(icon: nowPlayingSongId == songId ? HugeIcons.pauseCircle : HugeIcons.playCircle, size: 22)
-          .foregroundStyle(nowPlayingSongId == songId ? Color.accentColor : Color(white: 0.6))
+          .foregroundStyle(nowPlayingSongId == songId ? Color.accentColor : secondaryTextColor)
       }
     }
   }
@@ -482,6 +596,23 @@ struct RecordDetailView: View {
 
   private func openExternally(_ item: CD_SetlistItem) {
     MusicProviderPreferenceStore.load().open(query: searchQuery(for: item))
+  }
+
+  // MARK: - Venue map
+
+  private func venueSection(coordinate: CLLocationCoordinate2D) -> some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("#venue")
+        .font(.system(size: 18, weight: .black))
+        .foregroundStyle(primaryTextColor)
+
+      VenueMapCardView(
+        venueName: record.venue?.isEmpty == false ? record.venue! : "-",
+        address: record.venueAddress,
+        coordinate: coordinate,
+        tintColor: dominantColor
+      )
+    }
   }
 
   // MARK: - Memo
