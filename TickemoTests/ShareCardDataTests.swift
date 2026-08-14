@@ -134,48 +134,48 @@ final class ShareCardDataTests: XCTestCase {
     }
   }
 
-  func testReceiptRowsExactlySixteenSongsShowsNoEllipsis() {
+  func testReceiptRowsExactlyTwentySongsShowsNoEllipsis() {
     let record = makeRecord()
-    makeSongs(count: 16, in: record)
+    makeSongs(count: 20, in: record)
     try? context.save()
 
     let rows = ShareCardData.receiptRows(setlistItems: record.sortedSetlistItems)
 
-    XCTAssertEqual(rows.count, 16)
+    XCTAssertEqual(rows.count, 20)
     XCTAssertFalse(rows.contains { if case .ellipsis = $0 { true } else { false } })
   }
 
-  func testReceiptRowsSeventeenSongsCompressesWithEllipsis() {
+  func testReceiptRowsTwentyOneSongsCompressesWithEllipsis() {
     let record = makeRecord()
-    makeSongs(count: 17, in: record)
+    makeSongs(count: 21, in: record)
     try? context.save()
 
     let rows = ShareCardData.receiptRows(setlistItems: record.sortedSetlistItems)
 
-    // 8 head songs + 1 ellipsis + 8 tail songs = 17 rows, dropping exactly 1 song.
-    XCTAssertEqual(rows.count, 17)
+    // 10 head songs + 1 ellipsis + 10 tail songs = 21 rows, dropping exactly 1 song.
+    XCTAssertEqual(rows.count, 21)
     guard case .song(_, let firstName, _) = rows[0] else { return XCTFail("expected a song row") }
     XCTAssertEqual(firstName, "Song 1")
-    guard case .ellipsis = rows[8] else { return XCTFail("expected the ellipsis at index 8") }
-    guard case .song(_, let lastName, _) = rows[16] else { return XCTFail("expected a song row") }
-    XCTAssertEqual(lastName, "Song 17")
+    guard case .ellipsis = rows[10] else { return XCTFail("expected the ellipsis at index 10") }
+    guard case .song(_, let lastName, _) = rows[20] else { return XCTFail("expected a song row") }
+    XCTAssertEqual(lastName, "Song 21")
   }
 
   func testReceiptRowsEncoreAtBoundaryIsDroppedWithMiddleSongs() {
     let record = makeRecord()
-    for i in 0..<8 {
+    for i in 0..<10 {
       makeSetlistItem(songName: "Song \(i + 1)", orderIndex: Int32(i), for: record)
     }
-    makeSetlistItem(kind: "encore", orderIndex: 8, for: record)
-    for i in 8..<17 {
+    makeSetlistItem(kind: "encore", orderIndex: 10, for: record)
+    for i in 10..<21 {
       makeSetlistItem(songName: "Song \(i + 1)", orderIndex: Int32(i + 1), for: record)
     }
     try? context.save()
 
     let rows = ShareCardData.receiptRows(setlistItems: record.sortedSetlistItems)
 
-    // The encore marker sits right after the 8th song, i.e. exactly where
-    // the head slice stops (head stops as soon as 8 songs are consumed,
+    // The encore marker sits right after the 10th song, i.e. exactly where
+    // the head slice stops (head stops as soon as 10 songs are consumed,
     // BEFORE appending anything further) — so it must be dropped, not kept.
     XCTAssertFalse(rows.contains { if case .encoreMarker = $0 { true } else { false } })
   }

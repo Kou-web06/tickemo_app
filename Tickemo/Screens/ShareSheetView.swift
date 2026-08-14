@@ -121,10 +121,8 @@ struct ShareSheetView: View {
         .scaleEffect(scale)
         .frame(width: canvasSize.width * scale, height: previewHeight)
         // Plus 限定カード（Receipt / CD）は未加入だと内容が丸見えに
-        // ならないようぼかす。clipShape より前に置いてブラーの滲みも
-        // 角丸内に収める
+        // ならないようぼかす
         .blur(radius: isLockedPreview ? 14 : 0)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
         .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: 10)
         .id(cardType)
         .transition(.opacity.combined(with: .scale(scale: 0.96)))

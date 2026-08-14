@@ -168,7 +168,7 @@ enum ShareCardData {
   }
 
   static let receiptDashedDivider = String(repeating: "-", count: 60)
-  static let receiptEncoreMarkerLine = "-------------------- ENCORE --------------------"
+  static let receiptEncoreMarkerLine = "----------- ENCORE -----------"
 
   /// Full row-building + compression pipeline. `setlistItems` is expected
   /// already orderIndex-sorted (record.sortedSetlistItems).
@@ -180,11 +180,11 @@ enum ShareCardData {
   ///    (and don't consume a song index); everything else is skipped.
   ///    A song's display name gets " - {artistName}" appended when the
   ///    setlist has multiple distinct song artists.
-  /// 2. If total song count <= 16: return every entry as a row, no ellipsis.
-  /// 3. If total song count > 16: walk forward keeping entries until 8
-  ///    songs have been consumed (stopping BEFORE any entry once 8 is
-  ///    reached, so a marker immediately after the 8th song is dropped,
-  ///    not kept), walk backward the same way for the trailing 8 songs,
+  /// 2. If total song count <= 20: return every entry as a row, no ellipsis.
+  /// 3. If total song count > 20: walk forward keeping entries until 10
+  ///    songs have been consumed (stopping BEFORE any entry once 10 is
+  ///    reached, so a marker immediately after the 10th song is dropped,
+  ///    not kept), walk backward the same way for the trailing 10 songs,
   ///    and join head + [.ellipsis] + tail.
   static func receiptRows(setlistItems: [CD_SetlistItem]) -> [ReceiptRow] {
     enum Entry { case song(number: Int, name: String), encore }
@@ -225,14 +225,14 @@ enum ShareCardData {
       }
     }
 
-    guard songNumber > 16 else {
+    guard songNumber > 20 else {
       return entries.map(toRow)
     }
 
     var head: [Entry] = []
     var headSongs = 0
     for entry in entries {
-      if headSongs >= 8 { break }
+      if headSongs >= 10 { break }
       head.append(entry)
       if case .song = entry { headSongs += 1 }
     }
@@ -240,7 +240,7 @@ enum ShareCardData {
     var tail: [Entry] = []
     var tailSongs = 0
     for entry in entries.reversed() {
-      if tailSongs >= 8 { break }
+      if tailSongs >= 10 { break }
       tail.insert(entry, at: 0)
       if case .song = entry { tailSongs += 1 }
     }
