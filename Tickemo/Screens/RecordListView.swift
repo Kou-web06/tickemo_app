@@ -135,10 +135,18 @@ struct RecordListView: View {
     Group {
       switch viewMode {
       case .list:
-        if filteredRecords.isEmpty {
-          emptyState
-        } else {
-          listContent
+        // フィルタータブは常に表示 — 空状態でもここに置くことで、
+        // Upcoming/Past が0件でもタブが消えて戻れなくなるのを防ぐ。
+        VStack(spacing: 0) {
+          filterTabBar
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+          if filteredRecords.isEmpty {
+            emptyState
+          } else {
+            listContent
+          }
         }
       case .grid:
         if artistTiles.isEmpty {
@@ -204,38 +212,36 @@ struct RecordListView: View {
 
   // MARK: - List mode
 
+  private var filterTabBar: some View {
+    HStack(spacing: 8) {
+      ForEach(RecordFilter.allCases, id: \.self) { f in
+        Button {
+          filter = f
+        } label: {
+          Text(f.label)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(filter == f ? .white : palette.primaryText)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 7)
+            .background {
+              Capsule()
+                .fill(filter == f ? filterAccent : .clear)
+                .overlay {
+                  if filter != f {
+                    Capsule()
+                      .stroke(palette.primaryText.opacity(isDarkMode ? 0.3 : 0.2), lineWidth: 1)
+                  }
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.15), value: filter)
+      }
+    }
+  }
+
   private var listContent: some View {
     List {
-      // ── フィルタータブ ──
-      HStack(spacing: 8) {
-        ForEach(RecordFilter.allCases, id: \.self) { f in
-          Button {
-            filter = f
-          } label: {
-            Text(f.label)
-              .font(.system(size: 13, weight: .semibold))
-              .foregroundStyle(filter == f ? .white : palette.primaryText)
-              .padding(.horizontal, 16)
-              .padding(.vertical, 7)
-              .background {
-                Capsule()
-                  .fill(filter == f ? filterAccent : .clear)
-                  .overlay {
-                    if filter != f {
-                      Capsule()
-                        .stroke(palette.primaryText.opacity(isDarkMode ? 0.3 : 0.2), lineWidth: 1)
-                    }
-                  }
-              }
-          }
-          .buttonStyle(.plain)
-          .animation(.easeInOut(duration: 0.15), value: filter)
-        }
-      }
-      .listRowSeparator(.hidden)
-      .listRowInsets(EdgeInsets(top: -12, leading: 16, bottom: 12, trailing: 16))
-      .listRowBackground(Color.clear)
-
       // ── NextLiveCard ──
       if let nextLiveRecord {
         NextLiveCardView(record: nextLiveRecord)
@@ -292,6 +298,35 @@ struct RecordListView: View {
 
   // MARK: - Empty state
 
+  // レコードは存在するが選択中のフィルターに0件、というケース
+  // （records.isEmpty ではなく filteredRecords.isEmpty）で "Your collection
+  // is empty" と出すのは誤解を招くため、フィルター別の文言に分ける。
+  private var emptyStateTitle: String {
+    guard records.isEmpty else {
+      switch filter {
+      case .all: return "Your collection\nis empty"
+      case .upcoming: return "No upcoming\ntickets"
+      case .past: return "No past\ntickets"
+      }
+    }
+    return "Your collection\nis empty"
+  }
+
+  private var emptyStateDescription: String {
+    guard records.isEmpty else {
+      switch filter {
+      case .all: return "Add from the button above"
+      case .upcoming: return "Tickets for upcoming lives will show up here"
+      case .past: return "Tickets for past lives will show up here"
+      }
+    }
+    return "Add from the button above"
+  }
+
+  private var emptyStateButtonTitle: String {
+    records.isEmpty ? "Add your first live" : "Add a ticket"
+  }
+
   @ViewBuilder
   private var emptyState: some View {
     VStack(spacing: 0) {
@@ -301,13 +336,13 @@ struct RecordListView: View {
         .frame(width: 120, height: 120)
         .padding(.bottom, 24)
 
-      Text("Your collection\nis empty")
+      Text(emptyStateTitle)
         .font(.system(size: 22, weight: .heavy))
         .foregroundStyle(palette.primaryText)
         .multilineTextAlignment(.center)
         .padding(.bottom, 10)
 
-      Text("Add from the button above")
+      Text(emptyStateDescription)
         .font(.system(size: 15))
         .foregroundStyle(palette.emptyText)
         .multilineTextAlignment(.center)
@@ -316,7 +351,7 @@ struct RecordListView: View {
       Button {
         requestAddTicket()
       } label: {
-        Text("Add your first live")
+        Text(emptyStateButtonTitle)
           .font(.system(size: 14, weight: .bold))
           .foregroundStyle(.white)
           .padding(.vertical, 14)
