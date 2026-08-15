@@ -8,9 +8,9 @@ enum RecordFilter: String, CaseIterable {
 
   var label: String {
     switch self {
-    case .all: "All"
-    case .upcoming: "Upcoming"
-    case .past: "Past"
+    case .all: "すべて"
+    case .upcoming: "開催予定"
+    case .past: "過去"
     }
   }
 }
@@ -129,8 +129,6 @@ struct RecordListView: View {
     }?.objectID
   }
 
-  private var ticketWord: String { records.count == 1 ? "Ticket" : "Tickets" }
-
   var body: some View {
     Group {
       switch viewMode {
@@ -151,9 +149,9 @@ struct RecordListView: View {
       case .grid:
         if artistTiles.isEmpty {
           HugeIconUnavailableView(
-            title: "No Artists Yet",
+            title: "アーティストがまだいません",
             icon: HugeIcons.userMultiple02,
-            description: Text("Tickets with an artist name will show up here.")
+            description: Text("アーティスト名を登録したチケットがここに表示されます")
           )
         } else {
           ScrollView {
@@ -171,7 +169,7 @@ struct RecordListView: View {
       }
     }
     // 大タイトル → スクロールで自動的にナビバー中央へコンパクト収縮
-    .navigationTitle("\(records.count) \(ticketWord)")
+    .navigationTitle("\(records.count)枚のチケット")
     .navigationBarTitleDisplayMode(.large)
     .toolbar {
       ToolbarItem(placement: .primaryAction) {
@@ -261,9 +259,9 @@ struct RecordListView: View {
       ForEach(filteredRecords, id: \.objectID) { record in
         VStack(alignment: .leading, spacing: 8) {
           if record.objectID == firstUpNextRecordID {
-            sectionLeadLabel("Up Next")
+            sectionLeadLabel("これから")
           } else if record.objectID == firstPastEventsRecordID {
-            sectionLeadLabel("Past Events")
+            sectionLeadLabel("過去の記録")
           }
           ZStack(alignment: .leading) {
             NavigationLink(value: record) { EmptyView() }.opacity(0)
@@ -304,27 +302,27 @@ struct RecordListView: View {
   private var emptyStateTitle: String {
     guard records.isEmpty else {
       switch filter {
-      case .all: return "Your collection\nis empty"
-      case .upcoming: return "No upcoming\ntickets"
-      case .past: return "No past\ntickets"
+      case .all: return "コレクションは\nまだ空です"
+      case .upcoming: return "開催予定の\nチケットはありません"
+      case .past: return "過去の\nチケットはありません"
       }
     }
-    return "Your collection\nis empty"
+    return "コレクションは\nまだ空です"
   }
 
   private var emptyStateDescription: String {
     guard records.isEmpty else {
       switch filter {
-      case .all: return "Add from the button above"
-      case .upcoming: return "Tickets for upcoming lives will show up here"
-      case .past: return "Tickets for past lives will show up here"
+      case .all: return "上のボタンから追加しよう"
+      case .upcoming: return "今後のライブのチケットがここに表示されます"
+      case .past: return "過去のライブのチケットがここに表示されます"
       }
     }
-    return "Add from the button above"
+    return "上のボタンから追加しよう"
   }
 
   private var emptyStateButtonTitle: String {
-    records.isEmpty ? "Add your first live" : "Add a ticket"
+    records.isEmpty ? "最初のライブを追加" : "チケットを追加"
   }
 
   @ViewBuilder
