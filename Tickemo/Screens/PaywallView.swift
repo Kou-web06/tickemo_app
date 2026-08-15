@@ -63,6 +63,7 @@ struct PaywallView: View {
     (HugeIcons.infinity01, "無制限のアーカイブ", "過去のチケットも写真もすべて保存。"),
     (HugeIcons.cd, "シェアカードの拡張", "ストーリーズで映える限定画像を無制限に生成。"),
     (HugeIcons.analytics01, "レポートの全期間解放", "過去の年やAll-Timeのレポートも制限なく閲覧。"),
+    (HugeIcons.gridView, "ホーム画面ウィジェット", "次のライブまでのカウントダウンをホーム画面に表示。"),
     (HugeIcons.favourite, "開発者を応援", "今後のアップデートと新機能の開発をサポート"),
   ]
 
