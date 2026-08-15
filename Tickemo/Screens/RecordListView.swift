@@ -8,9 +8,9 @@ enum RecordFilter: String, CaseIterable {
 
   var label: String {
     switch self {
-    case .all: "すべて"
-    case .upcoming: "開催予定"
-    case .past: "過去"
+    case .all: "All"
+    case .upcoming: "Upcoming"
+    case .past: "Past"
     }
   }
 }
@@ -129,6 +129,8 @@ struct RecordListView: View {
     }?.objectID
   }
 
+  private var ticketWord: String { records.count == 1 ? "Ticket" : "Tickets" }
+
   var body: some View {
     Group {
       switch viewMode {
@@ -169,7 +171,7 @@ struct RecordListView: View {
       }
     }
     // 大タイトル → スクロールで自動的にナビバー中央へコンパクト収縮
-    .navigationTitle("\(records.count)枚のチケット")
+    .navigationTitle("\(records.count) \(ticketWord)")
     .navigationBarTitleDisplayMode(.large)
     .toolbar {
       ToolbarItem(placement: .primaryAction) {
@@ -259,9 +261,9 @@ struct RecordListView: View {
       ForEach(filteredRecords, id: \.objectID) { record in
         VStack(alignment: .leading, spacing: 8) {
           if record.objectID == firstUpNextRecordID {
-            sectionLeadLabel("これから")
+            sectionLeadLabel("Up Next")
           } else if record.objectID == firstPastEventsRecordID {
-            sectionLeadLabel("過去の記録")
+            sectionLeadLabel("Past Events")
           }
           ZStack(alignment: .leading) {
             NavigationLink(value: record) { EmptyView() }.opacity(0)
