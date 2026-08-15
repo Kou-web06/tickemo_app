@@ -20,6 +20,13 @@ enum RecordViewMode {
   case grid
 }
 
+private struct RecordListScrollOffsetKey: PreferenceKey {
+  static var defaultValue: CGFloat = 0
+  static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+    value = nextValue()
+  }
+}
+
 /// Matches CollectionScreen.tsx's FREE_TICKET_LIMIT.
 private let freeTicketLimit = 3
 
@@ -38,8 +45,12 @@ struct RecordListView: View {
   @State private var viewMode: RecordViewMode = .list
   @State private var showingCreateSheet = false
   @State private var showingPaywall = false
+  // リストを少し下にスクロールしたらフィルタータブをコンパクト化する
+  // （ずっとフルサイズで固定だとチケット表示領域を圧迫するため）
+  @State private var isFilterBarCompact = false
 
   private let filterAccent = Color(red: 0.604, green: 0.486, blue: 0.973)
+  private let scrollCoordinateSpace = "recordListScroll"
 
   private var isDarkMode: Bool {
     ThemePreferenceService.shared.effectiveIsDark(systemIsDark: systemColorScheme == .dark)
@@ -137,16 +148,21 @@ struct RecordListView: View {
       case .list:
         // フィルタータブは常に表示 — 空状態でもここに置くことで、
         // Upcoming/Past が0件でもタブが消えて戻れなくなるのを防ぐ。
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
           filterTabBar
             .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 8)
+            .padding(.top, isFilterBarCompact ? 6 : 12)
+            .padding(.bottom, isFilterBarCompact ? 4 : 8)
           if filteredRecords.isEmpty {
             emptyState
           } else {
             listContent
           }
+        }
+        .onPreferenceChange(RecordListScrollOffsetKey.self) { offset in
+          let shouldCompact = offset < -8
+          guard shouldCompact != isFilterBarCompact else { return }
+          withAnimation(.easeInOut(duration: 0.2)) { isFilterBarCompact = shouldCompact }
         }
       case .grid:
         if artistTiles.isEmpty {
@@ -213,16 +229,16 @@ struct RecordListView: View {
   // MARK: - List mode
 
   private var filterTabBar: some View {
-    HStack(spacing: 8) {
+    HStack(spacing: isFilterBarCompact ? 6 : 8) {
       ForEach(RecordFilter.allCases, id: \.self) { f in
         Button {
           filter = f
         } label: {
           Text(f.label)
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: isFilterBarCompact ? 11 : 13, weight: .semibold))
             .foregroundStyle(filter == f ? .white : palette.primaryText)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 7)
+            .padding(.horizontal, isFilterBarCompact ? 12 : 16)
+            .padding(.vertical, isFilterBarCompact ? 5 : 7)
             .background {
               Capsule()
                 .fill(filter == f ? filterAccent : .clear)
@@ -242,6 +258,21 @@ struct RecordListView: View {
 
   private var listContent: some View {
     List {
+      // フィルタータブのコンパクト化トリガー用、見えない高さ0の計測行
+      Color.clear
+        .frame(height: 0)
+        .listRowInsets(EdgeInsets())
+        .listRowSeparator(.hidden)
+        .listRowBackground(Color.clear)
+        .background(
+          GeometryReader { proxy in
+            Color.clear.preference(
+              key: RecordListScrollOffsetKey.self,
+              value: proxy.frame(in: .named(scrollCoordinateSpace)).minY
+            )
+          }
+        )
+
       // ── NextLiveCard ──
       if let nextLiveRecord {
         NextLiveCardView(record: nextLiveRecord)
@@ -287,6 +318,7 @@ struct RecordListView: View {
     .listStyle(.plain)
     .scrollContentBackground(.hidden)
     .scrollIndicators(.hidden)
+    .coordinateSpace(name: scrollCoordinateSpace)
   }
 
   private func sectionLeadLabel(_ text: String) -> some View {
