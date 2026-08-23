@@ -32,7 +32,7 @@ struct VenueMapCardView: View {
 
         VStack(alignment: .leading, spacing: 2) {
           Text(venueName)
-            .font(.system(size: 16, weight: .bold))
+            .font(.system(size: 18, weight: .bold))
             .foregroundStyle(.white)
             .lineLimit(1)
           if let address, !address.isEmpty {
@@ -45,7 +45,7 @@ struct VenueMapCardView: View {
         .padding(16)
       }
       .frame(height: 220)
-      .clipShape(RoundedRectangle(cornerRadius: 14))
+      .clipShape(RoundedRectangle(cornerRadius: 24))
     }
     .buttonStyle(.plain)
   }

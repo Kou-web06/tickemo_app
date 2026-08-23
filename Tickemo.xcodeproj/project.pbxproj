@@ -305,7 +305,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E0962EA32F853CAE00CE3EF6 /* Exceptions for "LiveWidget" folder in "LiveWidgetExtension" target */ = {
+		E0962EA32F853CAE00CE3EF6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -315,18 +315,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E0962E912F853CAD00CE3EF6 /* LiveWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				E0962EA32F853CAE00CE3EF6 /* Exceptions for "LiveWidget" folder in "LiveWidgetExtension" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = LiveWidget;
-			sourceTree = "<group>";
-		};
+		E0962E912F853CAD00CE3EF6 /* LiveWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (E0962EA32F853CAE00CE3EF6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = LiveWidget; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -917,7 +906,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.4.8;
+				MARKETING_VERSION = 3.6.15;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -950,7 +939,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.4.8;
+				MARKETING_VERSION = 3.6.15;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1179,7 +1168,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.6.14;
+				MARKETING_VERSION = 3.6.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.Tickemo.LiveWidget;
@@ -1227,7 +1216,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.6.14;
+				MARKETING_VERSION = 3.6.15;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.Tickemo.LiveWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
