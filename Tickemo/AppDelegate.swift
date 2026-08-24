@@ -37,9 +37,9 @@ final class TickemoSceneDelegate: NSObject, UIWindowSceneDelegate {
 @main
 struct TickemoApp: App {
   @UIApplicationDelegateAdaptor(TickemoAppDelegate.self) private var appDelegate
+  @State private var showSplash = true
 
   init() {
-    Task { await PurchasesService.shared.configure() }
     // 起動直後から CloudKit の eventChangedNotification を受け取るために
     // 早期にシングルトンを生成する。遅延初期化のまま放置すると、設定画面を
     // 開くまでオブザーバーが登録されず、起動時の import/export イベントを
@@ -52,18 +52,34 @@ struct TickemoApp: App {
       ContentView()
         .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
         .preferredColorScheme(ThemePreferenceService.shared.colorScheme)
-        // Runs before anything can be shown or edited. `runIfNeeded` is
-        // idempotent and returns immediately once migration has happened,
-        // so attaching it here (rather than to a single screen) costs
-        // nothing on subsequent launches.
+        // スプラッシュ表示中に並列で初回読み込みを完了させる。
+        // PurchasesService.configure() の完了（Plus 判定含む）と migration の
+        // 完了を待ってからスプラッシュを消す。最低 0.7 秒は表示して
+        // ランチスクリーンからの繋ぎが自然に見えるようにする。
+        // 初期化タスク: スキップ有無に関わらず必ず完走させる
         .task {
-          await MigrationCoordinator.shared.runIfNeeded()
-          // After migration, not before: the widget should reflect the
-          // imported records rather than the empty store they replaced.
+          async let purchases: Void = PurchasesService.shared.configure()
+          async let migration: Void = MigrationCoordinator.shared.runIfNeeded()
+          _ = await (purchases, migration)
           WidgetReloaderService.startObserving()
           LiveNotificationService.requestAuthorizationIfNeeded()
           LiveNotificationService.startObserving()
         }
+        // スプラッシュ表示タスク: 3 秒後に自動で閉じる（スキップ可）
+        .task {
+          try? await Task.sleep(nanoseconds: 3_000_000_000)
+          withAnimation(.easeOut(duration: 0.4)) {
+            showSplash = false
+          }
+        }
+        .overlay {
+          if showSplash {
+            SplashView()
+              .transition(.opacity)
+              .ignoresSafeArea()
+          }
+        }
+        .animation(.easeOut(duration: 0.4), value: showSplash)
     }
   }
 }

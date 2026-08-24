@@ -117,6 +117,7 @@
 		E0962E8E2F853CAD00CE3EF6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */; };
 		E0962E902F853CAD00CE3EF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */; };
 		E0962E9F2F853CAE00CE3EF6 /* LiveWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E0A2759B303B2A5B0022A5BD /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A2759A303B2A5B0022A5BD /* SplashView.swift */; };
 		E1B35F8E9EE2B9527B4BC8FE /* ShareReceiptCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0800A7D856FA6988684EA128 /* ShareReceiptCardView.swift */; };
 		E350B28E5DDDB949B33C927F /* ImageCropping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */; };
 		E3FA2835D57DD6FA064C5853 /* SetlistEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8C29472BB0AB4450819C528 /* SetlistEditorView.swift */; };
@@ -281,6 +282,7 @@
 		E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		E0962EA52F85506700CE3EF6 /* LiveWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LiveWidgetExtension.entitlements; sourceTree = "<group>"; };
+		E0A2759A303B2A5B0022A5BD /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		E1230990001977CC87208EC0 /* HugeIconPath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HugeIconPath.swift; sourceTree = "<group>"; };
 		E6D0322E74FBB97B858D09B7 /* ShareCapture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareCapture.swift; sourceTree = "<group>"; };
 		E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGroupingTests.swift; sourceTree = "<group>"; };
@@ -546,6 +548,7 @@
 				97FDED7BBE313F4E2B85599A /* ICloudSyncStatusView.swift */,
 				510FEECDFBC712D8783FFC05 /* SetlistOcrReviewView.swift */,
 				E91184330745F4D13D61D867 /* NotificationSettingsView.swift */,
+				E0A2759A303B2A5B0022A5BD /* SplashView.swift */,
 			);
 			name = Screens;
 			path = Tickemo/Screens;
@@ -775,6 +778,7 @@
 				1FF874666EB2D9903E52CE09 /* RecordDetailView.swift in Sources */,
 				4479BC3D12C54FCBEA653D8D /* RecordFormView.swift in Sources */,
 				D66DB574454AC6C701CCA05E /* DebugToolsView.swift in Sources */,
+				E0A2759B303B2A5B0022A5BD /* SplashView.swift in Sources */,
 				FF8FD5ACDE59B775B191833A /* RecordRowView.swift in Sources */,
 				2EA5E6B32379972C9C75E2F8 /* DateFormatting.swift in Sources */,
 				2ED127FE8B5D41D48E31A853 /* LiveType.swift in Sources */,
