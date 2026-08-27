@@ -125,6 +125,7 @@
 		E4F24B37C7F412D6EA5A86DD /* AppleMusicServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8915654231D36C39E7ACA59 /* AppleMusicServiceTests.swift */; };
 		E749E1331B2C9C50F58C5219 /* NextLiveCardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FE35494D7275C25C11EC3C /* NextLiveCardData.swift */; };
 		EABA1B92E4FAEF958730470E /* ChekiRecordArtists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A3A7CC25C17955E6806FC /* ChekiRecordArtists.swift */; };
+		EB53041D4BDD953E282F40D5 /* SetlistOcrImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA2A44D6699F40241BA25A7E /* SetlistOcrImport.swift */; };
 		F04553008EC9747425E10737 /* StringArrayTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 		F152BB5A871627E7BCD83CBB /* LiveNotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA8C4E889A7B929FF4011A /* LiveNotificationSettings.swift */; };
@@ -266,6 +267,7 @@
 		C0B9B148649A239A0A0B4441 /* TimeWheelPickerField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimeWheelPickerField.swift; sourceTree = "<group>"; };
 		C40CE53D60FA2117638BFA16 /* LegacyDataBackup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyDataBackup.swift; sourceTree = "<group>"; };
 		C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VenueMapCardView.swift; sourceTree = "<group>"; };
+		CA2A44D6699F40241BA25A7E /* SetlistOcrImport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistOcrImport.swift; sourceTree = "<group>"; };
 		CCB5B2FD867D3B5F862DB18E /* LiveType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveType.swift; sourceTree = "<group>"; };
 		D0B69313B8AB4D706F1A74A7 /* StatisticsRankingRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsRankingRowView.swift; sourceTree = "<group>"; };
 		D0F7B87F62C4B3D653726805 /* HapticsPreferenceService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HapticsPreferenceService.swift; sourceTree = "<group>"; };
@@ -307,7 +309,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E0962EA32F853CAE00CE3EF6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		E0962EA32F853CAE00CE3EF6 /* Exceptions for "LiveWidget" folder in "LiveWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -317,7 +319,18 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E0962E912F853CAD00CE3EF6 /* LiveWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (E0962EA32F853CAE00CE3EF6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = LiveWidget; sourceTree = "<group>"; };
+		E0962E912F853CAD00CE3EF6 /* LiveWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E0962EA32F853CAE00CE3EF6 /* Exceptions for "LiveWidget" folder in "LiveWidgetExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = LiveWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -416,6 +429,7 @@
 				2E5A1967DE1A194132F3A61E /* MigrationOverlayView.swift */,
 				C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */,
 				48286B05F1D063AE48B1F1FD /* VenueSearchField.swift */,
+				CA2A44D6699F40241BA25A7E /* SetlistOcrImport.swift */,
 			);
 			name = Components;
 			path = Tickemo/Components;
@@ -861,6 +875,7 @@
 				1CAE14C7B04539580F69D515 /* VenueMapCardView.swift in Sources */,
 				4EE2FB6BEFD752624B67382F /* VenueSearchField.swift in Sources */,
 				09247DE84CF37FBB2AE7E496 /* ChekiRecordVenue.swift in Sources */,
+				EB53041D4BDD953E282F40D5 /* SetlistOcrImport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

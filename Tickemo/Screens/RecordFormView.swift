@@ -55,6 +55,12 @@ struct RecordFormView: View {
   @State private var gamePhotosData: [Data]
   @State private var showingDiscardConfirmation = false
 
+  // セットリスト OCR「まとめて追加」の呈示は Form レベルにアンカーする。
+  // SetlistDraftEditorView（Section セル内）から呈示すると、行の再評価で
+  // セルごと破棄されて親シート（このフォーム）まで閉じてしまうため。
+  @State private var showingSetlistOcrDialog = false
+  @State private var isRecognizingSetlistOcr = false
+
   init(record: CD_ChekiRecord?) {
     self.record = record
     _liveName = State(initialValue: record?.liveName ?? "")
@@ -124,6 +130,11 @@ struct RecordFormView: View {
       lastIndex = targetIndex
     }
     return entries
+  }
+
+  /// OCR メタデータ補完のヒントに使う先頭アーティスト名（未入力なら nil）。
+  private var primaryArtistName: String? {
+    artistEntries.first { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }?.name
   }
 
   private var isSportsLive: Bool { liveType == .sports }
@@ -210,9 +221,10 @@ struct RecordFormView: View {
             SetlistDraftEditorView(
               items: $setlistItems,
               showsOcrButton: true,
-              artistHint: artistEntries.first {
-                !$0.name.trimmingCharacters(in: .whitespaces).isEmpty
-              }?.name
+              ocr: SetlistOcrBridge(
+                showingSourceDialog: $showingSetlistOcrDialog,
+                isRecognizing: $isRecognizingSetlistOcr
+              )
             )
           }
         }
@@ -277,6 +289,13 @@ struct RecordFormView: View {
           selectedGamePhotoItem = nil
         }
       }
+      // OCR「まとめて追加」の呈示系は Form 直付け（Section の外＝安定アンカー）。
+      .setlistOcrImport(
+        items: $setlistItems,
+        artistHint: primaryArtistName,
+        showingSourceDialog: $showingSetlistOcrDialog,
+        isRecognizing: $isRecognizingSetlistOcr
+      )
     }
     // CD_ChekiRecord.date is a wall-clock string formatted in UTC (see
     // DateFormatting), not a real timezone-aware instant. Without this,

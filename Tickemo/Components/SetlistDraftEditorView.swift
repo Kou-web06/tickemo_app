@@ -3,42 +3,18 @@ import SwiftUI
 struct SetlistDraftEditorView: View {
   @Binding var items: [SetlistDraftItem]
   var showsOcrButton: Bool = false
-  /// OCR 一括登録後のメタデータ補完検索に添えるアーティスト名。
-  /// 曲名だけの検索より正しい曲（＝正しいジャケ写）に当たりやすくなる。
-  var artistHint: String? = nil
+  /// OCR 一括登録フローとの受け渡し口。`showsOcrButton` が true のとき必須。
+  /// 呈示系（カメラ／アルバム／レビュー）は Form セル内に置くと親シートごと
+  /// 閉じてしまうため、`RecordFormView` 側の `.setlistOcrImport(...)` が持つ。
+  /// 詳細は SetlistOcrImport.swift のコメント参照。
+  var ocr: SetlistOcrBridge? = nil
 
   @State private var searchText = ""
   @State private var searchResults: [AppleMusicService.SongResult] = []
   @State private var isSearching = false
   @State private var searchTask: Task<Void, Never>?
 
-  @State private var showingSourceDialog = false
-  // Camera uses fullScreenCover — sheet clips the viewfinder and hides the shutter button.
-  @State private var showingCameraPicker = false
-  @State private var activeSheet: ActiveSheet?
-  @State private var isRecognizing = false
-  @State private var showingCameraUnavailableAlert = false
-  @State private var showingOcrErrorAlert = false
-  @State private var showingNoTextAlert = false
-
   private let appleMusicService = AppleMusicService()
-
-  private struct OcrLinesWrapper: Identifiable {
-    let id = UUID()
-    let lines: [String]
-  }
-
-  private enum ActiveSheet: Identifiable {
-    case library
-    case ocrReview(OcrLinesWrapper)
-
-    var id: String {
-      switch self {
-      case .library: return "library"
-      case .ocrReview(let w): return "review-\(w.id.uuidString)"
-      }
-    }
-  }
 
   var body: some View {
     Group {
@@ -47,36 +23,6 @@ struct SetlistDraftEditorView: View {
     }
     .onChange(of: searchText) { _, newValue in
       scheduleSearch(term: newValue)
-    }
-    // Camera must be fullScreenCover: UIImagePickerController needs the full
-    // screen to render the viewfinder and shutter button correctly.
-    .fullScreenCover(isPresented: $showingCameraPicker) {
-      ImagePickerRepresentable(sourceType: .camera, allowsEditing: false) { data in
-        runOcr(on: data)
-      }
-      .ignoresSafeArea()
-    }
-    .sheet(item: $activeSheet) { sheet in
-      switch sheet {
-      case .library:
-        ImagePickerRepresentable(sourceType: .photoLibrary, allowsEditing: false) { data in
-          runOcr(on: data)
-        }
-        .ignoresSafeArea()
-      case .ocrReview(let wrapper):
-        SetlistOcrReviewView(lines: wrapper.lines) { confirmedLines in
-          addOcrLines(confirmedLines)
-        } onCancel: {}
-      }
-    }
-    .alert("カメラを起動できませんでした。もう一度お試しください。", isPresented: $showingCameraUnavailableAlert) {
-      Button("OK", role: .cancel) {}
-    }
-    .alert("画像からテキストを取得できませんでした。もう一度お試しください。", isPresented: $showingOcrErrorAlert) {
-      Button("OK", role: .cancel) {}
-    }
-    .alert("テキストを検出できませんでした。別の画像をお試しください。", isPresented: $showingNoTextAlert) {
-      Button("OK", role: .cancel) {}
     }
   }
 
@@ -88,12 +34,12 @@ struct SetlistDraftEditorView: View {
         TextField("曲名を検索", text: $searchText)
           .textFieldStyle(.roundedBorder)
 
-        if showsOcrButton {
+        if showsOcrButton, let ocr {
           Button {
-            guard !isRecognizing else { return }
-            showingSourceDialog = true
+            guard !ocr.isRecognizing else { return }
+            ocr.showingSourceDialog = true
           } label: {
-            if isRecognizing {
+            if ocr.isRecognizing {
               ProgressView()
             } else {
               Image("edit ai")
@@ -104,18 +50,7 @@ struct SetlistDraftEditorView: View {
                 .foregroundStyle(Color(white: 0.6))
             }
           }
-          .disabled(isRecognizing)
-          .confirmationDialog("まとめて追加", isPresented: $showingSourceDialog, titleVisibility: .visible) {
-            Button("カメラで撮影") {
-              if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                showingCameraPicker = true
-              } else {
-                showingCameraUnavailableAlert = true
-              }
-            }
-            Button("アルバムから選ぶ") { activeSheet = .library }
-            Button("キャンセル", role: .cancel) {}
-          }
+          .disabled(ocr.isRecognizing)
         }
 
         Menu {
@@ -183,75 +118,6 @@ struct SetlistDraftEditorView: View {
       guard !Task.isCancelled else { return }
       searchResults = results
       isSearching = false
-    }
-  }
-
-  // MARK: - OCR confirm → plain-text parse
-
-  // Converts confirmed text lines to SetlistDraftItems.
-  // Lines starting with "ENCORE" → encore marker; "MC" → MC row; else → song (text only).
-  private func addOcrLines(_ lines: [String]) {
-    var addedSongIDs: [UUID] = []
-    for line in lines {
-      let upper = line.uppercased()
-      if upper == "ENCORE" || upper.hasPrefix("ENCORE ") || upper.hasPrefix("ENCORE\t") {
-        items.append(SetlistDraftItem(id: UUID(), kind: .encore, title: "ENCORE"))
-      } else if upper == "MC" || upper.hasPrefix("MC ") || upper.hasPrefix("MC\t") {
-        let talk = line.count > 2 ? String(line.dropFirst(2)).trimmingCharacters(in: .whitespaces) : ""
-        items.append(SetlistDraftItem(id: UUID(), kind: .mc, title: talk))
-      } else {
-        let item = SetlistDraftItem(id: UUID(), kind: .song, songName: line)
-        items.append(item)
-        addedSongIDs.append(item.id)
-      }
-    }
-    guard !addedSongIDs.isEmpty else { return }
-    Task { await backfillSongMetadata(ids: addedSongIDs) }
-  }
-
-  /// OCR で追加した曲はテキストしか持たずジャケ写が空になるため、
-  /// Apple Music 検索の先頭ヒットから artworkUrl などのメタデータを補完する。
-  /// songName は OCR レビューでユーザーが確認したテキストなので上書きしない。
-  private func backfillSongMetadata(ids: [UUID]) async {
-    let hint = artistHint?.trimmingCharacters(in: .whitespaces) ?? ""
-    for id in ids {
-      guard let name = items.first(where: { $0.id == id })?.songName, !name.isEmpty else { continue }
-
-      var match = hint.isEmpty
-        ? nil
-        : (try? await appleMusicService.searchSongs(term: "\(name) \(hint)", limit: 1))?.first
-      if match == nil {
-        // アーティスト名込みでヒットしない場合（表記ゆれ等）は曲名だけで再検索
-        match = (try? await appleMusicService.searchSongs(term: name, limit: 1))?.first
-      }
-      guard let match else { continue }
-
-      // 検索中に並べ替え・削除されている可能性があるので ID で引き直す
-      guard let index = items.firstIndex(where: { $0.id == id }) else { continue }
-      items[index].songId = match.id
-      items[index].artistName = match.artistName
-      items[index].albumName = match.albumName
-      items[index].artworkUrl = match.artworkUrl
-    }
-  }
-
-  // MARK: - OCR pipeline
-
-  private func runOcr(on imageData: Data) {
-    isRecognizing = true
-    Task {
-      defer { isRecognizing = false }
-      do {
-        let rawText = try await SetlistOcrRecognizer.recognizeText(in: imageData)
-        let lines = SetlistOcrCleanup.cleanedLines(from: rawText)
-        guard !lines.isEmpty else {
-          showingNoTextAlert = true
-          return
-        }
-        activeSheet = .ocrReview(OcrLinesWrapper(lines: lines))
-      } catch {
-        showingOcrErrorAlert = true
-      }
     }
   }
 
