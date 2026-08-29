@@ -34,6 +34,8 @@ struct SetlistEditorView: View {
 
   @Environment(\.managedObjectContext) private var viewContext
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.appBgColor) private var bgColor
+  @Environment(\.appCardBgColor) private var cardBgColor
 
   @State private var items: [SetlistDraftItem]
 
@@ -60,14 +62,17 @@ struct SetlistEditorView: View {
         // LiveEditScreen's inline single-artist setlist field, never on a
         // standalone post-creation editor.
         SetlistDraftEditorView(items: $items)
+          .listRowBackground(cardBgColor ?? Color(.systemBackground))
       }
       .listStyle(.plain)
+      .scrollContentBackground(.hidden)
+      .background((bgColor ?? Color(.systemBackground)).ignoresSafeArea())
       .navigationTitle("Setlist")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button { dismiss() } label: {
-            Image("edit ai")
+            Image("Close remove")
               .renderingMode(.template)
               .resizable()
               .scaledToFit()

@@ -26,6 +26,8 @@ struct ArtistSearchField: View {
 
   private let service = AppleMusicService()
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     Group {
       if !name.isEmpty {
@@ -59,9 +61,9 @@ struct ArtistSearchField: View {
         .foregroundStyle(.orange)
       VStack(alignment: .leading, spacing: 2) {
         Text("Apple Musicへのアクセスがオフです")
-          .font(.system(size: 13, weight: .semibold))
+          .font(appFont.bold(13))
         Text("アーティスト写真を検索するには設定でオンにしてください。")
-          .font(.system(size: 12))
+          .font(appFont.regular(12))
           .foregroundStyle(.secondary)
       }
       Spacer(minLength: 8)
@@ -69,7 +71,7 @@ struct ArtistSearchField: View {
         guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(url)
       }
-      .font(.system(size: 13, weight: .semibold))
+      .font(appFont.bold(13))
       .buttonStyle(.plain)
       .foregroundStyle(.blue)
     }
@@ -80,7 +82,7 @@ struct ArtistSearchField: View {
     HStack(spacing: 12) {
       thumbnail(urlString: imageUrl, size: 40)
       Text(name)
-        .font(.system(size: 16, weight: .semibold))
+        .font(appFont.bold(16))
         .lineLimit(1)
       Spacer(minLength: 8)
       Button {
@@ -121,7 +123,7 @@ struct ArtistSearchField: View {
             HStack(spacing: 12) {
               thumbnail(urlString: artist.imageUrl, size: 44)
               Text(artist.name)
-                .font(.system(size: 16, weight: .medium))
+                .font(appFont.regular(16))
                 .lineLimit(1)
                 .foregroundStyle(.primary)
               Spacer(minLength: 0)

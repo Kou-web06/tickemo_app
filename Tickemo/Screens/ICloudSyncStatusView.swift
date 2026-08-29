@@ -19,6 +19,9 @@ struct ICloudSyncStatusView: View {
   private var palette: ICloudSyncPalette { ICloudSyncPalette(isDarkMode: isDarkMode) }
   private var syncService: CloudSyncStatusService { CloudSyncStatusService.shared }
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+
   var body: some View {
     NavigationStack {
       ScrollView {
@@ -26,14 +29,14 @@ struct ICloudSyncStatusView: View {
           statusCard
 
           Text("iCloud同期が有効になっています。チケット・ライブの記録はすべてのデバイス間で自動的に同期されます。")
-            .font(.system(size: 14))
+            .font(appFont.regular(14))
             .lineSpacing(6)
             .foregroundStyle(palette.descriptionText)
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
 
           Text("最終同期: \(lastSyncText)")
-            .font(.system(size: 13, weight: .medium))
+            .font(appFont.regular(13))
             .foregroundStyle(palette.syncTimeText)
             .padding(.horizontal, 20)
             .padding(.bottom, 32)
@@ -43,7 +46,7 @@ struct ICloudSyncStatusView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 20)
       }
-      .background(palette.screenBackground.ignoresSafeArea())
+      .background((bgColor ?? palette.screenBackground).ignoresSafeArea())
       .navigationTitle("iCloud Sync")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -66,7 +69,7 @@ struct ICloudSyncStatusView: View {
   private var statusCard: some View {
     HStack {
       Text("Status")
-        .font(.system(size: 14, weight: .semibold))
+        .font(appFont.bold(14))
         .foregroundStyle(palette.statusLabel)
       Spacer()
       HStack(spacing: 10) {
@@ -75,7 +78,7 @@ struct ICloudSyncStatusView: View {
           .frame(width: 10, height: 10)
           .shadow(color: statusDotColor.opacity(0.4), radius: 3)
         Text(statusText)
-          .font(.system(size: 15, weight: .semibold))
+          .font(appFont.bold(15))
           .foregroundStyle(palette.statusText)
       }
     }
@@ -124,7 +127,7 @@ struct ICloudSyncStatusView: View {
           Text("今すぐ同期")
         }
       }
-      .font(.system(size: 15, weight: .semibold))
+      .font(appFont.bold(15))
       .foregroundStyle(palette.buttonText)
       .frame(maxWidth: .infinity)
       .padding(.vertical, 14)

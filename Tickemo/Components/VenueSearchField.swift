@@ -21,6 +21,8 @@ struct VenueSearchField: View {
   // just picked (which would otherwise flash the dropdown open again).
   @State private var suppressNextQueryUpdate = false
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       HStack(spacing: 8) {
@@ -51,11 +53,11 @@ struct VenueSearchField: View {
         } label: {
           VStack(alignment: .leading, spacing: 2) {
             Text(result.title)
-              .font(.system(size: 15, weight: .medium))
+              .font(appFont.regular(15))
               .foregroundStyle(.primary)
             if !result.subtitle.isEmpty {
               Text(result.subtitle)
-                .font(.system(size: 12))
+                .font(appFont.regular(12))
                 .foregroundStyle(.secondary)
             }
           }

@@ -26,6 +26,8 @@ struct MigrationOverlayView: View {
     }
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     ZStack {
       palette.screenBackground
@@ -36,12 +38,12 @@ struct MigrationOverlayView: View {
           .controlSize(.large)
 
         Text(message)
-          .font(.system(size: 15, weight: .medium))
+          .font(appFont.regular(15))
           .foregroundStyle(palette.primaryText)
           .multilineTextAlignment(.center)
 
         Text("アプリを開いたままお待ちください。既存のデータが変更されることはありません。")
-          .font(.system(size: 12))
+          .font(appFont.regular(12))
           .foregroundStyle(palette.secondaryText)
           .multilineTextAlignment(.center)
       }

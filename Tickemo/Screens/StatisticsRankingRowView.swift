@@ -16,11 +16,13 @@ struct RankBadge: View {
     }
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     ZStack {
       Circle().fill(fillColor)
       Text("\(rank)")
-        .font(.system(size: 13, weight: .heavy))
+        .font(appFont.bold(13))
         .foregroundStyle(.white)
     }
     .frame(width: 26, height: 26)
@@ -54,16 +56,18 @@ struct StatisticsRankingRow: View {
   let thumbnail: StatisticsRowThumbnail
   var imageShape: ImageShape = .square
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     HStack(spacing: 12) {
       RankBadge(rank: rank)
       thumbnailView
       Text(name)
-        .font(.system(size: 15, weight: .semibold))
+        .font(appFont.bold(15))
         .lineLimit(1)
       Spacer(minLength: 8)
       Text(detail)
-        .font(.system(size: 13, weight: .medium))
+        .font(appFont.regular(13))
         .foregroundStyle(.secondary)
     }
   }

@@ -47,6 +47,8 @@ struct ShareCDCardView: View {
     return ShareCardData.cdBusinessCode(date: record.date, startTime: record.startTime, songCount: songCount)
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     ZStack(alignment: .topLeading) {
       Image("ShareCDFrame")
@@ -64,7 +66,7 @@ struct ShareCDCardView: View {
         .offset(x: width - 200 - 600, y: 160)
 
       Text(businessCode)
-        .font(.system(size: 28, weight: .bold))
+        .font(appFont.bold(28))
         .tracking(1)
         .foregroundStyle(fgColor)
         .shadow(color: fgShadow ?? .clear, radius: fgShadow == nil ? 0 : 8)
@@ -113,7 +115,7 @@ struct ShareCDCardView: View {
     return HStack(alignment: .top, spacing: 16) {
       if setlistLines.isEmpty {
         Text("No setlist")
-          .font(.system(size: 25))
+          .font(appFont.regular(25))
           .foregroundStyle(fgColor)
       } else {
         setlistColumn(column1)
@@ -131,14 +133,14 @@ struct ShareCDCardView: View {
         switch line.kind {
         case .song(let index, let name):
           Text("\(index).\(name)")
-            .font(.system(size: 25, weight: .medium))
+            .font(appFont.regular(25))
             .foregroundStyle(fgColor)
             .lineLimit(1)
         case .encoreSpacer:
-          Text(" ").font(.system(size: 25)).foregroundStyle(.clear)
+          Text(" ").font(appFont.regular(25)).foregroundStyle(.clear)
         case .encoreLabel:
           Text("[ENCORE]")
-            .font(.system(size: 22, weight: .medium))
+            .font(appFont.regular(22))
             .tracking(2)
             .foregroundStyle(fgColor)
         }
@@ -150,19 +152,19 @@ struct ShareCDCardView: View {
   private var liveInfo: some View {
     VStack(alignment: .trailing, spacing: 0) {
       Text(record.liveName?.isEmpty == false ? record.liveName! : "-")
-        .font(.system(size: 56, weight: .black))
+        .font(appFont.bold(56))
         .foregroundStyle(fgColor)
         .lineLimit(2)
         .multilineTextAlignment(.trailing)
 
       Text(record.date?.isEmpty == false ? record.date! : "-")
-        .font(.system(size: 42, weight: .semibold))
+        .font(appFont.bold(42))
         .foregroundStyle(fgColor)
         .padding(.top, 50)
 
       if let venue = record.venue, !venue.isEmpty {
         Text(venue)
-          .font(.system(size: 38, weight: .semibold))
+          .font(appFont.bold(38))
           .foregroundStyle(fgColorSub)
           .lineLimit(2)
           .multilineTextAlignment(.trailing)
@@ -175,10 +177,10 @@ struct ShareCDCardView: View {
   private var credit: some View {
     VStack(alignment: .trailing, spacing: 0) {
       Text("This share card was created")
-        .font(.system(size: 38, weight: .medium))
+        .font(appFont.regular(38))
         .foregroundStyle(fgColor)
       Text("by \(ShareCardData.shareCreditHandle(username: username)) with Tickemo")
-        .font(.system(size: 38, weight: .medium))
+        .font(appFont.regular(38))
         .foregroundStyle(fgColor)
     }
     .frame(width: 550, alignment: .trailing)

@@ -16,6 +16,8 @@ struct ArtistGridItemView: View {
     tile.artistImageUrl ?? backfillImageUrl
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     GeometryReader { proxy in
       ZStack(alignment: .bottomLeading) {
@@ -31,7 +33,7 @@ struct ArtistGridItemView: View {
 
         VStack(alignment: .leading, spacing: 6) {
           Text(tile.name)
-            .font(.system(size: 14, weight: .heavy))
+            .font(appFont.bold(14))
             .foregroundStyle(.white)
             .lineLimit(1)
 
@@ -99,7 +101,7 @@ struct ArtistGridItemView: View {
 
   private func badge(_ text: String) -> some View {
     Text(text)
-      .font(.system(size: 11, weight: .bold))
+      .font(appFont.bold(11))
       .foregroundStyle(.white)
       .padding(.horizontal, 8)
       .padding(.vertical, 3)

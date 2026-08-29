@@ -131,6 +131,9 @@ struct RecordListView: View {
 
   private var ticketWord: String { records.count == 1 ? "Ticket" : "Tickets" }
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+
   var body: some View {
     Group {
       switch viewMode {
@@ -201,7 +204,7 @@ struct RecordListView: View {
     .sheet(isPresented: $showingPaywall) {
       PaywallView()
     }
-    .background(palette.screenBackground)
+    .background(bgColor ?? palette.screenBackground)
     .onAppear {
       WidgetReloaderService.sync(records: Array(records))
     }
@@ -222,7 +225,7 @@ struct RecordListView: View {
           filter = f
         } label: {
           Text(f.label)
-            .font(.system(size: 13, weight: .semibold))
+            .font(appFont.bold(13))
             .foregroundStyle(filter == f ? .white : palette.primaryText)
             .padding(.horizontal, 16)
             .padding(.vertical, 7)
@@ -300,7 +303,7 @@ struct RecordListView: View {
 
   private func sectionLeadLabel(_ text: String) -> some View {
     Text(text)
-      .font(.system(size: 14, weight: .heavy))
+      .font(appFont.bold(14))
       .tracking(0.4)
       .foregroundStyle(palette.primaryText)
   }
@@ -346,13 +349,13 @@ struct RecordListView: View {
         .padding(.bottom, 24)
 
       Text(emptyStateTitle)
-        .font(.system(size: 22, weight: .heavy))
+        .font(appFont.bold(22))
         .foregroundStyle(palette.primaryText)
         .multilineTextAlignment(.center)
         .padding(.bottom, 10)
 
       Text(emptyStateDescription)
-        .font(.system(size: 15))
+        .font(appFont.regular(15))
         .foregroundStyle(palette.emptyText)
         .multilineTextAlignment(.center)
         .padding(.bottom, 24)
@@ -361,7 +364,7 @@ struct RecordListView: View {
         requestAddTicket()
       } label: {
         Text(emptyStateButtonTitle)
-          .font(.system(size: 14, weight: .bold))
+          .font(appFont.bold(14))
           .foregroundStyle(.white)
           .padding(.vertical, 14)
           .padding(.horizontal, 24)

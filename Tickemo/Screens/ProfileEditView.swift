@@ -37,6 +37,9 @@ struct ProfileEditView: View {
   private var palette: ProfileEditPalette { ProfileEditPalette(isDarkMode: isDarkMode) }
   private var isPremium: Bool { PurchasesService.shared.isPremium }
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+
   var body: some View {
     NavigationStack {
       ScrollView {
@@ -47,7 +50,7 @@ struct ProfileEditView: View {
         .padding(.horizontal, 20)
         .padding(.bottom, 40)
       }
-      .background(palette.screenBackground.ignoresSafeArea())
+      .background((bgColor ?? palette.screenBackground).ignoresSafeArea())
       .navigationTitle("プロフィールを編集する")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -126,19 +129,19 @@ struct ProfileEditView: View {
 
       VStack(alignment: .trailing, spacing: 6) {
         Text("Joined")
-          .font(.system(size: 11, weight: .semibold))
+          .font(appFont.bold(11))
           .foregroundStyle(palette.subText)
         Text(formattedDate(profile.joinedAt))
-          .font(.system(size: 14, weight: .bold))
+          .font(appFont.bold(14))
           .foregroundStyle(palette.valueText)
 
         if isPremium {
           Text("Plus since")
-            .font(.system(size: 11, weight: .semibold))
+            .font(appFont.bold(11))
             .foregroundStyle(palette.subText)
             .padding(.top, 10)
           Text(formattedDate(profile.plusStartedAt))
-            .font(.system(size: 14, weight: .bold))
+            .font(appFont.bold(14))
             .foregroundStyle(palette.valueText)
         }
       }
@@ -159,7 +162,7 @@ struct ProfileEditView: View {
       ZStack {
         palette.avatarFallbackBackground
         Text(initials)
-          .font(.system(size: 22, weight: .heavy))
+          .font(appFont.bold(22))
           .foregroundStyle(palette.avatarText)
       }
     }
@@ -182,13 +185,13 @@ struct ProfileEditView: View {
   private var formCard: some View {
     VStack(alignment: .leading, spacing: 0) {
       Text("表示名")
-        .font(.system(size: 12, weight: .bold))
+        .font(appFont.bold(12))
         .foregroundStyle(palette.subText)
         .padding(.top, 8)
         .padding(.bottom, 10)
 
       TextField("例：チケモ太郎", text: $name)
-        .font(.system(size: 14))
+        .font(appFont.regular(14))
         .foregroundStyle(palette.inputText)
         .padding(.horizontal, 14)
         .frame(height: 44)
@@ -204,23 +207,23 @@ struct ProfileEditView: View {
 
       if let displayNameError {
         Text(displayNameError)
-          .font(.system(size: 12, weight: .bold))
+          .font(appFont.bold(12))
           .foregroundStyle(Color(hex: "#E53935"))
           .padding(.top, 8)
       }
 
       Text("ユーザーネーム")
-        .font(.system(size: 12, weight: .bold))
+        .font(appFont.bold(12))
         .foregroundStyle(palette.subText)
         .padding(.top, 18)
         .padding(.bottom, 10)
 
       HStack(spacing: 6) {
         Text("@")
-          .font(.system(size: 14, weight: .bold))
+          .font(appFont.bold(14))
           .foregroundStyle(palette.inputText)
         TextField("username", text: $username)
-          .font(.system(size: 14))
+          .font(appFont.regular(14))
           .foregroundStyle(palette.inputText)
           .textInputAutocapitalization(.never)
           .autocorrectionDisabled()
@@ -231,7 +234,7 @@ struct ProfileEditView: View {
       .clipShape(RoundedRectangle(cornerRadius: 14))
 
       Text("ユーザー名は公開プロフィールに表示されます")
-        .font(.system(size: 11))
+        .font(appFont.regular(11))
         .foregroundStyle(palette.subText)
         .padding(.top, 10)
     }

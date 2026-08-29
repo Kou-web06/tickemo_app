@@ -13,6 +13,8 @@ struct ArtistArchiveCardView: View {
   private let cardWidth: CGFloat = 118
   private let cardHeight: CGFloat = 121
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     ZStack(alignment: .bottomLeading) {
       photo
@@ -23,11 +25,11 @@ struct ArtistArchiveCardView: View {
 
       VStack(alignment: .leading, spacing: 2) {
         Text(entry.name)
-          .font(.system(size: 15, weight: .black))
+          .font(appFont.bold(15))
           .foregroundStyle(.white)
           .lineLimit(2)
         Text(entry.lastLiveDateText)
-          .font(.system(size: 10, weight: .bold))
+          .font(appFont.bold(10))
           .foregroundStyle(.white.opacity(0.95))
       }
       .padding(.horizontal, 10)

@@ -149,6 +149,34 @@ struct RecordFormView: View {
     )
   }
 
+  private var isArtistFulfilled: Bool {
+    if liveType == .sports {
+      return !(artistEntries.first?.name.trimmingCharacters(in: .whitespaces).isEmpty ?? true)
+    }
+    let named = artistEntries.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+    return !named.isEmpty && named.allSatisfy { !($0.imageUrl ?? "").isEmpty }
+  }
+
+  private var requiredTag: some View {
+    Text("必須")
+      .font(.system(size: 9, weight: .bold))
+      .foregroundStyle(.white)
+      .padding(.horizontal, 5)
+      .padding(.vertical, 2)
+      .background(Color.purple.opacity(0.85))
+      .clipShape(Capsule())
+  }
+
+  private func sectionHeader(_ title: String, isFulfilled: Bool) -> some View {
+    HStack(spacing: 6) {
+      Text(title)
+      if !isFulfilled {
+        requiredTag
+      }
+    }
+    .textCase(nil)
+  }
+
   private var venuePlaceholder: String {
     switch liveType {
     case .streaming: "プラットフォーム / URL"
@@ -161,11 +189,27 @@ struct RecordFormView: View {
     isSportsLive ? "選手 / 球団の写真" : "カバーアート（表紙）"
   }
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+  @Environment(\.appCardBgColor) private var cardBgColor
+
+  private var rowBg: Color { cardBgColor ?? Color(.secondarySystemGroupedBackground) }
+
   var body: some View {
     NavigationStack {
       Form {
         Section {
-          TextField("ライブ名", text: $liveName)
+          LabeledContent {
+            TextField("入力してください", text: $liveName)
+              .multilineTextAlignment(.trailing)
+          } label: {
+            HStack(spacing: 6) {
+              Text("ライブ名")
+              if liveName.trimmingCharacters(in: .whitespaces).isEmpty {
+                requiredTag
+              }
+            }
+          }
           Picker("ライブの種類", selection: $liveType) {
             ForEach(LiveType.allCases) { type in
               Label {
@@ -188,11 +232,15 @@ struct RecordFormView: View {
           }
           DatePicker("日付", selection: $date, displayedComponents: .date)
         }
+        .listRowBackground(rowBg)
 
         Section {
           VenueSearchField(name: $venue, coordinate: $venueCoordinate, address: $venueAddress, placeholder: venuePlaceholder)
           TextField("座席（任意）", text: $seat)
+        } header: {
+          sectionHeader("会場", isFulfilled: !venue.trimmingCharacters(in: .whitespaces).isEmpty)
         }
+        .listRowBackground(rowBg)
 
         Section("チケット料金") {
           TextField("金額", text: $ticketPriceText)
@@ -206,15 +254,20 @@ struct RecordFormView: View {
             }
           }
         }
+        .listRowBackground(rowBg)
 
         Section("時間") {
           TimeWheelPickerField(label: "開場", value: $startTime)
           TimeWheelPickerField(label: "開演", value: $endTime)
         }
+        .listRowBackground(rowBg)
 
-        Section("アーティスト") {
+        Section {
           artistSection
+        } header: {
+          sectionHeader("アーティスト", isFulfilled: isArtistFulfilled)
         }
+        .listRowBackground(rowBg)
 
         if !isSportsLive && !isMultiArtistLive {
           Section("セットリスト") {
@@ -227,6 +280,7 @@ struct RecordFormView: View {
               )
             )
           }
+          .listRowBackground(rowBg)
         }
 
         Section(coverImageSectionTitle) {
@@ -236,17 +290,20 @@ struct RecordFormView: View {
             Button("写真を削除", role: .destructive) { coverImageData = nil }
           }
         }
+        .listRowBackground(rowBg)
 
         if isSportsLive {
           Section("観戦写真") {
             gamePhotosGrid
           }
+          .listRowBackground(rowBg)
         }
 
         Section {
           TextField("感想", text: $memo, axis: .vertical)
             .lineLimit(3...8)
         }
+        .listRowBackground(rowBg)
 
         Section("QRコード") {
           TextField("https://...", text: $qrCode)
@@ -254,7 +311,10 @@ struct RecordFormView: View {
             .textInputAutocapitalization(.never)
             .autocorrectionDisabled()
         }
+        .listRowBackground(rowBg)
       }
+      .scrollContentBackground(.hidden)
+      .background((bgColor ?? Color(.systemGroupedBackground)).ignoresSafeArea())
       .navigationTitle(record == nil ? "チケットを追加" : "チケットを編集")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -322,7 +382,7 @@ struct RecordFormView: View {
         VStack(alignment: .leading, spacing: 8) {
           HStack {
             Text("アーティスト\(index + 1)")
-              .font(.system(size: 12, weight: .semibold))
+              .font(appFont.bold(12))
               .foregroundStyle(.secondary)
             Spacer()
             if artistEntries.count > 1 {

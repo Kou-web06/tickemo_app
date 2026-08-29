@@ -1,5 +1,6 @@
 import SwiftUI
 import RevenueCat
+import Lottie
 
 private let accentPurple = Color(hex: "#8B5CF6")
 private let termsURL = URL(string: "https://traveling-fahrenheit-b9b.notion.site/Tickemo-Terms-of-Use-2f65fd5d3e2d80ba8abcda85615cde4a?source=copy_link")!
@@ -59,17 +60,26 @@ struct PaywallView: View {
 
   private var isEarlyWindow: Bool { remainingSeconds > 0 }
 
-  private let benefits: [(icon: HugeIcon, title: String, description: String)] = [
-    (HugeIcons.infinity01, "無制限のアーカイブ", "過去のチケットも写真もすべて保存。"),
-    (HugeIcons.cd, "シェアカードの拡張", "ストーリーズで映える限定画像を無制限に生成。"),
-    (HugeIcons.analytics01, "レポートの全期間解放", "過去の年やAll-Timeのレポートも制限なく閲覧。"),
-    (HugeIcons.gridView, "ホーム画面ウィジェット", "次のライブまでのカウントダウンをホーム画面に表示。"),
-    (HugeIcons.favourite, "開発者を応援", "今後のアップデートと新機能の開発をサポート"),
+  private enum BenefitIcon {
+    case asset(String)
+    case lottie(String)
+  }
+
+  private let benefits: [(icon: BenefitIcon, title: String, description: String)] = [
+    (.asset("Ticket add"), "無制限のアーカイブ", "過去のチケットも写真もすべて保存。"),
+    (.asset("disc"), "シェアカードの拡張", "ストーリーズで映える限定画像を無制限に生成。"),
+    (.asset("Chart"), "レポートの全期間解放", "過去の年やAll-Timeのレポートも制限なく閲覧。"),
+    (.asset("widget"), "ホーム画面ウィジェット", "次のライブまでのカウントダウンをホーム画面に表示。"),
+    (.asset("letter-case"), "フォントのカスタマイズ", "8種類のフォントからアプリの雰囲気を自分好みに。"),
+    (.asset("Rolling brush"), "背景カラーのカスタマイズ", "8種類のカラーテーマでアプリの見た目をデザイン。"),
+    (.lottie("heart_like"), "開発者を応援", "今後のアップデートと新機能の開発をサポート"),
   ]
 
   private var currentPriceText: String {
     package?.storeProduct.localizedPriceString ?? formatJPYFallback(defaultLifetimePriceValue)
   }
+
+  @Environment(\.appFontChoice) private var appFont
 
   var body: some View {
     ZStack {
@@ -164,7 +174,7 @@ struct PaywallView: View {
       Task { await handleRestore() }
     } label: {
       Text(isRestoring ? "復元中…" : "購入を復元")
-        .font(.system(size: 12, weight: .bold))
+        .font(appFont.bold(12))
         .foregroundStyle(PaywallPalette.restoreText)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -184,11 +194,11 @@ struct PaywallView: View {
     VStack(spacing: 0) {
       HStack(spacing: 8) {
         Text("Tickemo")
-          .font(.system(size: 34, weight: .heavy))
+          .font(appFont.bold(34))
           .foregroundStyle(PaywallPalette.heroTitle)
           .tracking(0.3)
         Text("Plus")
-          .font(.system(size: 17, weight: .bold))
+          .font(appFont.bold(17))
           .foregroundStyle(PaywallPalette.plusText)
           .padding(.horizontal, 12)
           .padding(.vertical, 6)
@@ -198,7 +208,7 @@ struct PaywallView: View {
       }
 
       Text("全てのライブにこだわりをプラス。制限なしですべての機能にアクセスしよう")
-        .font(.system(size: 13, weight: .bold))
+        .font(appFont.bold(13))
         .foregroundStyle(PaywallPalette.heroSubtitle)
         .multilineTextAlignment(.center)
         .lineSpacing(7)
@@ -206,7 +216,7 @@ struct PaywallView: View {
 
       if isEarlyWindow {
         Text("限定価格まで残り \(EarlyOfferService.format(remaining: remainingSeconds))")
-          .font(.system(size: 13, weight: .bold))
+          .font(appFont.bold(13))
           .foregroundStyle(PaywallPalette.earlyCountdown)
           .padding(.top, 6)
       }
@@ -220,17 +230,30 @@ struct PaywallView: View {
     VStack(spacing: 16) {
       ForEach(Array(benefits.enumerated()), id: \.offset) { index, benefit in
         HStack(alignment: .top, spacing: 12) {
-          HugeIconView(icon: benefit.icon, size: 22, weight: 2.0)
-            .foregroundStyle(index == 2 ? accentPurple : PaywallPalette.featureIconDefault)
-            .frame(width: 34)
-            .padding(.top, 1)
+          Group {
+            switch benefit.icon {
+            case .asset(let name):
+              Image(name)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 22, height: 22)
+                .foregroundStyle(PaywallPalette.featureIconDefault)
+            case .lottie(let name):
+              LottieView(animation: .named(name))
+                .playing(loopMode: .loop)
+                .frame(width: 28, height: 28)
+            }
+          }
+          .frame(width: 34)
+          .padding(.top, 1)
 
           VStack(alignment: .leading, spacing: 3) {
             Text(benefit.title)
-              .font(.system(size: 16, weight: .bold))
+              .font(appFont.bold(16))
               .foregroundStyle(PaywallPalette.featureTitle)
             Text(benefit.description)
-              .font(.system(size: 12))
+              .font(appFont.regular(12))
               .foregroundStyle(PaywallPalette.featureDescription)
               .lineSpacing(5)
           }
@@ -264,10 +287,10 @@ struct PaywallView: View {
     HStack(alignment: .center) {
       VStack(alignment: .leading, spacing: 6) {
         Text("買い切り")
-          .font(.system(size: 15, weight: .bold))
+          .font(appFont.bold(15))
           .foregroundStyle(PaywallPalette.planTitle)
         Text("リリース記念価格・サブスクなし")
-          .font(.system(size: 10))
+          .font(appFont.regular(10))
           .foregroundStyle(PaywallPalette.planSubTitle)
       }
 
@@ -275,11 +298,11 @@ struct PaywallView: View {
 
       HStack(alignment: .lastTextBaseline, spacing: 6) {
         Text(formatJPYFallback(defaultOriginalPriceValue))
-          .font(.system(size: 14, weight: .bold))
+          .font(appFont.bold(14))
           .foregroundStyle(PaywallPalette.planOriginalPrice)
           .strikethrough()
         Text(currentPriceText)
-          .font(.system(size: 20, weight: .heavy))
+          .font(appFont.bold(20))
           .foregroundStyle(PaywallPalette.planCurrentPrice)
       }
     }
@@ -299,7 +322,7 @@ struct PaywallView: View {
           ProgressView().tint(.white)
         }
         Text(isPurchasing ? "購入処理中..." : "続ける")
-          .font(.system(size: 17, weight: .bold))
+          .font(appFont.bold(17))
           .foregroundStyle(.white)
       }
       .frame(maxWidth: .infinity)
@@ -315,15 +338,15 @@ struct PaywallView: View {
     HStack(spacing: 8) {
       Button { webViewURL = PaywallWebViewURL(url: termsURL) } label: {
         Text("利用規約")
-          .font(.system(size: 10))
+          .font(appFont.regular(10))
           .foregroundStyle(PaywallPalette.footerText)
       }
       Text("・")
-        .font(.system(size: 10))
+        .font(appFont.regular(10))
         .foregroundStyle(PaywallPalette.footerSeparator)
       Button { webViewURL = PaywallWebViewURL(url: privacyURL) } label: {
         Text("プライバシーポリシー")
-          .font(.system(size: 10))
+          .font(appFont.regular(10))
           .foregroundStyle(PaywallPalette.footerText)
       }
     }

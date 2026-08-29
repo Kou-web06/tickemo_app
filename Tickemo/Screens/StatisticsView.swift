@@ -59,6 +59,9 @@ struct StatisticsView: View {
   private var currentYear: Int { DateFormatting.utcCalendar.component(.year, from: Date()) }
   private var isLocked: Bool { !isPremium && selectedYear != currentYear }
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+
   var body: some View {
     NavigationStack {
       ScrollView {
@@ -105,6 +108,7 @@ struct StatisticsView: View {
       .sheet(isPresented: $showingPaywall) {
         PaywallView()
       }
+      .background((bgColor ?? Color(.systemBackground)).ignoresSafeArea())
     }
   }
 
@@ -117,9 +121,9 @@ struct StatisticsView: View {
       VStack(spacing: 8) {
         HugeIconView(icon: HugeIcons.squareLock02, size: 28)
         Text("Upgrade to Plus")
-          .font(.system(size: 15, weight: .heavy))
+          .font(appFont.bold(15))
         Text("過去の年やAll-TimeのレポートはPlus限定です")
-          .font(.system(size: 12))
+          .font(appFont.regular(12))
           .multilineTextAlignment(.center)
       }
       .foregroundStyle(Color(white: 0.18))
@@ -151,9 +155,9 @@ struct StatisticsView: View {
           .foregroundStyle(.orange)
         VStack(alignment: .leading, spacing: 2) {
           Text("Apple Music access is off")
-            .font(.system(size: 13, weight: .semibold))
+            .font(appFont.bold(13))
           Text("Turn it on in Settings to show official artist photos.")
-            .font(.system(size: 12))
+            .font(appFont.regular(12))
             .foregroundStyle(.secondary)
         }
         Spacer(minLength: 8)
@@ -161,7 +165,7 @@ struct StatisticsView: View {
           guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
           UIApplication.shared.open(url)
         }
-        .font(.system(size: 13, weight: .semibold))
+        .font(appFont.bold(13))
         .buttonStyle(.plain)
         .foregroundStyle(.blue)
       }
@@ -174,7 +178,7 @@ struct StatisticsView: View {
   private func yearChip(title: String, isActive: Bool, action: @escaping () -> Void) -> some View {
     Button(action: action) {
       Text(title)
-        .font(.system(size: 13, weight: .semibold))
+        .font(appFont.bold(13))
         .foregroundStyle(isActive ? .white : Color.primary)
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
@@ -200,11 +204,11 @@ struct StatisticsView: View {
   private func statBlock(label: String, value: String) -> some View {
     VStack(alignment: .leading, spacing: 4) {
       Text(label)
-        .font(.system(size: 12, weight: .bold))
+        .font(appFont.bold(12))
         .foregroundStyle(Color(white: 0.557))
         .tracking(1)
       Text(value)
-        .font(.system(size: 20, weight: .heavy))
+        .font(appFont.bold(20))
         .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
     }
   }
@@ -350,7 +354,7 @@ struct StatisticsView: View {
     return sectionContainer(title: "TOTAL SPENDING") {
       HStack {
         Text(priceHidden ? "¥ ••••••" : total.formatted(.currency(code: "JPY").precision(.fractionLength(0))))
-          .font(.system(size: 22, weight: .heavy))
+          .font(appFont.bold(22))
           .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
         Spacer()
         Button {
@@ -367,7 +371,7 @@ struct StatisticsView: View {
   private func sectionContainer<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 12) {
       Text(title)
-        .font(.system(size: 13, weight: .heavy))
+        .font(appFont.bold(13))
         .foregroundStyle(Color(white: 0.557))
         .tracking(1)
       content()
@@ -376,7 +380,7 @@ struct StatisticsView: View {
 
   private var emptyRow: some View {
     Text("No data yet")
-      .font(.system(size: 13))
+      .font(appFont.regular(13))
       .foregroundStyle(.secondary)
   }
 }

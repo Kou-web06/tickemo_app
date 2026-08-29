@@ -18,11 +18,13 @@ struct SetlistMarkerDivider: View {
       )
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     HStack(spacing: 12) {
       dashedLine
       Text(text.isEmpty ? "MC" : text)
-        .font(.system(size: 14, weight: .heavy))
+        .font(appFont.bold(14))
         .tracking(1.2)
         .foregroundStyle(Color(white: 0.4))
         .fixedSize()

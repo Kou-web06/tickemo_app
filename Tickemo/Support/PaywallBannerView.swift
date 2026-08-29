@@ -12,6 +12,8 @@ struct PaywallBannerView: View {
 
   private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     Button {
       showingPaywall = true
@@ -22,23 +24,23 @@ struct PaywallBannerView: View {
         HStack(spacing: 0) {
           VStack(alignment: .leading, spacing: 0) {
             Text("24時間限定 51%オフ")
-              .font(.system(size: 14, weight: .heavy))
+              .font(appFont.bold(14))
               .foregroundStyle(Color(hex: "#FFF6FD"))
 
             if remainingSeconds > 0 {
               Text(EarlyOfferService.format(remaining: remainingSeconds))
-                .font(.system(size: 20, weight: .bold))
+                .font(appFont.bold(20))
                 .foregroundStyle(Color(hex: "#ffe8ed"))
                 .padding(.top, 8)
             } else {
               Text("キャンペーン終了")
-                .font(.system(size: 15))
+                .font(appFont.regular(15))
                 .foregroundStyle(Color.white.opacity(0.6))
                 .padding(.top, 8)
             }
 
             Text("Plusにアップグレード")
-              .font(.system(size: 12, weight: .heavy))
+              .font(appFont.bold(12))
               .foregroundStyle(Color(hex: "#3c3c3d"))
               .padding(.horizontal, 10)
               .padding(.vertical, 10)

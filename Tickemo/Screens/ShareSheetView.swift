@@ -62,6 +62,8 @@ struct ShareSheetView: View {
     isGenerating || isLockedPreview
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     NavigationStack {
       VStack(spacing: 20) {
@@ -75,7 +77,7 @@ struct ShareSheetView: View {
         }
 
         Text("where to share?")
-          .font(.system(size: 16, weight: .bold))
+          .font(appFont.bold(16))
 
         actionButtons
       }
@@ -162,7 +164,7 @@ struct ShareSheetView: View {
       VStack(spacing: 8) {
         HugeIconView(icon: HugeIcons.squareLock02, size: 28)
         Text("Upgrade to Plus")
-          .font(.system(size: 15, weight: .heavy))
+          .font(appFont.bold(15))
       }
       .foregroundStyle(Color(white: 0.18))
       .padding(.horizontal, 22)
@@ -189,7 +191,7 @@ struct ShareSheetView: View {
               .scaledToFit()
               .frame(width: 13, height: 13)
             Text(option.label)
-              .font(.system(size: 13, weight: .bold))
+              .font(appFont.bold(13))
           }
           .foregroundStyle(cardType == option ? .white : Color(white: 0.53))
           .frame(maxWidth: .infinity)
@@ -268,7 +270,7 @@ struct ShareSheetView: View {
           }
         }
         Text(label)
-          .font(.system(size: 12, weight: .semibold))
+          .font(appFont.bold(12))
           .foregroundStyle(Color(white: 0.2))
       }
     }

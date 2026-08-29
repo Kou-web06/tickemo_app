@@ -16,6 +16,8 @@ struct SetlistDraftEditorView: View {
 
   private let appleMusicService = AppleMusicService()
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     Group {
       searchSection
@@ -30,9 +32,16 @@ struct SetlistDraftEditorView: View {
 
   private var searchSection: some View {
     VStack(alignment: .leading, spacing: 8) {
-      HStack {
+      HStack(spacing: 8) {
+        HugeIconView(icon: HugeIcons.search01, size: 18)
+          .foregroundStyle(Color(white: 0.6))
+
         TextField("曲名を検索", text: $searchText)
-          .textFieldStyle(.roundedBorder)
+          .autocorrectionDisabled()
+
+        if isSearching {
+          ProgressView()
+        }
 
         if showsOcrButton, let ocr {
           Button {
@@ -61,9 +70,7 @@ struct SetlistDraftEditorView: View {
         }
       }
 
-      if isSearching {
-        ProgressView()
-      } else if !searchResults.isEmpty {
+      if !isSearching && !searchResults.isEmpty {
         ScrollView {
           VStack(spacing: 0) {
             ForEach(searchResults, id: \.id) { result in
@@ -184,7 +191,7 @@ struct SetlistDraftEditorView: View {
   private func songRow(_ item: SetlistDraftItem) -> some View {
     HStack(spacing: 10) {
       Text("\((songIndex(of: item) ?? 0) + 1)")
-        .font(.system(size: 13, weight: .bold))
+        .font(appFont.bold(13))
         .foregroundStyle(Color(white: 0.4))
         .frame(width: 28, height: 28)
         .background(Color(white: 0.94))

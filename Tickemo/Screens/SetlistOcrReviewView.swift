@@ -18,6 +18,8 @@ struct SetlistOcrReviewView: View {
     _text = State(initialValue: lines.joined(separator: "\n"))
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
@@ -26,7 +28,7 @@ struct SetlistOcrReviewView: View {
         } else {
           // iOS 17 は TextEditor からカーソル位置を取得できないため従来どおり末尾に追加
           TextEditor(text: $text)
-            .font(.system(size: 15))
+            .font(appFont.regular(15))
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .focused($isEditorFocused)
@@ -54,7 +56,7 @@ struct SetlistOcrReviewView: View {
       .safeAreaInset(edge: .bottom) {
         Button(action: confirm) {
           Text("この内容で追加")
-            .font(.system(size: 16, weight: .bold))
+            .font(appFont.bold(16))
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
@@ -96,17 +98,19 @@ struct SetlistOcrReviewView: View {
 private struct MarkerInsertionBar: View {
   var onInsert: (String) -> Void
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     HStack(spacing: 10) {
       Text("挿入：")
-        .font(.system(size: 13))
+        .font(appFont.regular(13))
         .foregroundStyle(.secondary)
       Button("ENCORE") { onInsert("ENCORE") }
         .buttonStyle(.bordered)
-        .font(.system(size: 13, weight: .bold))
+        .font(appFont.bold(13))
       Button("MC") { onInsert("MC") }
         .buttonStyle(.bordered)
-        .font(.system(size: 13, weight: .bold))
+        .font(appFont.bold(13))
       Spacer()
     }
     .padding(.horizontal, 16)
@@ -124,9 +128,11 @@ private struct CursorMarkerEditor: View {
 
   @State private var selection: TextSelection?
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     TextEditor(text: $text, selection: $selection)
-      .font(.system(size: 15))
+      .font(appFont.regular(15))
       .padding(.horizontal, 12)
       .padding(.vertical, 8)
       .focused(focus)

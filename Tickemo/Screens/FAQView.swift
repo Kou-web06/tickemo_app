@@ -71,6 +71,9 @@ struct FAQView: View {
 
   private var palette: SettingsPalette { SettingsPalette(isDarkMode: isDarkMode) }
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+
   var body: some View {
     NavigationStack {
       ScrollView {
@@ -78,7 +81,7 @@ struct FAQView: View {
           ForEach(Array(categories.enumerated()), id: \.offset) { _, category in
             VStack(alignment: .leading, spacing: 0) {
               Text(category.title)
-                .font(.system(size: 20, weight: .heavy))
+                .font(appFont.bold(20))
                 .foregroundStyle(palette.titleText)
                 .padding(.bottom, 16)
 
@@ -86,19 +89,19 @@ struct FAQView: View {
                 VStack(alignment: .leading, spacing: 10) {
                   HStack(alignment: .top, spacing: 8) {
                     Text("Q.")
-                      .font(.system(size: 16, weight: .heavy))
+                      .font(appFont.bold(16))
                       .foregroundStyle(palette.faqQuestionLabel)
                     Text(item.question)
-                      .font(.system(size: 15, weight: .semibold))
+                      .font(appFont.bold(15))
                       .foregroundStyle(palette.primaryText)
                       .lineSpacing(6)
                   }
                   HStack(alignment: .top, spacing: 8) {
                     Text("A.")
-                      .font(.system(size: 16, weight: .heavy))
+                      .font(appFont.bold(16))
                       .foregroundStyle(palette.faqAnswerLabel)
                     Text(item.answer)
-                      .font(.system(size: 14))
+                      .font(appFont.regular(14))
                       .foregroundStyle(palette.subtleText)
                       .lineSpacing(6)
                   }
@@ -113,7 +116,7 @@ struct FAQView: View {
           }
 
           Text("その他ご不明な点は、設定画面の「フィードバック」からお問い合わせください。")
-            .font(.system(size: 13))
+            .font(appFont.regular(13))
             .foregroundStyle(palette.subtleText)
             .lineSpacing(6)
             .multilineTextAlignment(.center)
@@ -126,7 +129,7 @@ struct FAQView: View {
         }
         .padding(20)
       }
-      .background(palette.screenBackground.ignoresSafeArea())
+      .background((bgColor ?? palette.screenBackground).ignoresSafeArea())
       .navigationTitle("よくある質問")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
