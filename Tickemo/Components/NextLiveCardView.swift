@@ -23,10 +23,12 @@ struct NextLiveCardView: View {
   private var isPast: Bool { NextLiveCardData.isPast(record, now: now) }
   private var countdown: (text: String, isMessage: Bool) { NextLiveCardData.countdownText(for: record, now: now) }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     VStack(alignment: .leading, spacing: 12) {
       Text(isPast ? "LAST LIVE" : "NEXT LIVE")
-        .font(.system(size: 15, weight: .heavy))
+        .font(appFont.bold(15))
         .padding(.horizontal, 30)
 
       ZStack {
@@ -126,20 +128,20 @@ struct NextLiveCardView: View {
 
       VStack(alignment: .leading, spacing: 0) {
         Text(record.liveName?.isEmpty == false ? record.liveName! : "LIVE TITLE")
-          .font(.system(size: 22, weight: .heavy))
+          .font(appFont.bold(22))
           .foregroundStyle(.white)
           .lineLimit(1)
         Text(ArtistGrouping.names(for: record).first ?? "-")
-          .font(.system(size: 13))
+          .font(appFont.regular(13))
           .foregroundStyle(.white)
           .lineLimit(1)
           .padding(.top, 4)
         Text(metaText)
-          .font(.system(size: 13, weight: .bold))
+          .font(appFont.bold(13))
           .foregroundStyle(.white)
           .padding(.top, 10)
         Text(countdown.text)
-          .font(.system(size: countdown.isMessage ? 28 : 34, weight: .bold))
+          .font(appFont.bold(countdown.isMessage ? 28 : 34))
           .foregroundStyle(.white)
           .padding(.top, 2)
       }
@@ -199,7 +201,7 @@ struct NextLiveCardView: View {
 
       VStack(alignment: .leading, spacing: 0) {
         Text("TODAY'S SONG")
-          .font(.system(size: 14, weight: .bold))
+          .font(appFont.bold(14))
           .foregroundStyle(.white)
           .tracking(0.4)
           .padding(.bottom, 12)
@@ -208,11 +210,11 @@ struct NextLiveCardView: View {
           todaySongArtwork
           VStack(alignment: .leading, spacing: 4) {
             Text(todaySong?.title ?? "No song data")
-              .font(.system(size: 18, weight: .heavy))
+              .font(appFont.bold(18))
               .foregroundStyle(.white)
               .lineLimit(1)
             Text(todaySong?.artist ?? (record.artist?.isEmpty == false ? record.artist! : "-"))
-              .font(.system(size: 13))
+              .font(appFont.regular(13))
               .foregroundStyle(Color(white: 0.898))
               .lineLimit(1)
           }
@@ -270,11 +272,11 @@ struct NextLiveCardView: View {
   private func metaItem(label: String, value: String) -> some View {
     VStack(alignment: .leading, spacing: 2) {
       Text(label)
-        .font(.system(size: 6, weight: .bold))
+        .font(appFont.bold(6))
         .tracking(0.7)
         .foregroundStyle(.white.opacity(0.7))
       Text(value)
-        .font(.system(size: 9))
+        .font(appFont.regular(9))
         .foregroundStyle(.white.opacity(0.86))
         .lineLimit(1)
     }
@@ -307,7 +309,7 @@ struct NextLiveCardView: View {
       HStack(spacing: 6) {
         HugeIconView(icon: HugeIcons.musicNote01, size: 11)
         Text("Listen")
-          .font(.system(size: 10, weight: .bold))
+          .font(appFont.bold(10))
           .tracking(0.2)
       }
       .foregroundStyle(.white.opacity(0.92))

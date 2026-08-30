@@ -13,6 +13,8 @@ struct ContentView: View {
     let migration = MigrationCoordinator.shared
 
     tabs
+      .withAppFont()
+      .withAppBgColor()
       .overlay {
         if migration.isBusy {
           MigrationOverlayView(phase: migration.phase)

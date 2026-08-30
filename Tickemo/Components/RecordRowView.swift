@@ -15,6 +15,8 @@ struct RecordRowView: View {
   private static let baseSize = TicketStubShape.baseSize
   private static let imageSize: CGFloat = 73 // baseHeight(118) * 0.619, matches the RN comment "73/118"
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     GeometryReader { proxy in
       let width = proxy.size.width
@@ -92,7 +94,7 @@ struct RecordRowView: View {
   private var infoColumn: some View {
     VStack(alignment: .leading, spacing: 4) {
       Text(record.liveName ?? "-")
-        .font(.system(size: 16, weight: .heavy))
+        .font(appFont.bold(16))
         .foregroundStyle(.black)
         .lineLimit(1)
 
@@ -101,30 +103,27 @@ struct RecordRowView: View {
           + Text(artistDisplay.showAndMore ? " and more..." : "")
             .foregroundStyle(Color(.systemGray))
       )
-      .font(.system(size: 12, weight: .semibold))
+      .font(appFont.bold(12))
       .foregroundStyle(Color(white: 0.4))
       .lineLimit(1)
-
-      Spacer(minLength: 6)
 
       VStack(alignment: .leading, spacing: 2) {
         detailRow(label: "DATE", value: record.date)
         detailRow(label: "VENUE", value: record.venue)
         detailRow(label: "SEAT", value: record.seat)
       }
-
-      Spacer(minLength: 0)
+      .padding(.top, 4)
     }
   }
 
   private func detailRow(label: String, value: String?) -> some View {
     HStack(spacing: 6) {
       Text(label)
-        .font(.system(size: 13, weight: .semibold))
+        .font(appFont.bold(13))
         .foregroundStyle(Color(white: 0.6))
         .frame(minWidth: 40, alignment: .leading)
       Text(value?.isEmpty == false ? value! : "-")
-        .font(.system(size: 13, weight: .medium))
+        .font(appFont.regular(13))
         .foregroundStyle(.black)
         .lineLimit(1)
     }

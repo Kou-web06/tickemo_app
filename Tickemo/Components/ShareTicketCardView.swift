@@ -35,6 +35,8 @@ struct ShareTicketCardView: View {
     return "18:00"
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     ZStack(alignment: .topLeading) {
       if showsBlurredBackground {
@@ -54,7 +56,7 @@ struct ShareTicketCardView: View {
         .offset(x: textLeft, y: height * 0.33)
 
       Text(artistText)
-        .font(.system(size: height * 0.03, weight: .heavy))
+        .font(appFont.bold(height * 0.03))
         .foregroundStyle(Color.black.opacity(0.62))
         .lineLimit(2)
         .frame(width: width - textLeft - width * 0.13, alignment: .leading)
@@ -74,7 +76,7 @@ struct ShareTicketCardView: View {
         .offset(x: width - width * 0.09 - qrContainerSize, y: height - height * 0.31 - qrContainerSize)
 
       Text("TICKEMO")
-        .font(.system(size: height * 0.02, weight: .heavy))
+        .font(appFont.bold(height * 0.02))
         .foregroundStyle(Color.black.opacity(0.3))
         .offset(x: width * 0.08, y: height - height * 0.3 - height * 0.024)
     }
@@ -86,12 +88,12 @@ struct ShareTicketCardView: View {
   private var liveNameText: some View {
     if isShortLiveName {
       Text(liveName)
-        .font(.system(size: height * 0.06, weight: .black))
+        .font(appFont.bold(height * 0.06))
         .foregroundStyle(Color.black.opacity(0.87))
         .lineLimit(1)
     } else {
       Text(liveName)
-        .font(.system(size: height * 0.04, weight: .black))
+        .font(appFont.bold(height * 0.04))
         .foregroundStyle(Color.black.opacity(0.87))
         .lineLimit(2)
         .lineSpacing(height * 0.015)
@@ -101,10 +103,10 @@ struct ShareTicketCardView: View {
   private func labelValueRow(label: String, value: String, lineLimit: Int = 1) -> some View {
     HStack(spacing: width * 0.02) {
       Text(label)
-        .font(.system(size: height * 0.04, weight: .semibold))
+        .font(appFont.bold(height * 0.04))
         .foregroundStyle(Color.black.opacity(0.46))
       Text(value)
-        .font(.system(size: height * 0.04, weight: .heavy))
+        .font(appFont.bold(height * 0.04))
         .foregroundStyle(Color.black.opacity(0.87))
         .lineLimit(lineLimit)
     }

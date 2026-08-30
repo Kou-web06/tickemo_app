@@ -56,6 +56,8 @@ struct ArtistDetailView: View {
     }
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
@@ -211,7 +213,7 @@ struct ArtistDetailView: View {
         // 黒スクリムは画像下端のフェードを覆い隠して背景との境目を
         // 作ってしまうため廃止。名前の可読性は背景色の明暗連動で確保する。
         Text(artistName)
-          .font(.system(size: 26, weight: .black))
+          .font(appFont.bold(26))
           .foregroundStyle(primaryTextColor)
           .padding(16)
       }
@@ -242,11 +244,11 @@ struct ArtistDetailView: View {
   private func statColumn(label: String, value: String) -> some View {
     VStack(alignment: .leading, spacing: 4) {
       Text(label)
-        .font(.system(size: 12, weight: .bold))
+        .font(appFont.bold(12))
         .foregroundStyle(secondaryTextColor)
         .tracking(1)
       Text(value)
-        .font(.system(size: 17, weight: .heavy))
+        .font(appFont.bold(17))
         .foregroundStyle(primaryTextColor)
     }
   }
@@ -268,7 +270,7 @@ struct ArtistDetailView: View {
   private var editorialNoteSection: some View {
     if let note = editorialNote {
       Text(note)
-        .font(.system(size: 13))
+        .font(appFont.regular(13))
         .foregroundStyle(secondaryTextColor)
         .fixedSize(horizontal: false, vertical: true)
     }
@@ -287,7 +289,7 @@ struct ArtistDetailView: View {
       ForEach(years, id: \.self) { year in
         VStack(alignment: .leading, spacing: 10) {
           Text(year == 0 ? "-" : String(year))
-            .font(.system(size: 14, weight: .heavy))
+            .font(appFont.bold(14))
             .foregroundStyle(secondaryTextColor)
 
           ForEach(groups[year] ?? [], id: \.objectID) { record in
@@ -308,7 +310,7 @@ struct ArtistDetailView: View {
     if let url = URL(string: "https://music.apple.com/search?term=\(artistName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&entity=artist") {
       Link(destination: url) {
         HugeIconLabel(icon: HugeIcons.musicNote01, size: 13) { Text("Search on Apple Music") }
-          .font(.system(size: 13, weight: .semibold))
+          .font(appFont.bold(13))
       }
     }
   }

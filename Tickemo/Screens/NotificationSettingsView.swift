@@ -20,12 +20,15 @@ struct NotificationSettingsView: View {
   private var palette: SettingsPalette { SettingsPalette(isDarkMode: isDarkMode) }
   private let accent = Color(hex: "#9A7CF8")
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+
   var body: some View {
     NavigationStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 0) {
           Text("下記の通知タイプを設定できます。新規登録時に自動でスケジュールされます。")
-            .font(.system(size: 12))
+            .font(appFont.regular(12))
             .lineSpacing(4)
             .foregroundStyle(palette.secondaryText)
             .padding(.horizontal, 8)
@@ -61,7 +64,7 @@ struct NotificationSettingsView: View {
         .padding(.top, 24)
         .padding(.bottom, 36)
       }
-      .background(palette.screenBackground.ignoresSafeArea())
+      .background((bgColor ?? palette.screenBackground).ignoresSafeArea())
       .navigationTitle("通知設定")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -87,10 +90,10 @@ struct NotificationSettingsView: View {
     HStack(spacing: 10) {
       VStack(alignment: .leading, spacing: 4) {
         Text(title)
-          .font(.system(size: 15, weight: .bold))
+          .font(appFont.bold(15))
           .foregroundStyle(palette.primaryText)
         Text(desc)
-          .font(.system(size: 12))
+          .font(appFont.regular(12))
           .foregroundStyle(palette.secondaryText)
       }
       Spacer(minLength: 8)

@@ -63,6 +63,8 @@ struct RecordDetailView: View {
 
   private var liveType: LiveType { LiveType.normalized(record.liveType) }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: 0) {
@@ -75,7 +77,7 @@ struct RecordDetailView: View {
           }
 
           Text(record.liveName ?? "-")
-            .font(.system(size: 26, weight: .black))
+            .font(appFont.bold(26))
             .foregroundStyle(primaryTextColor)
             .padding(.top, isPast ? 26 : 8)
 
@@ -201,7 +203,7 @@ struct RecordDetailView: View {
             ZStack {
               Color(red: 0.839, green: 0.839, blue: 0.839)
               Text("NO IMAGE")
-                .font(.system(size: 16, weight: .bold))
+                .font(appFont.bold(16))
                 .foregroundStyle(Color(white: 0.5))
                 .tracking(0.6)
             }
@@ -257,7 +259,7 @@ struct RecordDetailView: View {
   private var countdownRow: some View {
     VStack(alignment: .leading, spacing: 4) {
       Text("NEXT LIVE")
-        .font(.system(size: 12, weight: .bold))
+        .font(appFont.bold(12))
         .tracking(1.2)
         .foregroundStyle(secondaryTextColor)
       Text(countdown.text)
@@ -272,7 +274,7 @@ struct RecordDetailView: View {
     HStack(alignment: .top, spacing: 12) {
       VStack(alignment: .leading, spacing: 6) {
         Text(displayArtistsText)
-          .font(.system(size: 17, weight: .semibold))
+          .font(appFont.bold(17))
           .foregroundStyle(secondaryTextColor)
           .lineLimit(2)
 
@@ -284,7 +286,7 @@ struct RecordDetailView: View {
             .frame(width: 14, height: 14)
           Text(liveType.label)
         }
-        .font(.system(size: 14, weight: .bold))
+        .font(appFont.bold(14))
         .foregroundStyle(secondaryTextColor)
       }
 
@@ -294,7 +296,7 @@ struct RecordDetailView: View {
         Image("Wallet")
           .foregroundStyle(secondaryTextColor)
         Text(priceText)
-          .font(.system(size: 17, weight: .heavy))
+          .font(appFont.bold(17))
           .foregroundStyle(secondaryTextColor)
       }
     }
@@ -318,23 +320,23 @@ struct RecordDetailView: View {
     HStack(alignment: .top, spacing: 16) {
       VStack(alignment: .leading, spacing: 2) {
         Text(yearText)
-          .font(.system(size: 14, weight: .bold))
+          .font(appFont.bold(14))
           .foregroundStyle(secondaryTextColor)
           .tracking(1.2)
         HStack(alignment: .top, spacing: 8) {
           Text(monthDayText)
-            .font(.system(size: 52, weight: .bold))
+            .font(appFont.bold(52))
             .foregroundStyle(primaryTextColor)
           if !weekdayText.isEmpty {
             Text(weekdayText)
-              .font(.system(size: 12, weight: .bold))
+              .font(appFont.bold(12))
               .foregroundStyle(secondaryTextColor)
               .padding(.top, 10)
               .tracking(1.1)
           }
         }
         Text(record.venue?.isEmpty == false ? record.venue! : "-")
-          .font(.system(size: 16, weight: .heavy))
+          .font(appFont.bold(16))
           .foregroundStyle(primaryTextColor)
       }
 
@@ -350,11 +352,11 @@ struct RecordDetailView: View {
   private func timeLine(label: String, value: String?) -> some View {
     HStack(alignment: .lastTextBaseline, spacing: 14) {
       Text(label)
-        .font(.system(size: 14, weight: .heavy))
+        .font(appFont.bold(14))
         .foregroundStyle(secondaryTextColor)
         .tracking(1)
       Text(value?.isEmpty == false ? value! : "--:--")
-        .font(.system(size: 22, weight: .bold))
+        .font(appFont.bold(22))
         .foregroundStyle(primaryTextColor)
     }
   }
@@ -393,7 +395,7 @@ struct RecordDetailView: View {
     VStack(alignment: .leading, spacing: 12) {
       HStack {
         Text("#set list")
-          .font(.system(size: 18, weight: .black))
+          .font(appFont.bold(18))
           .foregroundStyle(primaryTextColor)
         Spacer()
         // 編集はツールバーの編集ボタン（RecordFormView）に一本化したので、
@@ -403,7 +405,7 @@ struct RecordDetailView: View {
           Button("Add Setlist") {
             showingSetlistEditor = true
           }
-          .font(.system(size: 14, weight: .semibold))
+          .font(appFont.bold(14))
         } else {
           collapseToggleButton
         }
@@ -438,7 +440,7 @@ struct RecordDetailView: View {
       }
     } label: {
       Image(systemName: isSetlistExpanded ? "chevron.up" : "chevron.down")
-        .font(.system(size: 13, weight: .bold))
+        .font(appFont.bold(13))
         .foregroundStyle(primaryTextColor)
         .frame(width: 30, height: 30)
         .background(setlistCardBackground)
@@ -471,7 +473,7 @@ struct RecordDetailView: View {
       songArtwork(item, songNumber: songNumber)
 
       Text(item.songName ?? "-")
-        .font(.system(size: 15, weight: .bold))
+        .font(appFont.bold(15))
         .foregroundStyle(primaryTextColor)
         .lineLimit(1)
 
@@ -518,7 +520,7 @@ struct RecordDetailView: View {
     .clipShape(RoundedRectangle(cornerRadius: 10))
     .overlay(alignment: .topLeading) {
       Text(String(format: "%02d", songNumber))
-        .font(.system(size: 9, weight: .bold))
+        .font(appFont.bold(9))
         .foregroundStyle(.white)
         .padding(.horizontal, 5)
         .padding(.vertical, 2)
@@ -603,7 +605,7 @@ struct RecordDetailView: View {
   private func venueSection(coordinate: CLLocationCoordinate2D) -> some View {
     VStack(alignment: .leading, spacing: 12) {
       Text("#venue")
-        .font(.system(size: 18, weight: .black))
+        .font(appFont.bold(18))
         .foregroundStyle(primaryTextColor)
 
       VenueMapCardView(
@@ -620,14 +622,14 @@ struct RecordDetailView: View {
   private func memoSection(_ memo: String) -> some View {
     VStack(alignment: .leading, spacing: 12) {
       Text("#memo")
-        .font(.system(size: 18, weight: .black))
+        .font(appFont.bold(18))
         .foregroundStyle(primaryTextColor)
 
       HStack(alignment: .top, spacing: 8) {
         HugeIconView(icon: HugeIcons.quoteUp, size: 17)
           .foregroundStyle(secondaryTextColor)
         Text(memo)
-          .font(.system(size: 16, weight: .medium))
+          .font(appFont.regular(16))
           .foregroundStyle(primaryTextColor)
           .lineSpacing(6)
       }

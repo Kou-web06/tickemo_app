@@ -18,6 +18,8 @@ struct VenueMapCardView: View {
     .region(MKCoordinateRegion(center: coordinate, latitudinalMeters: 800, longitudinalMeters: 800))
   }
 
+  @Environment(\.appFontChoice) private var appFont
+
   var body: some View {
     Button(action: openInMaps) {
       ZStack(alignment: .bottomLeading) {
@@ -32,12 +34,12 @@ struct VenueMapCardView: View {
 
         VStack(alignment: .leading, spacing: 2) {
           Text(venueName)
-            .font(.system(size: 18, weight: .bold))
+            .font(appFont.bold(18))
             .foregroundStyle(.white)
             .lineLimit(1)
           if let address, !address.isEmpty {
             Text(address)
-              .font(.system(size: 13))
+              .font(appFont.regular(13))
               .foregroundStyle(.white.opacity(0.85))
               .lineLimit(1)
           }

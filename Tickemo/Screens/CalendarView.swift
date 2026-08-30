@@ -45,6 +45,9 @@ struct CalendarView: View {
     CalendarEvents.recordsByDate(records: Array(records))
   }
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+
   var body: some View {
     NavigationStack {
       ScrollView {
@@ -68,6 +71,7 @@ struct CalendarView: View {
       .navigationDestination(for: CD_ChekiRecord.self) { record in
         RecordDetailView(record: record)
       }
+      .background((bgColor ?? Color(.systemBackground)).ignoresSafeArea())
     }
   }
 
@@ -84,7 +88,7 @@ struct CalendarView: View {
 
       VStack(spacing: 2) {
         Text(monthTitle)
-          .font(.system(size: 18, weight: .bold))
+          .font(appFont.bold(18))
         if !displayedMonth.isCurrentMonth {
           Button(useJapanese ? "今日" : "Today") {
             displayedMonth = .current
@@ -92,7 +96,7 @@ struct CalendarView: View {
               dateString: DateFormatting.string(from: DateFormatting.utcCalendar.startOfDay(for: Date()))
             )
           }
-          .font(.system(size: 12, weight: .semibold))
+          .font(appFont.bold(12))
           .foregroundStyle(accentPurple)
         }
       }
@@ -112,7 +116,7 @@ struct CalendarView: View {
     HStack {
       ForEach(Array(weekdayLabels.enumerated()), id: \.offset) { index, label in
         Text(label)
-          .font(.system(size: 11, weight: .semibold))
+          .font(appFont.bold(11))
           .foregroundStyle(index == 0 || index == 6 ? Color.secondary : Color.primary)
           .frame(maxWidth: .infinity)
       }
@@ -146,7 +150,7 @@ struct CalendarView: View {
       } label: {
         VStack(spacing: 4) {
           Text("\(dayNumber)")
-            .font(.system(size: 14, weight: (isToday || isSelected) ? .bold : .regular))
+            .font((isToday || isSelected) ? appFont.bold(14) : appFont.regular(14))
             .foregroundStyle(
               isSelected ? .white :
               isToday ? accentPurple :
@@ -210,7 +214,7 @@ struct CalendarView: View {
     let dayRecords = recordsByDate[day.dateString] ?? []
     return VStack(alignment: .leading, spacing: 12) {
       Text(formattedDayHeader(day.dateString))
-        .font(.system(size: 12, weight: .heavy))
+        .font(appFont.bold(12))
         .foregroundStyle(Color.secondary)
         .tracking(0.5)
         .padding(.top, 4)

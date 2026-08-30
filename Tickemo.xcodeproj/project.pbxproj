@@ -113,11 +113,25 @@
 		DCC4E1C2CB72401B93B0A171 /* CalendarDayEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72645012E927C7402CB88893 /* CalendarDayEventsView.swift */; };
 		DCEF94CDEDCC8C2B0DC1C1DF /* MigrationOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E5A1967DE1A194132F3A61E /* MigrationOverlayView.swift */; };
 		DEABC535C445036472BCCC2D /* HugeIconPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1230990001977CC87208EC0 /* HugeIconPath.swift */; };
+		E04D03483042CBE10073058E /* AppBgColorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04D03473042CBE10073058E /* AppBgColorService.swift */; };
+		E04D034A3042CBEC0073058E /* BgColorPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E04D03493042CBEC0073058E /* BgColorPickerView.swift */; };
+		E04D034C3042EB6C0073058E /* heart_like.json in Resources */ = {isa = PBXBuildFile; fileRef = E04D034B3042EB6C0073058E /* heart_like.json */; };
+		E04D034F3042EDE10073058E /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = E04D034E3042EDE10073058E /* Lottie */; };
 		E06ACB6130295CA1005FD9D3 /* DominantColorCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = E06ACB6030295CA1005FD9D3 /* DominantColorCache.swift */; };
 		E0962E8E2F853CAD00CE3EF6 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8D2F853CAD00CE3EF6 /* WidgetKit.framework */; };
 		E0962E902F853CAD00CE3EF6 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */; };
 		E0962E9F2F853CAE00CE3EF6 /* LiveWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E0A2759B303B2A5B0022A5BD /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A2759A303B2A5B0022A5BD /* SplashView.swift */; };
+		E0CC3C1C3041441C0089897A /* ZenMaruGothic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C1B3041441C0089897A /* ZenMaruGothic-Regular.ttf */; };
+		E0CC3C1E304144270089897A /* ZenMaruGothic-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C1D304144270089897A /* ZenMaruGothic-Bold.ttf */; };
+		E0CC3C20304145180089897A /* ShipporiMincho-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C1F304145180089897A /* ShipporiMincho-Regular.ttf */; };
+		E0CC3C22304145220089897A /* ShipporiMincho-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C21304145220089897A /* ShipporiMincho-Bold.ttf */; };
+		E0CC3C243041458A0089897A /* KaiseiDecol-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C233041458A0089897A /* KaiseiDecol-Regular.ttf */; };
+		E0CC3C26304145930089897A /* KaiseiDecol-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C25304145930089897A /* KaiseiDecol-Bold.ttf */; };
+		E0CC3C28304147630089897A /* DotGothic16-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C27304147630089897A /* DotGothic16-Regular.ttf */; };
+		E0CC3C2A3041479B0089897A /* YuseiMagic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C293041479B0089897A /* YuseiMagic-Regular.ttf */; };
+		E0CC3C2C304149200089897A /* FontPreferenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0CC3C2B304149200089897A /* FontPreferenceService.swift */; };
+		E0CC3C2E304149280089897A /* FontPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0CC3C2D304149280089897A /* FontPickerView.swift */; };
 		E1B35F8E9EE2B9527B4BC8FE /* ShareReceiptCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0800A7D856FA6988684EA128 /* ShareReceiptCardView.swift */; };
 		E350B28E5DDDB949B33C927F /* ImageCropping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */; };
 		E3FA2835D57DD6FA064C5853 /* SetlistEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8C29472BB0AB4450819C528 /* SetlistEditorView.swift */; };
@@ -125,6 +139,7 @@
 		E4F24B37C7F412D6EA5A86DD /* AppleMusicServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8915654231D36C39E7ACA59 /* AppleMusicServiceTests.swift */; };
 		E749E1331B2C9C50F58C5219 /* NextLiveCardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FE35494D7275C25C11EC3C /* NextLiveCardData.swift */; };
 		EABA1B92E4FAEF958730470E /* ChekiRecordArtists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472A3A7CC25C17955E6806FC /* ChekiRecordArtists.swift */; };
+		EB53041D4BDD953E282F40D5 /* SetlistOcrImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA2A44D6699F40241BA25A7E /* SetlistOcrImport.swift */; };
 		F04553008EC9747425E10737 /* StringArrayTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46EF708F60576D9560483FC4 /* StringArrayTransformer.swift */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 		F152BB5A871627E7BCD83CBB /* LiveNotificationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FA8C4E889A7B929FF4011A /* LiveNotificationSettings.swift */; };
@@ -266,6 +281,7 @@
 		C0B9B148649A239A0A0B4441 /* TimeWheelPickerField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimeWheelPickerField.swift; sourceTree = "<group>"; };
 		C40CE53D60FA2117638BFA16 /* LegacyDataBackup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyDataBackup.swift; sourceTree = "<group>"; };
 		C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VenueMapCardView.swift; sourceTree = "<group>"; };
+		CA2A44D6699F40241BA25A7E /* SetlistOcrImport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistOcrImport.swift; sourceTree = "<group>"; };
 		CCB5B2FD867D3B5F862DB18E /* LiveType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveType.swift; sourceTree = "<group>"; };
 		D0B69313B8AB4D706F1A74A7 /* StatisticsRankingRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsRankingRowView.swift; sourceTree = "<group>"; };
 		D0F7B87F62C4B3D653726805 /* HapticsPreferenceService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HapticsPreferenceService.swift; sourceTree = "<group>"; };
@@ -276,6 +292,9 @@
 		DEC38A042A5BFB1CD699F666 /* CalendarMonthTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarMonthTests.swift; sourceTree = "<group>"; };
 		DFFEFA9D370F4114ABF0605C /* FAQView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FAQView.swift; sourceTree = "<group>"; };
 		E02F5F98A94E16C625FD351E /* LegacyMigrationClaim.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyMigrationClaim.swift; sourceTree = "<group>"; };
+		E04D03473042CBE10073058E /* AppBgColorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBgColorService.swift; sourceTree = "<group>"; };
+		E04D03493042CBEC0073058E /* BgColorPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BgColorPickerView.swift; sourceTree = "<group>"; };
+		E04D034B3042EB6C0073058E /* heart_like.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = heart_like.json; sourceTree = "<group>"; };
 		E06ACB5330270255005FD9D3 /* Tickemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tickemo.entitlements; sourceTree = "<group>"; };
 		E06ACB6030295CA1005FD9D3 /* DominantColorCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DominantColorCache.swift; sourceTree = "<group>"; };
 		E0962E8C2F853CAD00CE3EF6 /* LiveWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LiveWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -283,6 +302,16 @@
 		E0962E8F2F853CAD00CE3EF6 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		E0962EA52F85506700CE3EF6 /* LiveWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LiveWidgetExtension.entitlements; sourceTree = "<group>"; };
 		E0A2759A303B2A5B0022A5BD /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		E0CC3C1B3041441C0089897A /* ZenMaruGothic-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ZenMaruGothic-Regular.ttf"; sourceTree = "<group>"; };
+		E0CC3C1D304144270089897A /* ZenMaruGothic-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ZenMaruGothic-Bold.ttf"; sourceTree = "<group>"; };
+		E0CC3C1F304145180089897A /* ShipporiMincho-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ShipporiMincho-Regular.ttf"; sourceTree = "<group>"; };
+		E0CC3C21304145220089897A /* ShipporiMincho-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "ShipporiMincho-Bold.ttf"; sourceTree = "<group>"; };
+		E0CC3C233041458A0089897A /* KaiseiDecol-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "KaiseiDecol-Regular.ttf"; sourceTree = "<group>"; };
+		E0CC3C25304145930089897A /* KaiseiDecol-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "KaiseiDecol-Bold.ttf"; sourceTree = "<group>"; };
+		E0CC3C27304147630089897A /* DotGothic16-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "DotGothic16-Regular.ttf"; sourceTree = "<group>"; };
+		E0CC3C293041479B0089897A /* YuseiMagic-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YuseiMagic-Regular.ttf"; sourceTree = "<group>"; };
+		E0CC3C2B304149200089897A /* FontPreferenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontPreferenceService.swift; sourceTree = "<group>"; };
+		E0CC3C2D304149280089897A /* FontPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontPickerView.swift; sourceTree = "<group>"; };
 		E1230990001977CC87208EC0 /* HugeIconPath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HugeIconPath.swift; sourceTree = "<group>"; };
 		E6D0322E74FBB97B858D09B7 /* ShareCapture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareCapture.swift; sourceTree = "<group>"; };
 		E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGroupingTests.swift; sourceTree = "<group>"; };
@@ -326,6 +355,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				18ACFC9FE7CB1D239DFE7094 /* RevenueCat in Frameworks */,
+				E04D034F3042EDE10073058E /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,6 +382,7 @@
 		13B07FAE1A68108700A75B9A /* Tickemo */ = {
 			isa = PBXGroup;
 			children = (
+				E0CC3C1A304144050089897A /* Fonts */,
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -364,6 +395,7 @@
 				E351373E211F52C4C1FE19B3 /* Screens */,
 				29D1925F8A2C0F0D177B7174 /* Components */,
 				EB6FDC9DBDE13BA8D0A9ECC6 /* Support */,
+				E04D034B3042EB6C0073058E /* heart_like.json */,
 			);
 			name = Tickemo;
 			sourceTree = "<group>";
@@ -416,6 +448,7 @@
 				2E5A1967DE1A194132F3A61E /* MigrationOverlayView.swift */,
 				C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */,
 				48286B05F1D063AE48B1F1FD /* VenueSearchField.swift */,
+				CA2A44D6699F40241BA25A7E /* SetlistOcrImport.swift */,
 			);
 			name = Components;
 			path = Tickemo/Components;
@@ -525,6 +558,21 @@
 			path = Tickemo/Migration;
 			sourceTree = "<group>";
 		};
+		E0CC3C1A304144050089897A /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				E0CC3C1B3041441C0089897A /* ZenMaruGothic-Regular.ttf */,
+				E0CC3C1D304144270089897A /* ZenMaruGothic-Bold.ttf */,
+				E0CC3C1F304145180089897A /* ShipporiMincho-Regular.ttf */,
+				E0CC3C21304145220089897A /* ShipporiMincho-Bold.ttf */,
+				E0CC3C233041458A0089897A /* KaiseiDecol-Regular.ttf */,
+				E0CC3C25304145930089897A /* KaiseiDecol-Bold.ttf */,
+				E0CC3C27304147630089897A /* DotGothic16-Regular.ttf */,
+				E0CC3C293041479B0089897A /* YuseiMagic-Regular.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		E351373E211F52C4C1FE19B3 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
@@ -549,6 +597,8 @@
 				510FEECDFBC712D8783FFC05 /* SetlistOcrReviewView.swift */,
 				E91184330745F4D13D61D867 /* NotificationSettingsView.swift */,
 				E0A2759A303B2A5B0022A5BD /* SplashView.swift */,
+				E0CC3C2D304149280089897A /* FontPickerView.swift */,
+				E04D03493042CBEC0073058E /* BgColorPickerView.swift */,
 			);
 			name = Screens;
 			path = Tickemo/Screens;
@@ -590,6 +640,8 @@
 				E06ACB6030295CA1005FD9D3 /* DominantColorCache.swift */,
 				920F93E66DE069310797ABF2 /* AppReviewTracker.swift */,
 				9C4874D2D96E89FA289584CF /* ChekiRecordVenue.swift */,
+				E0CC3C2B304149200089897A /* FontPreferenceService.swift */,
+				E04D03473042CBE10073058E /* AppBgColorService.swift */,
 			);
 			name = Support;
 			path = Tickemo/Support;
@@ -615,6 +667,7 @@
 			name = Tickemo;
 			packageProductDependencies = (
 				56144CC32DB1572AE2544D93 /* RevenueCat */,
+				E04D034E3042EDE10073058E /* Lottie */,
 			);
 			productName = Tickemo;
 			productReference = 13B07F961A680F5B00A75B9A /* Tickemo.app */;
@@ -689,6 +742,7 @@
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
 				7D837ECE308FA9FACBAE330A /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				E04D034D3042EBE70073058E /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -706,9 +760,18 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0CC3C2A3041479B0089897A /* YuseiMagic-Regular.ttf in Resources */,
+				E0CC3C1C3041441C0089897A /* ZenMaruGothic-Regular.ttf in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				E0CC3C28304147630089897A /* DotGothic16-Regular.ttf in Resources */,
+				E0CC3C22304145220089897A /* ShipporiMincho-Bold.ttf in Resources */,
+				E0CC3C1E304144270089897A /* ZenMaruGothic-Bold.ttf in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				E48F6C3505BACCF9FCA8E58C /* PrivacyInfo.xcprivacy in Resources */,
+				E0CC3C20304145180089897A /* ShipporiMincho-Regular.ttf in Resources */,
+				E0CC3C243041458A0089897A /* KaiseiDecol-Regular.ttf in Resources */,
+				E0CC3C26304145930089897A /* KaiseiDecol-Bold.ttf in Resources */,
+				E04D034C3042EB6C0073058E /* heart_like.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -771,6 +834,7 @@
 				16A2485E8BBFB58BB581BDE3 /* LegacyStoreLoading.swift in Sources */,
 				056EFB780FCB6E6FBFBCD546 /* ICloudFallbackLoader.swift in Sources */,
 				C3D5A82856B58EA1471E206A /* UbiquitousItemDownloader.swift in Sources */,
+				E04D03483042CBE10073058E /* AppBgColorService.swift in Sources */,
 				D94F7FDF6A4A42DE8DE1F665 /* ImageMigrator.swift in Sources */,
 				3D68379DC1810320883F82F4 /* DataMigrationImporter.swift in Sources */,
 				CBA1C5DA9656929640860C22 /* Tickemo.xcdatamodeld in Sources */,
@@ -839,6 +903,7 @@
 				DEABC535C445036472BCCC2D /* HugeIconPath.swift in Sources */,
 				277BF656566EB8B4C3CF05A6 /* HugeIcon.swift in Sources */,
 				329EF629C46B483642061036 /* HugeIconView.swift in Sources */,
+				E0CC3C2C304149200089897A /* FontPreferenceService.swift in Sources */,
 				5537E6A5E456B4B4480D4644 /* TimeWheelPickerField.swift in Sources */,
 				F3D3A1011BE1577EEFE232F4 /* RecordFormValidation.swift in Sources */,
 				BEFB60167BDF2062C916F508 /* SetlistOcrCleanup.swift in Sources */,
@@ -854,6 +919,7 @@
 				DCEF94CDEDCC8C2B0DC1C1DF /* MigrationOverlayView.swift in Sources */,
 				A6F5D11F3B89529EC3E67DBE /* CloudKitInspector.swift in Sources */,
 				64BF107D7893E61C242482AA /* AppReviewTracker.swift in Sources */,
+				E0CC3C2E304149280089897A /* FontPickerView.swift in Sources */,
 				F152BB5A871627E7BCD83CBB /* LiveNotificationSettings.swift in Sources */,
 				7AD5D4777392CFBAAE88DF98 /* LiveNotificationService.swift in Sources */,
 				914B8E8BB5A3D0E49B42A8B6 /* NotificationSettingsView.swift in Sources */,
@@ -861,6 +927,8 @@
 				1CAE14C7B04539580F69D515 /* VenueMapCardView.swift in Sources */,
 				4EE2FB6BEFD752624B67382F /* VenueSearchField.swift in Sources */,
 				09247DE84CF37FBB2AE7E496 /* ChekiRecordVenue.swift in Sources */,
+				EB53041D4BDD953E282F40D5 /* SetlistOcrImport.swift in Sources */,
+				E04D034A3042CBEC0073058E /* BgColorPickerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -910,7 +978,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.6.15;
+				MARKETING_VERSION = 3.6.16;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -943,7 +1011,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.6.15;
+				MARKETING_VERSION = 3.6.16;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1172,7 +1240,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.6.15;
+				MARKETING_VERSION = 3.6.16;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.Tickemo.LiveWidget;
@@ -1220,7 +1288,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 3.6.15;
+				MARKETING_VERSION = 3.6.16;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.Tickemo.LiveWidget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1284,6 +1352,14 @@
 				version = 5.59.0;
 			};
 		};
+		E04D034D3042EBE70073058E /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1291,6 +1367,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 7D837ECE308FA9FACBAE330A /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCat;
+		};
+		E04D034E3042EDE10073058E /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E04D034D3042EBE70073058E /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 

@@ -18,12 +18,15 @@ struct MusicProviderPickerView: View {
 
   private var palette: SettingsPalette { SettingsPalette(isDarkMode: isDarkMode) }
 
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+
   var body: some View {
     NavigationStack {
       ScrollView {
         VStack(alignment: .leading, spacing: 0) {
           Text("デフォルトで開くアプリ")
-            .font(.system(size: 14, weight: .medium))
+            .font(appFont.regular(14))
             .foregroundStyle(palette.tertiaryText)
             .padding(.leading, 8)
             .padding(.bottom, 10)
@@ -38,7 +41,7 @@ struct MusicProviderPickerView: View {
           .shadow(color: palette.sectionShadow.opacity(0.16), radius: 8, x: 0, y: 2)
 
           Text("選択されたアプリは、楽曲のリンクやアーティストページの移動に使用されます。")
-            .font(.system(size: 12))
+            .font(appFont.regular(12))
             .lineSpacing(4)
             .foregroundStyle(palette.secondaryText)
             .padding(.top, 14)
@@ -48,7 +51,7 @@ struct MusicProviderPickerView: View {
         .padding(.top, 24)
         .padding(.bottom, 36)
       }
-      .background(palette.screenBackground.ignoresSafeArea())
+      .background((bgColor ?? palette.screenBackground).ignoresSafeArea())
       .navigationTitle("音楽プロバイダー")
       .navigationBarTitleDisplayMode(.inline)
       .toolbar {
@@ -77,7 +80,7 @@ struct MusicProviderPickerView: View {
         HugeIconView(icon: HugeIcons.musicNote01, size: 20)
           .foregroundStyle(tint)
         Text(title)
-          .font(.system(size: 15, weight: .bold))
+          .font(appFont.bold(15))
           .foregroundStyle(palette.primaryText)
         Spacer()
         if selection == value {

@@ -23,6 +23,8 @@ struct SettingsView: View {
   @State private var showingLegacyReimportConfirmation = false
   @State private var legacyReimportResult: String?
   @State private var isReimportingLegacy = false
+  @State private var showingFontPicker = false
+  @State private var showingBgColorPicker = false
   @State private var showingMusicProvider = false
   @State private var showingICloudSync = false
   @State private var showingNotificationSettings = false
@@ -37,7 +39,6 @@ struct SettingsView: View {
 
   @State private var isHapticsEnabled = HapticsPreferenceService.shared.isEnabled
   @State private var musicProviderValue = MusicProviderPreferenceStore.load()
-
   private var profile: CD_UserProfile? {
     profiles.first ?? resolvedProfile
   }
@@ -47,6 +48,11 @@ struct SettingsView: View {
   }
 
   private var palette: SettingsPalette { SettingsPalette(isDarkMode: isDarkMode) }
+
+  @AppStorage(AppBgColorService.userDefaultsKey) private var storedBgColor: String = AppBgColorChoice.system.rawValue
+  @Environment(\.appFontChoice) private var appFont
+  @Environment(\.appBgColor) private var bgColor
+  @Environment(\.appCardBgColor) private var cardBgColor
 
   var body: some View {
     NavigationStack {
@@ -87,9 +93,15 @@ struct SettingsView: View {
       .padding(.top, 28)
       .padding(.bottom, 120)
     }
-    .background(palette.screenBackground.ignoresSafeArea())
+    .background((bgColor ?? palette.screenBackground).ignoresSafeArea())
     .sheet(isPresented: $showingProfileEdit) {
       ProfileEditView(profile: profile)
+    }
+    .sheet(isPresented: $showingFontPicker) {
+      FontPickerView()
+    }
+    .sheet(isPresented: $showingBgColorPicker) {
+      BgColorPickerView()
     }
     .sheet(isPresented: $showingMusicProvider) {
       MusicProviderPickerView(selection: $musicProviderValue)
@@ -153,12 +165,12 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 8) {
           HStack(spacing: 8) {
             Text(profile.name?.isEmpty == false ? profile.name! : "ユーザー")
-              .font(.system(size: 20, weight: .heavy))
+              .font(appFont.bold(20))
               .foregroundStyle(palette.titleText)
             membershipBadge(isPremium: isPremium)
           }
           Text("@\(displayUsername(profile)) • joined \(JoinedDateFormatting.relativeString(from: profile.joinedAt))")
-            .font(.system(size: 12))
+            .font(appFont.regular(12))
             .foregroundStyle(palette.secondaryText)
         }
       }
@@ -177,7 +189,7 @@ struct SettingsView: View {
     }
     .padding(.horizontal, 8)
     .padding(.vertical, 18)
-    .background(palette.screenBackground)
+    .background(bgColor ?? palette.screenBackground)
     .clipShape(RoundedRectangle(cornerRadius: 18))
   }
 
@@ -218,7 +230,7 @@ struct SettingsView: View {
       ZStack {
         palette.avatarFallbackBackground
         Text(initials(profile))
-          .font(.system(size: 18, weight: .heavy))
+          .font(appFont.bold(18))
           .foregroundStyle(palette.avatarFallbackText)
       }
     }
@@ -237,7 +249,7 @@ struct SettingsView: View {
         LinearGradient(colors: [palette.plusGradientStart, palette.plusGradientEnd], startPoint: .topLeading, endPoint: .bottomTrailing)
           .overlay {
             Text("Plus")
-              .font(.system(size: 9, weight: .bold))
+              .font(appFont.bold(9))
               .tracking(0.5)
               .foregroundStyle(palette.plusText)
           }
@@ -245,7 +257,7 @@ struct SettingsView: View {
         palette.freeBadgeBackground
           .overlay {
             Text("Free")
-              .font(.system(size: 9, weight: .bold))
+              .font(appFont.bold(9))
               .tracking(0.5)
               .foregroundStyle(palette.freeBadgeText)
           }
@@ -284,6 +296,8 @@ struct SettingsView: View {
       RowSection(id: "general", title: "一般", rows: [
         Row(id: "dark-mode", label: "ダークモード"),
         Row(id: "haptics", label: "触覚フィードバック"),
+        Row(id: "font", label: "フォント変更", value: appFont.displayName),
+        Row(id: "bg-color", label: "背景カラー", value: (AppBgColorChoice(rawValue: storedBgColor) ?? .system).displayName),
         Row(id: "music-provider", label: "音楽プロバイダー", value: musicProviderValue == .spotify ? "Spotify" : "Apple Music"),
         Row(id: "icloud-sync", label: "iCloud同期", value: icloudSyncStatusText),
         Row(id: "notifications", label: "通知"),
@@ -319,7 +333,7 @@ struct SettingsView: View {
     ForEach(sectionsData) { section in
       VStack(alignment: .leading, spacing: 10) {
         Text(section.title)
-          .font(.system(size: 14, weight: .medium))
+          .font(appFont.regular(14))
           .foregroundStyle(palette.tertiaryText)
           .padding(.leading, 8)
 
@@ -331,7 +345,7 @@ struct SettingsView: View {
             }
           }
         }
-        .background(palette.cardBackground)
+        .background(cardBgColor ?? palette.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 20))
         .shadow(color: palette.sectionShadow.opacity(0.16), radius: 8, x: 0, y: 2)
       }
@@ -350,7 +364,7 @@ struct SettingsView: View {
         HStack(spacing: 12) {
           rowLeadingIcon(row.id)
           Text(row.label)
-            .font(.system(size: 14, weight: .semibold))
+            .font(appFont.bold(14))
             .foregroundStyle(row.destructive ? palette.destructiveText : palette.primaryText)
           Spacer(minLength: 8)
           rowTrailingContent(row)
@@ -368,7 +382,7 @@ struct SettingsView: View {
     HStack(spacing: 12) {
       rowLeadingIcon(row.id)
       Text(row.label)
-        .font(.system(size: 14, weight: .semibold))
+        .font(appFont.bold(14))
         .foregroundStyle(palette.primaryText)
       Spacer(minLength: 8)
       if row.id == "dark-mode" {
@@ -401,6 +415,16 @@ struct SettingsView: View {
       settingsIcon("Moon", color: palette.iconColor)
     case "haptics":
       settingsIcon("haptics", color: palette.iconColor)
+    case "font":
+      Image(systemName: "textformat")
+        .font(appFont.regular(18))
+        .foregroundStyle(palette.iconColor)
+        .frame(width: 24, height: 24)
+    case "bg-color":
+      Image("Rolling brush")
+        .font(appFont.regular(17))
+        .foregroundStyle(palette.iconColor)
+        .frame(width: 24, height: 24)
     case "music-provider":
       if musicProviderValue == .spotify {
         settingsIcon("Spotify", color: palette.iconColor)
@@ -445,7 +469,7 @@ struct SettingsView: View {
   private func rowTrailingContent(_ row: Row) -> some View {
     HStack(spacing: 8) {
       if let value = row.value {
-        Text(value).font(.system(size: 10)).foregroundStyle(palette.secondaryText)
+        Text(value).font(appFont.regular(10)).foregroundStyle(palette.secondaryText)
       }
       if !row.destructive {
         rowIcon(row.id)
@@ -456,6 +480,15 @@ struct SettingsView: View {
   @ViewBuilder
   private func rowIcon(_ id: String) -> some View {
     switch id {
+    case "font", "bg-color":
+      if PurchasesService.shared.isPremium {
+        HugeIconView(icon: HugeIcons.arrowRight01, size: 15)
+          .foregroundStyle(palette.iconColor)
+      } else {
+        Image(systemName: "lock.fill")
+          .font(appFont.regular(13))
+          .foregroundStyle(palette.iconColor)
+      }
     case "faq", "icloud-sync", "music-provider", "debug-tools", "reimport-legacy", "notifications":
       HugeIconView(icon: HugeIcons.arrowRight01, size: 15)
         .foregroundStyle(palette.iconColor)
@@ -467,6 +500,8 @@ struct SettingsView: View {
 
   private func handleRowTap(_ id: String) {
     switch id {
+    case "font": if PurchasesService.shared.isPremium { showingFontPicker = true }
+    case "bg-color": if PurchasesService.shared.isPremium { showingBgColorPicker = true }
     case "icloud-sync": showingICloudSync = true
     case "notifications": showingNotificationSettings = true
     case "music-provider": showingMusicProvider = true
@@ -497,8 +532,8 @@ struct SettingsView: View {
         .frame(width: 28, height: 28)
         .opacity(0.6)
       VStack(alignment: .leading, spacing: 0) {
-        Text("Tickemo").font(.system(size: 11)).foregroundStyle(palette.secondaryText)
-        Text("Version \(appVersionText)").font(.system(size: 11)).foregroundStyle(palette.secondaryText)
+        Text("Tickemo").font(appFont.regular(11)).foregroundStyle(palette.secondaryText)
+        Text("Version \(appVersionText)").font(appFont.regular(11)).foregroundStyle(palette.secondaryText)
       }
     }
     .frame(maxWidth: .infinity)
