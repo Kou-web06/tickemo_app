@@ -1,4 +1,5 @@
 import SwiftUI
+import Lottie
 
 struct SetlistDraftEditorView: View {
   @Binding var items: [SetlistDraftItem]
@@ -51,12 +52,11 @@ struct SetlistDraftEditorView: View {
             if ocr.isRecognizing {
               ProgressView()
             } else {
-              Image("edit ai")
-                .renderingMode(.template)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 20, height: 20)
-                .foregroundStyle(Color(white: 0.6))
+              LottieView(animation: .named("edit"))
+                .playing(loopMode: .loop)
+                .frame(width: 24, height: 24)
+                .grayscale(1.0)
+                .opacity(0.4)
             }
           }
           .disabled(ocr.isRecognizing)

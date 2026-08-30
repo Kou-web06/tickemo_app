@@ -132,6 +132,8 @@
 		E0CC3C2A3041479B0089897A /* YuseiMagic-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E0CC3C293041479B0089897A /* YuseiMagic-Regular.ttf */; };
 		E0CC3C2C304149200089897A /* FontPreferenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0CC3C2B304149200089897A /* FontPreferenceService.swift */; };
 		E0CC3C2E304149280089897A /* FontPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0CC3C2D304149280089897A /* FontPickerView.swift */; };
+		E0F0E83A30441F0B00EA98A8 /* edit.json in Resources */ = {isa = PBXBuildFile; fileRef = E0F0E83930441EFC00EA98A8 /* edit.json */; };
+		E0F0E83C304422EA00EA98A8 /* tap.json in Resources */ = {isa = PBXBuildFile; fileRef = E0F0E83B304422E200EA98A8 /* tap.json */; };
 		E1B35F8E9EE2B9527B4BC8FE /* ShareReceiptCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0800A7D856FA6988684EA128 /* ShareReceiptCardView.swift */; };
 		E350B28E5DDDB949B33C927F /* ImageCropping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */; };
 		E3FA2835D57DD6FA064C5853 /* SetlistEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8C29472BB0AB4450819C528 /* SetlistEditorView.swift */; };
@@ -312,6 +314,8 @@
 		E0CC3C293041479B0089897A /* YuseiMagic-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "YuseiMagic-Regular.ttf"; sourceTree = "<group>"; };
 		E0CC3C2B304149200089897A /* FontPreferenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontPreferenceService.swift; sourceTree = "<group>"; };
 		E0CC3C2D304149280089897A /* FontPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontPickerView.swift; sourceTree = "<group>"; };
+		E0F0E83930441EFC00EA98A8 /* edit.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = edit.json; sourceTree = "<group>"; };
+		E0F0E83B304422E200EA98A8 /* tap.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = tap.json; sourceTree = "<group>"; };
 		E1230990001977CC87208EC0 /* HugeIconPath.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HugeIconPath.swift; sourceTree = "<group>"; };
 		E6D0322E74FBB97B858D09B7 /* ShareCapture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareCapture.swift; sourceTree = "<group>"; };
 		E74793A4EFA8E715AFD1F210 /* ArtistGroupingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistGroupingTests.swift; sourceTree = "<group>"; };
@@ -382,6 +386,8 @@
 		13B07FAE1A68108700A75B9A /* Tickemo */ = {
 			isa = PBXGroup;
 			children = (
+				E0F0E83B304422E200EA98A8 /* tap.json */,
+				E0F0E83930441EFC00EA98A8 /* edit.json */,
 				E0CC3C1A304144050089897A /* Fonts */,
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -469,7 +475,6 @@
 			isa = PBXGroup;
 			children = (
 				4AFC27233C7B2540CCA957DB /* MusicKitService.swift */,
-				291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */,
 				AE6333409566700D88792880 /* WidgetReloaderService.swift */,
 				DDC8097D167570A73C9B4DE5 /* PurchasesService.swift */,
 				26FD9F153931A7B6B67A5D6F /* EarlyOfferService.swift */,
@@ -542,6 +547,7 @@
 		CF6004C0EDCDBB4324D06EBD /* Migration */ = {
 			isa = PBXGroup;
 			children = (
+				291F0D2821D2E1AA31C13F42 /* AppleMusicService.swift */,
 				8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */,
 				0A982954F51907B4DB248412 /* LegacyStoreLoading.swift */,
 				2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */,
@@ -765,6 +771,7 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				E0CC3C28304147630089897A /* DotGothic16-Regular.ttf in Resources */,
 				E0CC3C22304145220089897A /* ShipporiMincho-Bold.ttf in Resources */,
+				E0F0E83A30441F0B00EA98A8 /* edit.json in Resources */,
 				E0CC3C1E304144270089897A /* ZenMaruGothic-Bold.ttf in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				E48F6C3505BACCF9FCA8E58C /* PrivacyInfo.xcprivacy in Resources */,
@@ -772,6 +779,7 @@
 				E0CC3C243041458A0089897A /* KaiseiDecol-Regular.ttf in Resources */,
 				E0CC3C26304145930089897A /* KaiseiDecol-Bold.ttf in Resources */,
 				E04D034C3042EB6C0073058E /* heart_like.json in Resources */,
+				E0F0E83C304422EA00EA98A8 /* tap.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
