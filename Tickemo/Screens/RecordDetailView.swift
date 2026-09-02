@@ -28,6 +28,12 @@ struct RecordDetailView: View {
   @State private var isSetlistExpanded = true
   @State private var showingShareSheet = false
 
+  // セットリストの書き出し（Apple Music プレイリスト作成 / テキスト）
+  @State private var showingPlaylistExportDialog = false
+  @State private var showingPlaylistTextShare = false
+  @State private var isCreatingPlaylist = false
+  @State private var playlistResultMessage: String?
+
   private let appleMusicService = AppleMusicService()
   @State private var nowPlayingSongId: String?
   @State private var loadingSongId: String?
@@ -173,6 +179,29 @@ struct RecordDetailView: View {
     }
     .sheet(isPresented: $showingShareSheet) {
       ShareSheetView(record: record)
+    }
+    .confirmationDialog("セットリストを書き出す", isPresented: $showingPlaylistExportDialog, titleVisibility: .visible) {
+      Button("Apple Musicにプレイリストを作成") { createApplePlaylist() }
+      Button("曲リストをコピー") {
+        UIPasteboard.general.string = playlistText
+        playlistResultMessage = "曲リストをコピーしました。"
+      }
+      Button("曲リストを共有") { showingPlaylistTextShare = true }
+      Button("キャンセル", role: .cancel) {}
+    }
+    .sheet(isPresented: $showingPlaylistTextShare) {
+      ActivityShareSheet(items: [playlistText])
+    }
+    .alert(
+      "セットリストの書き出し",
+      isPresented: Binding(
+        get: { playlistResultMessage != nil },
+        set: { if !$0 { playlistResultMessage = nil } }
+      )
+    ) {
+      Button("OK", role: .cancel) { playlistResultMessage = nil }
+    } message: {
+      Text(playlistResultMessage ?? "")
     }
     .alert("このチケットを削除しますか？", isPresented: $showingDeleteConfirmation) {
       Button("削除", role: .destructive) { deleteRecord() }
@@ -407,6 +436,7 @@ struct RecordDetailView: View {
           }
           .font(appFont.bold(14))
         } else {
+          playlistExportButton
           collapseToggleButton
         }
       }
@@ -431,6 +461,29 @@ struct RecordDetailView: View {
       Color.white
       dominantColor.opacity(0.35)
     }
+  }
+
+  /// セトリがあるときだけ出す書き出しボタン。Apple Music プレイリスト
+  /// 作成と、どのプレイヤーにも貼れるテキストの2系統をここにまとめる。
+  private var playlistExportButton: some View {
+    Button {
+      HapticsPreferenceService.shared.impact(.light)
+      showingPlaylistExportDialog = true
+    } label: {
+      Group {
+        if isCreatingPlaylist {
+          ProgressView()
+        } else {
+          HugeIconView(icon: HugeIcons.playList, size: 15)
+            .foregroundStyle(primaryTextColor)
+        }
+      }
+      .frame(width: 30, height: 30)
+      .background(setlistCardBackground)
+      .clipShape(Circle())
+    }
+    .buttonStyle(.plain)
+    .disabled(isCreatingPlaylist)
   }
 
   private var collapseToggleButton: some View {
@@ -622,6 +675,52 @@ struct RecordDetailView: View {
 
   private func openExternally(_ item: CD_SetlistItem) {
     MusicProviderPreferenceStore.load().open(query: searchQuery(for: item))
+  }
+
+  // MARK: - Playlist export
+
+  private var songItems: [CD_SetlistItem] {
+    record.sortedSetlistItems.filter { $0.kind == "song" }
+  }
+
+  private var playlistText: String {
+    SetlistPlaylistText.songList(
+      liveName: record.liveName,
+      venue: record.venue,
+      date: record.date,
+      songs: songItems.map { ($0.songName, $0.performerName, $0.artistName) }
+    )
+  }
+
+  /// Apple Music に登録済みの曲だけがプレイリストに入れられる。曲名検索
+  /// を経ずに残った曲（OCR で候補に当たらなかった等）は songId を持たない
+  /// ので、除外件数を結果メッセージで伝える。
+  private func createApplePlaylist() {
+    let songIds = songItems.compactMap { item -> String? in
+      guard let id = item.songId?.trimmingCharacters(in: .whitespaces), !id.isEmpty else { return nil }
+      return id
+    }
+    let skipped = songItems.count - songIds.count
+    let name = SetlistPlaylistText.playlistName(
+      liveName: record.liveName,
+      venue: record.venue,
+      date: record.date
+    )
+
+    Task {
+      isCreatingPlaylist = true
+      defer { isCreatingPlaylist = false }
+      do {
+        let added = try await ApplePlaylistExporter.createPlaylist(named: name, songIds: songIds)
+        HapticsPreferenceService.shared.notify(.success)
+        let skippedNote = skipped > 0 ? "\n\(skipped)曲はApple Musicに登録がないため除外しました。" : ""
+        playlistResultMessage = "Apple Musicに「\(name)」を作成しました（\(added)曲）。\(skippedNote)"
+      } catch {
+        HapticsPreferenceService.shared.notify(.error)
+        playlistResultMessage = (error as? ApplePlaylistExportError)?.errorDescription
+          ?? "プレイリストを作成できませんでした。"
+      }
+    }
   }
 
   // MARK: - Venue map
