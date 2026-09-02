@@ -1,7 +1,6 @@
 import SwiftUI
 import UIKit
 import CoreLocation
-import OSLog
 
 /// Ports components/TicketDetail.tsx's layout and styling (colors, type
 /// scale, section structure) to SwiftUI. Explicitly out of scope, same as
@@ -34,6 +33,9 @@ struct RecordDetailView: View {
   @State private var showingPlaylistTextShare = false
   @State private var isCreatingPlaylist = false
   @State private var playlistResultMessage: String?
+  /// 直近の書き出しの足取り。失敗時はアラートからコピーできるようにして、
+  /// 実機の不具合報告をそのまま送ってもらえるようにする。
+  @State private var playlistDiagnosticsText: String?
 
   private let appleMusicService = AppleMusicService()
   @State private var nowPlayingSongId: String?
@@ -200,6 +202,12 @@ struct RecordDetailView: View {
         set: { if !$0 { playlistResultMessage = nil } }
       )
     ) {
+      if let playlistDiagnosticsText {
+        Button("詳細をコピー") {
+          UIPasteboard.general.string = playlistDiagnosticsText
+          playlistResultMessage = nil
+        }
+      }
       Button("OK", role: .cancel) { playlistResultMessage = nil }
     } message: {
       Text(playlistResultMessage ?? "")
@@ -708,22 +716,28 @@ struct RecordDetailView: View {
       date: record.date
     )
 
-    Logger(subsystem: "com.anonymous.Tickemo", category: "PlaylistExport").info("""
-      呼び出し: 曲行=\(songItems.count, privacy: .public)       songIdあり=\(songIds.count, privacy: .public)       除外=\(skipped, privacy: .public)
-      """)
+    let diagnostics = ApplePlaylistExportDiagnostics()
+    diagnostics.record("呼び出し: 曲行=\(songItems.count) songIdあり=\(songIds.count) 除外=\(skipped)")
 
     Task {
       isCreatingPlaylist = true
       defer { isCreatingPlaylist = false }
       do {
-        let added = try await ApplePlaylistExporter.createPlaylist(named: name, songIds: songIds)
+        let added = try await ApplePlaylistExporter.createPlaylist(
+          named: name,
+          songIds: songIds,
+          diagnostics: diagnostics
+        )
         HapticsPreferenceService.shared.notify(.success)
         let skippedNote = skipped > 0 ? "\n\(skipped)曲はApple Musicに登録がないため除外しました。" : ""
+        playlistDiagnosticsText = nil
         playlistResultMessage = "Apple Musicに「\(name)」を作成しました（\(added)曲）。\(skippedNote)"
       } catch {
         HapticsPreferenceService.shared.notify(.error)
-        playlistResultMessage = (error as? ApplePlaylistExportError)?.errorDescription
+        playlistDiagnosticsText = diagnostics.text
+        let reason = (error as? ApplePlaylistExportError)?.errorDescription
           ?? "プレイリストを作成できませんでした。"
+        playlistResultMessage = "\(reason)\n\n原因の切り分けに使うので、「詳細をコピー」で記録を送ってください。"
       }
     }
   }
