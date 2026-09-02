@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import CoreLocation
+import OSLog
 
 /// Ports components/TicketDetail.tsx's layout and styling (colors, type
 /// scale, section structure) to SwiftUI. Explicitly out of scope, same as
@@ -706,6 +707,10 @@ struct RecordDetailView: View {
       venue: record.venue,
       date: record.date
     )
+
+    Logger(subsystem: "com.anonymous.Tickemo", category: "PlaylistExport").info("""
+      呼び出し: 曲行=\(songItems.count, privacy: .public)       songIdあり=\(songIds.count, privacy: .public)       除外=\(skipped, privacy: .public)
+      """)
 
     Task {
       isCreatingPlaylist = true
