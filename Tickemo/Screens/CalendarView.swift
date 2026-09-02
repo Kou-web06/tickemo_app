@@ -71,6 +71,12 @@ struct CalendarView: View {
       .navigationDestination(for: CD_ChekiRecord.self) { record in
         RecordDetailView(record: record)
       }
+      // RecordDetailView の #artist カードからの遷移先。RecordListView が
+      // ホーム側のスタックに登録しているのと同じもので、カレンダー側の
+      // スタックにも要る。
+      .navigationDestination(for: ArtistRoute.self) { route in
+        ArtistDetailView(artistName: route.name)
+      }
       .background((bgColor ?? Color(.systemBackground)).ignoresSafeArea())
     }
   }

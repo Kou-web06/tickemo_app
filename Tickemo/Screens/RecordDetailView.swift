@@ -22,6 +22,11 @@ struct RecordDetailView: View {
   @Environment(\.managedObjectContext) private var viewContext
   @Environment(\.dismiss) private var dismiss
 
+  /// `#artist` カードの「最後に見た日」をレポート画面と同じ基準で出すため、
+  /// 全チケットを引く（StatisticsData.allArtists がアーティストごとの最新
+  /// 公演を出す仕様なので、このチケット単体では決まらない）。
+  @FetchRequest(sortDescriptors: []) private var allRecords: FetchedResults<CD_ChekiRecord>
+
   @State private var showingEditSheet = false
   @State private var showingDeleteConfirmation = false
   @State private var showingSetlistEditor = false
@@ -95,6 +100,11 @@ struct RecordDetailView: View {
 
           dateTimeGrid
             .padding(.top, 28)
+
+          if !artistCards.isEmpty {
+            artistSection
+              .padding(.top, 60)
+          }
 
           setlistSection
             .padding(.top, 60)
@@ -425,6 +435,57 @@ struct RecordDetailView: View {
     guard let date = DateFormatting.date(from: record.date) else { return "" }
     let weekday = Self.utcCalendar.component(.weekday, from: date) // 1 = Sunday
     return Self.weekdayAbbreviations[weekday - 1]
+  }
+
+  // MARK: - Artists
+
+  /// このチケットの出演者を、レポート画面の ALL ARTISTS と同じ体裁で出す。
+  /// 並びはアーティスト欄に入力した順（＝メインが先）で、レポート側の
+  /// 「最新公演順」には合わせない — チケットの上では出演順の方が自然なため。
+  private var artistCards: [ArtistArchiveEntry] {
+    guard liveType != .sports else { return [] }
+    let archive = Dictionary(
+      StatisticsData.allArtists(Array(allRecords)).map { ($0.id, $0) },
+      uniquingKeysWith: { first, _ in first }
+    )
+    return ArtistGrouping.entries(for: record).map { entry in
+      let key = entry.name.lowercased()
+      // 日付が壊れているチケットは allArtists 側で落ちるので、その場合は
+      // このチケットの情報だけでカードを組む（日付は "-"）。
+      guard let archived = archive[key] else {
+        return ArtistArchiveEntry(
+          id: key,
+          name: entry.name,
+          lastLiveDateText: "-",
+          artistImageUrl: entry.imageUrl
+        )
+      }
+      return ArtistArchiveEntry(
+        id: key,
+        name: archived.name,
+        lastLiveDateText: archived.lastLiveDateText,
+        artistImageUrl: archived.artistImageUrl ?? entry.imageUrl
+      )
+    }
+  }
+
+  private var artistSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text(artistCards.count > 1 ? "#artists" : "#artist")
+        .font(appFont.bold(18))
+        .foregroundStyle(primaryTextColor)
+
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 12) {
+          ForEach(artistCards) { entry in
+            NavigationLink(value: ArtistRoute(name: entry.name)) {
+              ArtistArchiveBackfillCardView(entry: entry)
+            }
+            .buttonStyle(.plain)
+          }
+        }
+      }
+    }
   }
 
   // MARK: - Setlist

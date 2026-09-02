@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00343D831727C5A94594CE03 /* ArtistArchiveBackfillCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D822652D50E7D154136A10C1 /* ArtistArchiveBackfillCardView.swift */; };
 		03F45438BC18A43EC09E3011 /* ShortcutItemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71099DBD07A050B1E2DA2893 /* ShortcutItemService.swift */; };
 		056EFB780FCB6E6FBFBCD546 /* ICloudFallbackLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBF705867638EE36C96ED68 /* ICloudFallbackLoader.swift */; };
 		06103D883AE95BBC14312886 /* CalendarEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A46977CD287EA4809AF52CF /* CalendarEvents.swift */; };
@@ -300,6 +301,7 @@
 		D0B69313B8AB4D706F1A74A7 /* StatisticsRankingRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsRankingRowView.swift; sourceTree = "<group>"; };
 		D0F7B87F62C4B3D653726805 /* HapticsPreferenceService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HapticsPreferenceService.swift; sourceTree = "<group>"; };
 		D76B3F78C61869FF10F355A8 /* SetlistPlaylistText.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistPlaylistText.swift; sourceTree = "<group>"; };
+		D822652D50E7D154136A10C1 /* ArtistArchiveBackfillCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistArchiveBackfillCardView.swift; sourceTree = "<group>"; };
 		D92DA71054CD0EFE8D1F7193 /* ThemePreferenceService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ThemePreferenceService.swift; sourceTree = "<group>"; };
 		D9DDE7FF9976BE063D24EB4E /* DebugToolsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DebugToolsView.swift; sourceTree = "<group>"; };
 		DDBDF60F6535CA06AC9EBA0A /* StableLegacyIDTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StableLegacyIDTests.swift; sourceTree = "<group>"; };
@@ -484,6 +486,7 @@
 				C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */,
 				48286B05F1D063AE48B1F1FD /* VenueSearchField.swift */,
 				CA2A44D6699F40241BA25A7E /* SetlistOcrImport.swift */,
+				D822652D50E7D154136A10C1 /* ArtistArchiveBackfillCardView.swift */,
 			);
 			name = Components;
 			path = Tickemo/Components;
@@ -976,6 +979,7 @@
 				9C1948FE794A6B0C815C9E56 /* SetlistPerformers.swift in Sources */,
 				B91F0D142E4B4C94EE10539E /* SetlistPlaylistText.swift in Sources */,
 				2734B854E50B974BED16087C /* ApplePlaylistExporter.swift in Sources */,
+				00343D831727C5A94594CE03 /* ArtistArchiveBackfillCardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

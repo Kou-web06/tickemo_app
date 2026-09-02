@@ -208,6 +208,28 @@ final class StatisticsDataTests: XCTestCase {
     XCTAssertEqual(entries.first?.artistImageUrl, "oldest-url", "no image on the newest record falls back to the oldest record's artist photo")
   }
 
+  /// `recordInstant` は日付と開演時刻を UTC の壁時計として組み立てるので、
+  /// 整形側のタイムゾーンを固定し忘れると、UTC より進んだ地域（JST など）
+  /// では夕方開演のチケットが翌日として表示される。実際 4/26 15:00 の
+  /// チケットが "Apr 27, 2026" と出ていた。
+  func testAllArtistsLastLiveDateIsNotShiftedByTheDeviceTimeZone() {
+    let record = makeRecord(artist: "Artist", date: "2026-04-26", startTime: "15:00")
+    try? context.save()
+
+    let entries = StatisticsData.allArtists([record])
+
+    XCTAssertEqual(entries.first?.lastLiveDateText, "Apr 26, 2026")
+  }
+
+  func testAllArtistsLastLiveDateIsNotLocalized() {
+    let record = makeRecord(artist: "Artist", date: "2026-04-26")
+    try? context.save()
+
+    let entries = StatisticsData.allArtists([record])
+
+    XCTAssertEqual(entries.first?.lastLiveDateText, "Apr 26, 2026")
+  }
+
   // MARK: - Top artists image selection
 
   func testTopArtistsArtistImageUrlPicksFirstNonNilAcrossRecords() {

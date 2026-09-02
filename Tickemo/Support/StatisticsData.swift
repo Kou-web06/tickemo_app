@@ -136,6 +136,16 @@ enum StatisticsData {
 
   // MARK: - All artists (sorted by most recent show, not count)
 
+  /// ALL ARTISTS カードとライブ詳細の #artist カードで共有する日付書式。
+  /// ロケールとタイムゾーンを両方とも明示的に固定する（理由は
+  /// `allArtists` 内のコメント参照）。
+  private static let archiveDateStyle: Date.FormatStyle = {
+    var style = Date.FormatStyle.dateTime.month(.abbreviated).day().year()
+    style.locale = Locale(identifier: "en_US")
+    style.timeZone = DateFormatting.timeZone
+    return style
+  }()
+
   static func allArtists(_ records: [CD_ChekiRecord]) -> [ArtistArchiveEntry] {
     var order: [String] = []
     var latest: [String: (name: String, instant: Date, artistImageUrl: String?)] = [:]
@@ -168,9 +178,12 @@ enum StatisticsData {
           // as e.g. "2024年5月10日" on a Japanese-locale device. This exact
           // bug class (locale-dependent date display) has already been hit
           // and fixed twice elsewhere in this migration.
-          lastLiveDateText: value.instant.formatted(
-            .dateTime.month(.abbreviated).day().year().locale(Locale(identifier: "en_US"))
-          ),
+          //
+          // タイムゾーンの固定も同じ理由で必須。`recordInstant` は
+          // "yyyy-MM-dd" + "HH:mm" を UTC の壁時計として組み立てるのに、
+          // 整形側が端末のタイムゾーンだと日付がずれる。JST（UTC+9）では
+          // 4/26 15:00 開演のチケットが 4/27 と表示されていた。
+          lastLiveDateText: value.instant.formatted(archiveDateStyle),
           artistImageUrl: value.artistImageUrl
         )
         return (entry, value.instant)
