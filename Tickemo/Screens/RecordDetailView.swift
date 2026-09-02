@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import CoreData
 import CoreLocation
 
 /// Ports components/TicketDetail.tsx's layout and styling (colors, type
@@ -412,9 +413,15 @@ struct RecordDetailView: View {
       }
 
       if !record.sortedSetlistItems.isEmpty && isSetlistExpanded {
+        let headers = performerHeaders
         VStack(spacing: 8) {
           ForEach(Array(record.sortedSetlistItems.enumerated()), id: \.element.objectID) { index, item in
-            setlistRow(item, songNumber: songNumber(for: item))
+            VStack(alignment: .leading, spacing: 8) {
+              if let header = headers[item.objectID] {
+                SetlistPerformerHeader(name: header)
+              }
+              setlistRow(item, songNumber: songNumber(for: item))
+            }
           }
         }
         .padding(12)
@@ -447,6 +454,19 @@ struct RecordDetailView: View {
         .clipShape(Circle())
     }
     .buttonStyle(.plain)
+  }
+
+  /// 出演者が切り替わる行の上に出す見出し。対バン／フェスで A→B→A と
+  /// 交互に演奏した場合に、どこで演者が替わったかを読み取れるようにする。
+  /// 出演者が実質1組しかないセトリでは空になる（SetlistPerformers 参照）。
+  private var performerHeaders: [NSManagedObjectID: String] {
+    let items = record.sortedSetlistItems
+    let labels = SetlistPerformers.sectionHeaders(for: items.map(\.performerName))
+    var map: [NSManagedObjectID: String] = [:]
+    for (index, label) in labels.enumerated() {
+      if let label { map[items[index].objectID] = label }
+    }
+    return map
   }
 
   private func songNumber(for item: CD_SetlistItem) -> Int? {

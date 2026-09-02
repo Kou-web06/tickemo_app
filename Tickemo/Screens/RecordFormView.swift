@@ -10,7 +10,10 @@ private let ticketPricePresets: [Int] = [3000, 5000, 8000, 10000, 15000]
 ///   name, no photo requirement).
 /// - `two-man`/`festival` render one independent ArtistSearchField per
 ///   artist (`artistEntries`), add/remove via a "+ Add artist" row, minimum
-///   1 entry — mirrors RN's `performances[]`.
+///   1 entry — mirrors RN's `performances[]`. Note that unlike RN, the
+///   setlist is NOT nested per artist: it is a single flat list in actual
+///   performance order, with a per-song performer picker (see
+///   SetlistPerformers for why).
 /// - every other type shows exactly one ArtistSearchField.
 /// Save is blocked (button disabled) unless every named, non-sports artist
 /// has a photo picked from search — RN enforces the same "must select from
@@ -31,7 +34,6 @@ struct RecordFormView: View {
     let id = UUID()
     var name: String
     var imageUrl: String?
-    var setlistItems: [SetlistDraftItem] = []
   }
 
   @State private var liveName: String
@@ -73,10 +75,11 @@ struct RecordFormView: View {
     _ticketPriceText = State(initialValue: record.map { String(Int($0.ticketPrice)) } ?? "")
     _startTime = State(initialValue: record?.startTime ?? "18:00")
     _endTime = State(initialValue: record?.endTime ?? "20:00")
-    _artistEntries = State(initialValue: Self.initialArtistEntries(for: record))
-    let liveType = LiveType.normalized(record?.liveType)
-    let isMulti = liveType == .twoMan || liveType == .festival
-    _setlistItems = State(initialValue: isMulti ? [] : Self.setlistDraftItems(from: record))
+    let entries = Self.initialArtistEntries(for: record)
+    _artistEntries = State(initialValue: entries)
+    _setlistItems = State(initialValue: record.map {
+      SetlistDraftItem.drafts(from: $0, artistNames: entries.map(\.name))
+    } ?? [])
     _memo = State(initialValue: record?.memo ?? "")
     _qrCode = State(initialValue: record?.qrCode ?? "")
     _coverImageData = State(initialValue: record?.coverImageData)
@@ -85,51 +88,14 @@ struct RecordFormView: View {
 
   private static let maxGamePhotos = 6
 
-  private static func setlistDraftItems(from record: CD_ChekiRecord?) -> [SetlistDraftItem] {
-    guard let record else { return [] }
-    return record.sortedSetlistItems.map { cdItem in
-      SetlistDraftItem(
-        id: cdItem.id ?? UUID(),
-        kind: SetlistDraftItem.Kind(rawValue: cdItem.kind ?? "song") ?? .song,
-        songId: cdItem.songId,
-        songName: cdItem.songName,
-        artistName: cdItem.artistName,
-        albumName: cdItem.albumName,
-        artworkUrl: cdItem.artworkUrl,
-        title: cdItem.title ?? ""
-      )
-    }
-  }
-
   private static func initialArtistEntries(for record: CD_ChekiRecord?) -> [ArtistEntry] {
     guard let record else { return [ArtistEntry(name: "", imageUrl: nil)] }
     let names = record.artistsArray?.isEmpty == false ? record.artistsArray! : [record.artist ?? ""]
     let urls = record.artistImageUrlsArray ?? []
-    var entries = names.enumerated().map { index, name in
+    let entries = names.enumerated().map { index, name in
       ArtistEntry(name: name, imageUrl: index < urls.count ? urls[index] : (index == 0 ? record.artistImageUrl : nil))
     }
-    if entries.isEmpty { entries = [ArtistEntry(name: "", imageUrl: nil)] }
-
-    let liveType = LiveType.normalized(record.liveType)
-    guard liveType == .twoMan || liveType == .festival else { return entries }
-
-    // Best-effort split of the flat, artistName-tagged setlist back into
-    // per-performance buckets when re-opening a multi-artist record for
-    // edit — RN faces the identical reconstruction ambiguity (its own
-    // persisted setlist is just as flat, artistName-per-song), so this
-    // isn't meant to be authoritative, just a reasonable starting point.
-    // Marker rows (encore/mc) have no artistName to match on, so they fall
-    // into whichever performance the preceding song matched.
-    var lastIndex = 0
-    for draft in setlistDraftItems(from: record) {
-      let matchIndex = entries.firstIndex { entry in
-        !entry.name.isEmpty && entry.name.caseInsensitiveCompare(draft.artistName ?? "") == .orderedSame
-      }
-      let targetIndex = matchIndex ?? lastIndex
-      entries[targetIndex].setlistItems.append(draft)
-      lastIndex = targetIndex
-    }
-    return entries
+    return entries.isEmpty ? [ArtistEntry(name: "", imageUrl: nil)] : entries
   }
 
   /// OCR メタデータ補完のヒントに使う先頭アーティスト名（未入力なら nil）。
@@ -269,11 +235,16 @@ struct RecordFormView: View {
         }
         .listRowBackground(rowBg)
 
-        if !isSportsLive && !isMultiArtistLive {
+        // 対バン／フェスもここに含める。以前はアーティストごとに独立した
+        // セトリ欄を出していたが、それだと交互演奏が表現できないため、
+        // ライブ種別によらず「実際の演奏順の1本のリスト」に統一した。
+        // OCR まとめて追加も種別を問わず使えるようになる。
+        if !isSportsLive {
           Section("セットリスト") {
             SetlistDraftEditorView(
               items: $setlistItems,
               showsOcrButton: true,
+              performerChoices: artistEntries.map(\.name),
               ocr: SetlistOcrBridge(
                 showingSourceDialog: $showingSetlistOcrDialog,
                 isRecognizing: $isRecognizingSetlistOcr
@@ -387,7 +358,7 @@ struct RecordFormView: View {
             Spacer()
             if artistEntries.count > 1 {
               Button(role: .destructive) {
-                artistEntries.remove(at: index)
+                removeArtist(at: index)
               } label: {
                 HugeIconView(icon: HugeIcons.delete02, size: 16)
               }
@@ -395,12 +366,6 @@ struct RecordFormView: View {
             }
           }
           ArtistSearchField(name: artistNameBinding(index), imageUrl: artistImageUrlBinding(index))
-
-          // Each performance carries its own setlist, matching RN's
-          // per-performance SetlistInputWithTags — no OCR trigger here,
-          // RN's bulk-register only exists on the single-artist path.
-          SetlistDraftEditorView(items: artistSetlistItemsBinding(index), showsOcrButton: false)
-            .padding(.top, 4)
         }
         .padding(.vertical, 4)
       }
@@ -434,14 +399,30 @@ struct RecordFormView: View {
     )
   }
 
-  private func artistSetlistItemsBinding(_ index: Int) -> Binding<[SetlistDraftItem]> {
-    Binding(
-      get: { artistEntries.indices.contains(index) ? artistEntries[index].setlistItems : [] },
-      set: { newValue in
-        guard artistEntries.indices.contains(index) else { return }
-        artistEntries[index].setlistItems = newValue
-      }
-    )
+  /// 出演者を消したら、その人に紐づいていた曲のタグも落とす。残したまま
+  /// だと、もういない出演者の見出しがセトリに出続けてしまう。
+  private func removeArtist(at index: Int) {
+    guard artistEntries.indices.contains(index) else { return }
+    let removed = SetlistPerformers.normalized(artistEntries[index].name)
+    artistEntries.remove(at: index)
+    guard let removed else { return }
+    for itemIndex in setlistItems.indices
+    where setlistItems[itemIndex].performerName?.caseInsensitiveCompare(removed) == .orderedSame {
+      setlistItems[itemIndex].performerName = nil
+    }
+  }
+
+  private var namedArtistNames: [String] {
+    artistEntries.compactMap { SetlistPerformers.normalized($0.name) }
+  }
+
+  /// 保存時に出演者タグを現在のアーティスト欄と突き合わせる。ライブ種別を
+  /// 単独公演に変えた／アーティストを消した／名前を選び直した後に、実在
+  /// しない出演者名が残らないようにするための最終フィルタ。表記は
+  /// アーティスト欄側に寄せる。
+  private func canonicalPerformer(_ raw: String?) -> String? {
+    guard namedArtistNames.count > 1, let name = SetlistPerformers.normalized(raw) else { return nil }
+    return namedArtistNames.first { $0.caseInsensitiveCompare(name) == .orderedSame }
   }
 
   // MARK: - Cover image
@@ -546,35 +527,19 @@ struct RecordFormView: View {
   }
 
   // Sports never has a setlist (matches RN, which hides the whole section
-  // for isSportsLive); multi-artist flattens each performance's own items
-  // in order, matching RN's per-performance parse + flatMap at save time.
-  private var flattenedSetlistItems: [SetlistDraftItem] {
-    if isSportsLive { return [] }
-    if isMultiArtistLive { return artistEntries.flatMap(\.setlistItems) }
-    return setlistItems
-  }
-
+  // for isSportsLive). それ以外は画面上の並び＝実際の演奏順なので、
+  // 並べ替えずにそのまま保存する。
   private func applySetlist(to target: CD_ChekiRecord) {
-    for existing in target.sortedSetlistItems {
-      viewContext.delete(existing)
+    guard !isSportsLive else {
+      SetlistDraftItem.apply([], to: target, in: viewContext)
+      return
     }
-    for (index, draft) in flattenedSetlistItems.enumerated() {
-      let cdItem = CD_SetlistItem(context: viewContext)
-      cdItem.id = draft.id
-      cdItem.orderIndex = Int32(index)
-      cdItem.kind = draft.kind.rawValue
-      switch draft.kind {
-      case .song:
-        cdItem.songId = draft.songId
-        cdItem.songName = draft.songName
-        cdItem.artistName = draft.artistName
-        cdItem.albumName = draft.albumName
-        cdItem.artworkUrl = draft.artworkUrl
-      case .encore, .mc:
-        cdItem.title = draft.title
-      }
-      cdItem.record = target
+    let sanitized = setlistItems.map { draft -> SetlistDraftItem in
+      var copy = draft
+      copy.performerName = canonicalPerformer(draft.performerName)
+      return copy
     }
+    SetlistDraftItem.apply(sanitized, to: target, in: viewContext)
   }
 
   // Derives the singular `artist`/`artistImageUrl` as index-0 of the plural
