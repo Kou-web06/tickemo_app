@@ -61,6 +61,27 @@ final class SetlistPerformersTests: XCTestCase {
     XCTAssertEqual(resolved, [nil])
   }
 
+  // MARK: - canonical / soleArtist
+
+  func testCanonicalMatchesRegisteredArtistsCaseInsensitivelyAndAdoptsTheirSpelling() {
+    XCTAssertEqual(
+      SetlistPerformers.canonical(" mygo!!!!! ", artistNames: ["sumimi", "MyGO!!!!!"]),
+      "MyGO!!!!!"
+    )
+  }
+
+  func testCanonicalDropsNamesThatAreNoLongerRegistered() {
+    XCTAssertNil(SetlistPerformers.canonical("Roselia", artistNames: ["sumimi", "MyGO!!!!!"]))
+    XCTAssertNil(SetlistPerformers.canonical("sumimi", artistNames: []))
+    XCTAssertNil(SetlistPerformers.canonical(nil, artistNames: ["sumimi"]))
+  }
+
+  func testSoleArtistOnlyResolvesWhenExactlyOneArtistIsNamed() {
+    XCTAssertEqual(SetlistPerformers.soleArtist(in: [" sumimi ", "  "]), "sumimi")
+    XCTAssertNil(SetlistPerformers.soleArtist(in: ["sumimi", "MyGO!!!!!"]))
+    XCTAssertNil(SetlistPerformers.soleArtist(in: []))
+  }
+
   // MARK: - displayName
 
   /// 曲カードに出す名前は「実際に演奏した人」を優先する。カバー曲だと

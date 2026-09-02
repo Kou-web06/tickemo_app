@@ -412,19 +412,6 @@ struct RecordFormView: View {
     }
   }
 
-  private var namedArtistNames: [String] {
-    artistEntries.compactMap { SetlistPerformers.normalized($0.name) }
-  }
-
-  /// 保存時に出演者タグを現在のアーティスト欄と突き合わせる。ライブ種別を
-  /// 単独公演に変えた／アーティストを消した／名前を選び直した後に、実在
-  /// しない出演者名が残らないようにするための最終フィルタ。表記は
-  /// アーティスト欄側に寄せる。
-  private func canonicalPerformer(_ raw: String?) -> String? {
-    guard namedArtistNames.count > 1, let name = SetlistPerformers.normalized(raw) else { return nil }
-    return namedArtistNames.first { $0.caseInsensitiveCompare(name) == .orderedSame }
-  }
-
   // MARK: - Cover image
 
   @ViewBuilder
@@ -534,12 +521,11 @@ struct RecordFormView: View {
       SetlistDraftItem.apply([], to: target, in: viewContext)
       return
     }
-    let sanitized = setlistItems.map { draft -> SetlistDraftItem in
-      var copy = draft
-      copy.performerName = canonicalPerformer(draft.performerName)
-      return copy
-    }
-    SetlistDraftItem.apply(sanitized, to: target, in: viewContext)
+    let normalized = SetlistDraftItem.normalizingPerformers(
+      setlistItems,
+      artistNames: artistEntries.map(\.name)
+    )
+    SetlistDraftItem.apply(normalized, to: target, in: viewContext)
   }
 
   // Derives the singular `artist`/`artistImageUrl` as index-0 of the plural

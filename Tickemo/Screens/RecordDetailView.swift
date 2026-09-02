@@ -608,8 +608,16 @@ struct RecordDetailView: View {
   // MARK: - External fallback (ports TicketDetail.tsx's openSpotifySearch /
   // Apple Music web-search fallback, opened directly in the saved provider)
 
+  /// 音源のアーティストではなく「実際に歌った人」で検索する。カバー曲は
+  /// 原曲のアーティスト名で引くと当然その原曲しか出てこないので、出演者名
+  /// で引いた方がカバー音源にたどり着ける。出演者が未指定の曲は従来どおり
+  /// 音源のアーティスト名にフォールバックする。
   private func searchQuery(for item: CD_SetlistItem) -> String {
-    "\(item.songName ?? "") \(item.artistName ?? "")".trimmingCharacters(in: .whitespaces)
+    let artist = SetlistPerformers.displayName(
+      performer: item.performerName,
+      songArtist: item.artistName
+    ) ?? ""
+    return "\(item.songName ?? "") \(artist)".trimmingCharacters(in: .whitespaces)
   }
 
   private func openExternally(_ item: CD_SetlistItem) {

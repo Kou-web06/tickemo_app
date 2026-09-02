@@ -4,8 +4,9 @@ import Lottie
 struct SetlistDraftEditorView: View {
   @Binding var items: [SetlistDraftItem]
   var showsOcrButton: Bool = false
-  /// 対バン／フェスで登録済みの出演者名。2組以上あるときだけ各曲行に
-  /// 出演者ピッカーと、出演者が切り替わる位置の見出しを出す。
+  /// 登録済みの出演者名。1組でも入っていれば各曲行に出演者ピッカーを出す
+  /// — ワンマンでも「原曲は別アーティストだがこの人が歌った」カバー曲を
+  /// タグ付けできるようにするため。
   var performerChoices: [String] = []
   /// OCR 一括登録フローとの受け渡し口。`showsOcrButton` が true のとき必須。
   /// 呈示系（カメラ／アルバム／レビュー）は Form セル内に置くと親シートごと
@@ -154,7 +155,7 @@ struct SetlistDraftEditorView: View {
     performerChoices.compactMap(SetlistPerformers.normalized)
   }
 
-  private var showsPerformerPicker: Bool { namedPerformerChoices.count > 1 }
+  private var showsPerformerPicker: Bool { !namedPerformerChoices.isEmpty }
 
   /// 新しく追加する曲の出演者は直前の曲から引き継ぐ。A→A→A→B→B→A の
   /// ように上から順に入力していく場合、切り替わる行でだけピッカーを
@@ -187,6 +188,11 @@ struct SetlistDraftEditorView: View {
           } else {
             Text(choice)
           }
+        }
+      }
+      if current != nil {
+        Button("指定しない", role: .destructive) {
+          item.wrappedValue.performerName = nil
         }
       }
       Divider()

@@ -46,6 +46,24 @@ enum SetlistPerformers {
     }
   }
 
+  /// 登録済みのアーティスト欄に一致する名前だけを残し、表記をアーティスト
+  /// 欄側に寄せる。ライブ種別を変えた／アーティストを削除した後に、実在
+  /// しない出演者名が残らないようにするための突き合わせ。
+  static func canonical(_ raw: String?, artistNames: [String]) -> String? {
+    guard let name = normalized(raw) else { return nil }
+    return artistNames.compactMap(normalized).first { $0.caseInsensitiveCompare(name) == .orderedSame }
+  }
+
+  /// 出演者が1組しかいない公演（ワンマン・FC限定・配信）の、その1組。
+  /// この場合は全曲をその1組が演奏しているので、未指定の曲は自動でこの
+  /// 名前になる。カバー曲が原曲のアーティスト名のまま表示・検索されて
+  /// しまうのを防ぐのが狙いで、対バン／フェスでは誰が演奏したか推測が
+  /// つかないので nil を返して自動補完しない。
+  static func soleArtist(in artistNames: [String]) -> String? {
+    let named = artistNames.compactMap(normalized)
+    return named.count == 1 ? named[0] : nil
+  }
+
   /// 曲カードに出す1行分のアーティスト名。その公演で実際に演奏した
   /// 出演者を優先し、無ければ音源のアーティストにフォールバックする。
   /// 対バンで交互に演奏していても、行ごとに演者名が出るので区切りの

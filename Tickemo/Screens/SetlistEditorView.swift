@@ -57,6 +57,24 @@ extension SetlistDraftItem {
     return drafts
   }
 
+  /// 保存前に出演者タグを整える。登録アーティストに無い名前を落としたうえで、
+  /// 出演者が1組しかいない公演では未指定の曲にその1組を入れる。後者が
+  /// あるおかげで、ワンマンのカバー曲も「原曲のアーティスト」ではなく
+  /// 「実際に歌った人」として表示・検索されるようになる。
+  /// 区切り行（MC / アンコール）は表示に出ないので自動補完はしない。
+  static func normalizingPerformers(
+    _ drafts: [SetlistDraftItem],
+    artistNames: [String]
+  ) -> [SetlistDraftItem] {
+    let fallback = SetlistPerformers.soleArtist(in: artistNames)
+    return drafts.map { draft in
+      var copy = draft
+      let canonical = SetlistPerformers.canonical(draft.performerName, artistNames: artistNames)
+      copy.performerName = canonical ?? (draft.kind == .song ? fallback : nil)
+      return copy
+    }
+  }
+
   /// ドラフトを Core Data へ書き戻す（既存行は全消しして作り直す）。
   /// RecordFormView のインライン編集と SetlistEditorView シートの両方から
   /// 呼ぶ — `performerName` の書き漏らしを片方だけで起こさないよう、
@@ -156,7 +174,8 @@ struct SetlistEditorView: View {
   // MARK: - Save
 
   private func save() {
-    SetlistDraftItem.apply(items, to: record, in: viewContext)
+    let normalized = SetlistDraftItem.normalizingPerformers(items, artistNames: performerChoices)
+    SetlistDraftItem.apply(normalized, to: record, in: viewContext)
     try? viewContext.save()
     dismiss()
   }
