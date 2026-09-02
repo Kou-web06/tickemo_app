@@ -46,33 +46,12 @@ enum SetlistPerformers {
     }
   }
 
-  /// 出演者が切り替わる位置に出す見出しラベル。切り替わらない行は nil。
-  ///
-  /// 出演者が実質1組しかいない公演（ワンマンや、対バンでも片方しか
-  /// セトリを入れていない場合）では見出しを一切出さない — 全行に同じ
-  /// バンド名が並ぶだけで情報量がゼロになるため。
-  static func sectionHeaders(for performers: [String?]) -> [String?] {
-    guard distinctNames(in: performers).count > 1 else {
-      return Array(repeating: nil, count: performers.count)
-    }
-    var current: String?
-    return performers.map { performer in
-      guard let performer = normalized(performer) else { return nil }
-      guard performer.caseInsensitiveCompare(current ?? "") != .orderedSame else { return nil }
-      current = performer
-      return performer
-    }
-  }
-
-  /// 出現順・大文字小文字を無視した重複排除（表記は初出のものを採用）。
-  static func distinctNames(in performers: [String?]) -> [String] {
-    var seen = Set<String>()
-    var order: [String] = []
-    for performer in performers.compactMap(normalized) {
-      if seen.insert(performer.lowercased()).inserted {
-        order.append(performer)
-      }
-    }
-    return order
+  /// 曲カードに出す1行分のアーティスト名。その公演で実際に演奏した
+  /// 出演者を優先し、無ければ音源のアーティストにフォールバックする。
+  /// 対バンで交互に演奏していても、行ごとに演者名が出るので区切りの
+  /// 見出しは要らない（当初は見出しを挟んでいたが、曲カードの外に線が
+  /// 増えて読みにくいという指摘を受けて取りやめた）。
+  static func displayName(performer: String?, songArtist: String?) -> String? {
+    normalized(performer) ?? normalized(songArtist)
   }
 }

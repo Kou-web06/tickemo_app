@@ -165,17 +165,6 @@ struct SetlistDraftEditorView: View {
     return carried ?? namedPerformerChoices.first
   }
 
-  /// 曲 ID をキーにした「この行の上に出す出演者見出し」。行ごとに
-  /// 引き直すと O(n^2) になるので、`songRows` で一度だけ組み立てて配る。
-  private var performerHeaders: [UUID: String] {
-    let labels = SetlistPerformers.sectionHeaders(for: items.map(\.performerName))
-    var map: [UUID: String] = [:]
-    for (index, label) in labels.enumerated() {
-      if let label { map[items[index].id] = label }
-    }
-    return map
-  }
-
   /// 入力済みのセトリに後から出演者を割り当てるとき、1行ずつ選び直すのは
   /// 現実的でないので「ここから下をまとめて」を用意する。対象は曲行のみ
   /// （MC / アンコールは直前のブロックに従うので触らない）。
@@ -236,30 +225,24 @@ struct SetlistDraftEditorView: View {
   // MARK: - Rows
 
   private var songRows: some View {
-    let headers = performerHeaders
-    return ForEach($items) { $item in
-      row(for: $item, headerLabel: headers[item.id])
+    ForEach($items) { $item in
+      row(for: $item)
     }
     .onMove { items.move(fromOffsets: $0, toOffset: $1) }
   }
 
-  private func row(for item: Binding<SetlistDraftItem>, headerLabel: String?) -> some View {
-    VStack(alignment: .leading, spacing: 6) {
-      if let headerLabel {
-        SetlistPerformerHeader(name: headerLabel)
+  private func row(for item: Binding<SetlistDraftItem>) -> some View {
+    HStack(spacing: 8) {
+      rowContent(for: item)
+      Spacer(minLength: 8)
+      Button(role: .destructive) {
+        let id = item.wrappedValue.id
+        items.removeAll { $0.id == id }
+      } label: {
+        HugeIconView(icon: HugeIcons.delete02, size: 14)
+          .foregroundStyle(.secondary)
       }
-      HStack(spacing: 8) {
-        rowContent(for: item)
-        Spacer(minLength: 8)
-        Button(role: .destructive) {
-          let id = item.wrappedValue.id
-          items.removeAll { $0.id == id }
-        } label: {
-          HugeIconView(icon: HugeIcons.delete02, size: 14)
-            .foregroundStyle(.secondary)
-        }
-        .buttonStyle(.plain)
-      }
+      .buttonStyle(.plain)
     }
   }
 

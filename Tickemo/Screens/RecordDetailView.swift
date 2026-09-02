@@ -1,6 +1,5 @@
 import SwiftUI
 import UIKit
-import CoreData
 import CoreLocation
 
 /// Ports components/TicketDetail.tsx's layout and styling (colors, type
@@ -413,15 +412,9 @@ struct RecordDetailView: View {
       }
 
       if !record.sortedSetlistItems.isEmpty && isSetlistExpanded {
-        let headers = performerHeaders
         VStack(spacing: 8) {
           ForEach(Array(record.sortedSetlistItems.enumerated()), id: \.element.objectID) { index, item in
-            VStack(alignment: .leading, spacing: 8) {
-              if let header = headers[item.objectID] {
-                SetlistPerformerHeader(name: header)
-              }
-              setlistRow(item, songNumber: songNumber(for: item))
-            }
+            setlistRow(item, songNumber: songNumber(for: item))
           }
         }
         .padding(12)
@@ -456,19 +449,6 @@ struct RecordDetailView: View {
     .buttonStyle(.plain)
   }
 
-  /// 出演者が切り替わる行の上に出す見出し。対バン／フェスで A→B→A と
-  /// 交互に演奏した場合に、どこで演者が替わったかを読み取れるようにする。
-  /// 出演者が実質1組しかないセトリでは空になる（SetlistPerformers 参照）。
-  private var performerHeaders: [NSManagedObjectID: String] {
-    let items = record.sortedSetlistItems
-    let labels = SetlistPerformers.sectionHeaders(for: items.map(\.performerName))
-    var map: [NSManagedObjectID: String] = [:]
-    for (index, label) in labels.enumerated() {
-      if let label { map[items[index].objectID] = label }
-    }
-    return map
-  }
-
   private func songNumber(for item: CD_SetlistItem) -> Int? {
     guard item.kind == "song" else { return nil }
     let songs = record.sortedSetlistItems.filter { $0.kind == "song" }
@@ -492,10 +472,26 @@ struct RecordDetailView: View {
     HStack(spacing: 12) {
       songArtwork(item, songNumber: songNumber)
 
-      Text(item.songName ?? "-")
-        .font(appFont.bold(15))
-        .foregroundStyle(primaryTextColor)
-        .lineLimit(1)
+      VStack(alignment: .leading, spacing: 2) {
+        Text(item.songName ?? "-")
+          .font(appFont.bold(15))
+          .foregroundStyle(primaryTextColor)
+          .lineLimit(1)
+
+        // 曲ごとのアーティスト名はカードの中に置く。対バンで演者が
+        // 入れ替わっても、行を見れば誰の曲か分かるようにするため
+        // （ブロックごとの区切り見出しは入れない）。実際に演奏した
+        // 出演者を優先し、無ければ音源のアーティストを出す。
+        if let artistName = SetlistPerformers.displayName(
+          performer: item.performerName,
+          songArtist: item.artistName
+        ) {
+          Text(artistName)
+            .font(appFont.regular(12))
+            .foregroundStyle(secondaryTextColor)
+            .lineLimit(1)
+        }
+      }
 
       Spacer(minLength: 8)
 

@@ -61,53 +61,33 @@ final class SetlistPerformersTests: XCTestCase {
     XCTAssertEqual(resolved, [nil])
   }
 
-  // MARK: - sectionHeaders
+  // MARK: - displayName
 
-  /// A→B→A の交互演奏。番号は通しのまま、切り替わった3か所にだけ
-  /// 見出しが立つ。
-  func testSectionHeadersMarkEveryPerformerSwitchIncludingAReturn() {
-    let performers: [String?] = [
-      "sumimi", "sumimi", "sumimi",
-      "MyGO!!!!!", "MyGO!!!!!", "MyGO!!!!!",
-      "sumimi", "sumimi",
-    ]
+  /// 曲カードに出す名前は「実際に演奏した人」を優先する。カバー曲だと
+  /// 音源のアーティストと食い違うので、ここでどちらを採るかが効く。
+  func testDisplayNamePrefersThePerformerOverTheSongArtist() {
     XCTAssertEqual(
-      SetlistPerformers.sectionHeaders(for: performers),
-      ["sumimi", nil, nil, "MyGO!!!!!", nil, nil, "sumimi", nil]
+      SetlistPerformers.displayName(performer: "sumimi", songArtist: "MyGO!!!!!"),
+      "sumimi"
     )
   }
 
-  func testSectionHeadersAreSuppressedForASinglePerformer() {
-    let performers: [String?] = ["MyGO!!!!!", "MyGO!!!!!", nil, "MyGO!!!!!"]
-    XCTAssertEqual(SetlistPerformers.sectionHeaders(for: performers), [nil, nil, nil, nil])
-  }
-
-  func testSectionHeadersAreSuppressedWhenNoPerformerIsAssigned() {
-    XCTAssertEqual(SetlistPerformers.sectionHeaders(for: [nil, nil, nil]), [nil, nil, nil])
-  }
-
-  /// 未割り当ての行（MC など）はブロックを切らないし、直後の同じ出演者に
-  /// 見出しを再発行させることもない。
-  func testUnassignedRowsDoNotBreakABlock() {
-    let performers: [String?] = ["sumimi", nil, "sumimi", "MyGO!!!!!"]
+  func testDisplayNameFallsBackToTheSongArtistWhenNoPerformerIsAssigned() {
     XCTAssertEqual(
-      SetlistPerformers.sectionHeaders(for: performers),
-      ["sumimi", nil, nil, "MyGO!!!!!"]
+      SetlistPerformers.displayName(performer: nil, songArtist: "MyGO!!!!!"),
+      "MyGO!!!!!"
     )
   }
 
-  func testSectionHeadersCompareCaseInsensitively() {
-    let performers: [String?] = ["sumimi", "SUMIMI", "MyGO!!!!!"]
+  func testDisplayNameTreatsBlanksAsAbsent() {
     XCTAssertEqual(
-      SetlistPerformers.sectionHeaders(for: performers),
-      ["sumimi", nil, "MyGO!!!!!"]
+      SetlistPerformers.displayName(performer: "  ", songArtist: " MyGO!!!!! "),
+      "MyGO!!!!!"
     )
+    XCTAssertNil(SetlistPerformers.displayName(performer: nil, songArtist: "   "))
   }
 
-  // MARK: - distinctNames
-
-  func testDistinctNamesKeepsFirstSeenSpellingAndOrder() {
-    let performers: [String?] = ["MyGO!!!!!", nil, "mygo!!!!!", "  ", "sumimi"]
-    XCTAssertEqual(SetlistPerformers.distinctNames(in: performers), ["MyGO!!!!!", "sumimi"])
+  func testDisplayNameIsNilWhenNeitherIsKnown() {
+    XCTAssertNil(SetlistPerformers.displayName(performer: nil, songArtist: nil))
   }
 }
