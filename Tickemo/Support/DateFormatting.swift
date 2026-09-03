@@ -89,6 +89,12 @@ enum DateFormatting {
     dateFormatter.string(from: date)
   }
 
+  /// 表示・書き出し用の "yyyy.MM.dd"。保存形式は `string(from:)` の
+  /// "yyyy-MM-dd" のままなので、こちらは人が読む所にだけ使うこと。
+  static func dottedString(from date: Date) -> String {
+    dottedDateFormatter.string(from: date)
+  }
+
   static func time(from string: String?) -> Date? {
     guard let string, !string.isEmpty else { return nil }
     return timeFormatter.date(from: string)

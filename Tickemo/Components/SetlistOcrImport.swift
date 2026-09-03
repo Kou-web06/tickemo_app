@@ -69,7 +69,7 @@ private struct SetlistOcrImportModifier: ViewModifier {
 
   func body(content: Content) -> some View {
     content
-      .confirmationDialog("まとめて追加", isPresented: $showingSourceDialog, titleVisibility: .visible) {
+      .confirmationDialog("まとめて追加（β版）", isPresented: $showingSourceDialog, titleVisibility: .visible) {
         Button("カメラで撮影") {
           // Wait for the confirmation dialog to fully dismiss before presenting
           // the next sheet. Presenting while the UIAlertController is still

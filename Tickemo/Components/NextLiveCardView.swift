@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import Lottie
 
 /// Ports screens/CollectionScreen.tsx's inline "Next Live" card (the block
 /// inside `ListHeaderComponent`, not just the small `NextLiveCountdown`
@@ -107,10 +108,9 @@ struct NextLiveCardView: View {
             isFlipped.toggle()
           }
         } label: {
-          HugeIconView(icon: HugeIcons.tap03, size: 16, weight: 2)
-            .foregroundStyle(.white)
-            .frame(width: 34, height: 34)
-            .contentShape(Rectangle())
+          LottieView(animation: .named("tap"))
+              .playing(loopMode: .loop)
+              .frame(width: 24, height: 24)
         }
         .buttonStyle(.plain)
       }

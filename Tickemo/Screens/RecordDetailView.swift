@@ -22,11 +22,25 @@ struct RecordDetailView: View {
   @Environment(\.managedObjectContext) private var viewContext
   @Environment(\.dismiss) private var dismiss
 
+  /// `#artist` カードの「最後に見た日」をレポート画面と同じ基準で出すため、
+  /// 全チケットを引く（StatisticsData.allArtists がアーティストごとの最新
+  /// 公演を出す仕様なので、このチケット単体では決まらない）。
+  @FetchRequest(sortDescriptors: []) private var allRecords: FetchedResults<CD_ChekiRecord>
+
   @State private var showingEditSheet = false
   @State private var showingDeleteConfirmation = false
   @State private var showingSetlistEditor = false
   @State private var isSetlistExpanded = true
   @State private var showingShareSheet = false
+
+  // セットリストの書き出し（Apple Music プレイリスト作成 / テキスト）
+  @State private var showingPlaylistExportDialog = false
+  @State private var showingPlaylistTextShare = false
+  @State private var isCreatingPlaylist = false
+  @State private var playlistResultMessage: String?
+  /// 直近の書き出しの足取り。失敗時はアラートからコピーできるようにして、
+  /// 実機の不具合報告をそのまま送ってもらえるようにする。
+  @State private var playlistDiagnosticsText: String?
 
   private let appleMusicService = AppleMusicService()
   @State private var nowPlayingSongId: String?
@@ -86,6 +100,11 @@ struct RecordDetailView: View {
 
           dateTimeGrid
             .padding(.top, 28)
+
+          if !artistCards.isEmpty {
+            artistSection
+              .padding(.top, 60)
+          }
 
           setlistSection
             .padding(.top, 60)
@@ -173,6 +192,35 @@ struct RecordDetailView: View {
     }
     .sheet(isPresented: $showingShareSheet) {
       ShareSheetView(record: record)
+    }
+    .confirmationDialog("セットリストを書き出す", isPresented: $showingPlaylistExportDialog, titleVisibility: .visible) {
+      Button("Apple Musicにプレイリストを作成") { createApplePlaylist() }
+      Button("曲リストをコピー") {
+        UIPasteboard.general.string = playlistText
+        playlistResultMessage = "曲リストをコピーしました。"
+      }
+      Button("曲リストを共有") { showingPlaylistTextShare = true }
+      Button("キャンセル", role: .cancel) {}
+    }
+    .sheet(isPresented: $showingPlaylistTextShare) {
+      ActivityShareSheet(items: [playlistText])
+    }
+    .alert(
+      "セットリストの書き出し",
+      isPresented: Binding(
+        get: { playlistResultMessage != nil },
+        set: { if !$0 { playlistResultMessage = nil } }
+      )
+    ) {
+      if let playlistDiagnosticsText {
+        Button("詳細をコピー") {
+          UIPasteboard.general.string = playlistDiagnosticsText
+          playlistResultMessage = nil
+        }
+      }
+      Button("OK", role: .cancel) { playlistResultMessage = nil }
+    } message: {
+      Text(playlistResultMessage ?? "")
     }
     .alert("このチケットを削除しますか？", isPresented: $showingDeleteConfirmation) {
       Button("削除", role: .destructive) { deleteRecord() }
@@ -389,6 +437,57 @@ struct RecordDetailView: View {
     return Self.weekdayAbbreviations[weekday - 1]
   }
 
+  // MARK: - Artists
+
+  /// このチケットの出演者を、レポート画面の ALL ARTISTS と同じ体裁で出す。
+  /// 並びはアーティスト欄に入力した順（＝メインが先）で、レポート側の
+  /// 「最新公演順」には合わせない — チケットの上では出演順の方が自然なため。
+  private var artistCards: [ArtistArchiveEntry] {
+    guard liveType != .sports else { return [] }
+    let archive = Dictionary(
+      StatisticsData.allArtists(Array(allRecords)).map { ($0.id, $0) },
+      uniquingKeysWith: { first, _ in first }
+    )
+    return ArtistGrouping.entries(for: record).map { entry in
+      let key = entry.name.lowercased()
+      // 日付が壊れているチケットは allArtists 側で落ちるので、その場合は
+      // このチケットの情報だけでカードを組む（日付は "-"）。
+      guard let archived = archive[key] else {
+        return ArtistArchiveEntry(
+          id: key,
+          name: entry.name,
+          lastLiveDateText: "-",
+          artistImageUrl: entry.imageUrl
+        )
+      }
+      return ArtistArchiveEntry(
+        id: key,
+        name: archived.name,
+        lastLiveDateText: archived.lastLiveDateText,
+        artistImageUrl: archived.artistImageUrl ?? entry.imageUrl
+      )
+    }
+  }
+
+  private var artistSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text(artistCards.count > 1 ? "#artists" : "#artist")
+        .font(appFont.bold(18))
+        .foregroundStyle(primaryTextColor)
+
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 12) {
+          ForEach(artistCards) { entry in
+            NavigationLink(value: ArtistRoute(name: entry.name)) {
+              ArtistArchiveBackfillCardView(entry: entry)
+            }
+            .buttonStyle(.plain)
+          }
+        }
+      }
+    }
+  }
+
   // MARK: - Setlist
 
   private var setlistSection: some View {
@@ -407,6 +506,7 @@ struct RecordDetailView: View {
           }
           .font(appFont.bold(14))
         } else {
+          playlistExportButton
           collapseToggleButton
         }
       }
@@ -431,6 +531,32 @@ struct RecordDetailView: View {
       Color.white
       dominantColor.opacity(0.35)
     }
+  }
+
+  /// セトリがあるときだけ出す書き出しボタン。Apple Music プレイリスト
+  /// 作成と、どのプレイヤーにも貼れるテキストの2系統をここにまとめる。
+  private var playlistExportButton: some View {
+    Button {
+      HapticsPreferenceService.shared.impact(.light)
+      showingPlaylistExportDialog = true
+    } label: {
+      Group {
+        if isCreatingPlaylist {
+          ProgressView()
+        } else {
+          Image("Export")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 18,height: 18)
+            .foregroundStyle(primaryTextColor)
+        }
+      }
+      .frame(width: 30, height: 30)
+      .background(setlistCardBackground)
+      .clipShape(Circle())
+    }
+    .buttonStyle(.plain)
+    .disabled(isCreatingPlaylist)
   }
 
   private var collapseToggleButton: some View {
@@ -472,10 +598,26 @@ struct RecordDetailView: View {
     HStack(spacing: 12) {
       songArtwork(item, songNumber: songNumber)
 
-      Text(item.songName ?? "-")
-        .font(appFont.bold(15))
-        .foregroundStyle(primaryTextColor)
-        .lineLimit(1)
+      VStack(alignment: .leading, spacing: 2) {
+        Text(item.songName ?? "-")
+          .font(appFont.bold(15))
+          .foregroundStyle(primaryTextColor)
+          .lineLimit(1)
+
+        // 曲ごとのアーティスト名はカードの中に置く。対バンで演者が
+        // 入れ替わっても、行を見れば誰の曲か分かるようにするため
+        // （ブロックごとの区切り見出しは入れない）。実際に演奏した
+        // 出演者を優先し、無ければ音源のアーティストを出す。
+        if let artistName = SetlistPerformers.displayName(
+          performer: item.performerName,
+          songArtist: item.artistName
+        ) {
+          Text(artistName)
+            .font(appFont.regular(12))
+            .foregroundStyle(secondaryTextColor)
+            .lineLimit(1)
+        }
+      }
 
       Spacer(minLength: 8)
 
@@ -592,12 +734,76 @@ struct RecordDetailView: View {
   // MARK: - External fallback (ports TicketDetail.tsx's openSpotifySearch /
   // Apple Music web-search fallback, opened directly in the saved provider)
 
+  /// 音源のアーティストではなく「実際に歌った人」で検索する。カバー曲は
+  /// 原曲のアーティスト名で引くと当然その原曲しか出てこないので、出演者名
+  /// で引いた方がカバー音源にたどり着ける。出演者が未指定の曲は従来どおり
+  /// 音源のアーティスト名にフォールバックする。
   private func searchQuery(for item: CD_SetlistItem) -> String {
-    "\(item.songName ?? "") \(item.artistName ?? "")".trimmingCharacters(in: .whitespaces)
+    let artist = SetlistPerformers.displayName(
+      performer: item.performerName,
+      songArtist: item.artistName
+    ) ?? ""
+    return "\(item.songName ?? "") \(artist)".trimmingCharacters(in: .whitespaces)
   }
 
   private func openExternally(_ item: CD_SetlistItem) {
     MusicProviderPreferenceStore.load().open(query: searchQuery(for: item))
+  }
+
+  // MARK: - Playlist export
+
+  private var songItems: [CD_SetlistItem] {
+    record.sortedSetlistItems.filter { $0.kind == "song" }
+  }
+
+  private var playlistText: String {
+    SetlistPlaylistText.songList(
+      liveName: record.liveName,
+      venue: record.venue,
+      date: record.date,
+      songs: songItems.map { ($0.songName, $0.performerName, $0.artistName) }
+    )
+  }
+
+  /// Apple Music に登録済みの曲だけがプレイリストに入れられる。曲名検索
+  /// を経ずに残った曲（OCR で候補に当たらなかった等）は songId を持たない
+  /// ので、除外件数を結果メッセージで伝える。
+  private func createApplePlaylist() {
+    let songIds = songItems.compactMap { item -> String? in
+      guard let id = item.songId?.trimmingCharacters(in: .whitespaces), !id.isEmpty else { return nil }
+      return id
+    }
+    let skipped = songItems.count - songIds.count
+    let name = SetlistPlaylistText.playlistName(
+      liveName: record.liveName,
+      venue: record.venue,
+      date: record.date
+    )
+
+    let diagnostics = ApplePlaylistExportDiagnostics()
+    diagnostics.record("呼び出し: 曲行=\(songItems.count) songIdあり=\(songIds.count) 除外=\(skipped)")
+
+    Task {
+      isCreatingPlaylist = true
+      defer { isCreatingPlaylist = false }
+      do {
+        let added = try await ApplePlaylistExporter.createPlaylist(
+          named: name,
+          songIds: songIds,
+          diagnostics: diagnostics
+        )
+        HapticsPreferenceService.shared.notify(.success)
+        let skippedNote = skipped > 0 ? "\n\(skipped)曲はApple Musicに登録がないため除外しました。" : ""
+        playlistDiagnosticsText = nil
+        playlistResultMessage = "Apple Musicに「\(name)」を作成しました（\(added)曲）。\(skippedNote)"
+      } catch {
+        HapticsPreferenceService.shared.notify(.error)
+        playlistDiagnosticsText = diagnostics.text
+        let reason = (error as? ApplePlaylistExportError)?.errorDescription
+          ?? "プレイリストを作成できませんでした。"
+        playlistResultMessage = "\(reason)\n\n原因の切り分けに使うので、「詳細をコピー」で記録を送ってください。"
+      }
+    }
   }
 
   // MARK: - Venue map

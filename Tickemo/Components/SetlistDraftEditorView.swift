@@ -1,8 +1,13 @@
 import SwiftUI
+import Lottie
 
 struct SetlistDraftEditorView: View {
   @Binding var items: [SetlistDraftItem]
   var showsOcrButton: Bool = false
+  /// 登録済みの出演者名。1組でも入っていれば各曲行に出演者ピッカーを出す
+  /// — ワンマンでも「原曲は別アーティストだがこの人が歌った」カバー曲を
+  /// タグ付けできるようにするため。
+  var performerChoices: [String] = []
   /// OCR 一括登録フローとの受け渡し口。`showsOcrButton` が true のとき必須。
   /// 呈示系（カメラ／アルバム／レビュー）は Form セル内に置くと親シートごと
   /// 閉じてしまうため、`RecordFormView` 側の `.setlistOcrImport(...)` が持つ。
@@ -51,12 +56,11 @@ struct SetlistDraftEditorView: View {
             if ocr.isRecognizing {
               ProgressView()
             } else {
-              Image("edit ai")
-                .renderingMode(.template)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 20, height: 20)
-                .foregroundStyle(Color(white: 0.6))
+              LottieView(animation: .named("edit"))
+                .playing(loopMode: .loop)
+                .frame(width: 24, height: 24)
+                .grayscale(1.0)
+                .opacity(0.4)
             }
           }
           .disabled(ocr.isRecognizing)
@@ -138,10 +142,82 @@ struct SetlistDraftEditorView: View {
       songName: result.title,
       artistName: result.artistName,
       albumName: result.albumName,
-      artworkUrl: result.artworkUrl
+      artworkUrl: result.artworkUrl,
+      performerName: performerForNewSong
     ))
     searchText = ""
     searchResults = []
+  }
+
+  // MARK: - Performers
+
+  private var namedPerformerChoices: [String] {
+    performerChoices.compactMap(SetlistPerformers.normalized)
+  }
+
+  private var showsPerformerPicker: Bool { !namedPerformerChoices.isEmpty }
+
+  /// 新しく追加する曲の出演者は直前の曲から引き継ぐ。A→A→A→B→B→A の
+  /// ように上から順に入力していく場合、切り替わる行でだけピッカーを
+  /// 触れば済む。
+  private var performerForNewSong: String? {
+    guard showsPerformerPicker else { return nil }
+    let carried = items.reversed().compactMap { SetlistPerformers.normalized($0.performerName) }.first
+    return carried ?? namedPerformerChoices.first
+  }
+
+  /// 入力済みのセトリに後から出演者を割り当てるとき、1行ずつ選び直すのは
+  /// 現実的でないので「ここから下をまとめて」を用意する。対象は曲行のみ
+  /// （MC / アンコールは直前のブロックに従うので触らない）。
+  private func applyPerformer(_ name: String, from itemID: UUID) {
+    guard let start = items.firstIndex(where: { $0.id == itemID }) else { return }
+    for index in start..<items.count where items[index].kind == .song {
+      items[index].performerName = name
+    }
+  }
+
+  private func performerMenu(_ item: Binding<SetlistDraftItem>) -> some View {
+    let current = SetlistPerformers.normalized(item.wrappedValue.performerName)
+    return Menu {
+      ForEach(namedPerformerChoices, id: \.self) { choice in
+        Button {
+          item.wrappedValue.performerName = choice
+        } label: {
+          if choice.caseInsensitiveCompare(current ?? "") == .orderedSame {
+            Label(choice, systemImage: "checkmark")
+          } else {
+            Text(choice)
+          }
+        }
+      }
+      if current != nil {
+        Button("指定しない", role: .destructive) {
+          item.wrappedValue.performerName = nil
+        }
+      }
+      Divider()
+      Menu("ここから下をまとめて変更") {
+        ForEach(namedPerformerChoices, id: \.self) { choice in
+          Button(choice) {
+            applyPerformer(choice, from: item.wrappedValue.id)
+          }
+        }
+      }
+    } label: {
+      HStack(spacing: 4) {
+        HugeIconView(icon: HugeIcons.userGroup03, size: 11)
+        Text(current ?? "出演者を選択")
+          .lineLimit(1)
+        Image(systemName: "chevron.down")
+          .font(.system(size: 8, weight: .bold))
+      }
+      .font(.caption2.weight(.semibold))
+      .foregroundStyle(current == nil ? Color.accentColor : Color(white: 0.35))
+      .padding(.horizontal, 8)
+      .padding(.vertical, 3)
+      .background(Capsule().fill(Color(white: 0.94)))
+    }
+    .buttonStyle(.plain)
   }
 
   private func addEncore() {
@@ -180,7 +256,7 @@ struct SetlistDraftEditorView: View {
   private func rowContent(for item: Binding<SetlistDraftItem>) -> some View {
     switch item.wrappedValue.kind {
     case .song:
-      songRow(item.wrappedValue)
+      songRow(item)
     case .encore:
       SetlistMarkerDivider(text: item.wrappedValue.title)
     case .mc:
@@ -188,16 +264,16 @@ struct SetlistDraftEditorView: View {
     }
   }
 
-  private func songRow(_ item: SetlistDraftItem) -> some View {
+  private func songRow(_ item: Binding<SetlistDraftItem>) -> some View {
     HStack(spacing: 10) {
-      Text("\((songIndex(of: item) ?? 0) + 1)")
+      Text("\((songIndex(of: item.wrappedValue) ?? 0) + 1)")
         .font(appFont.bold(13))
         .foregroundStyle(Color(white: 0.4))
         .frame(width: 28, height: 28)
         .background(Color(white: 0.94))
         .clipShape(Circle())
 
-      AsyncImage(url: URL(string: item.artworkUrl ?? "")) { image in
+      AsyncImage(url: URL(string: item.wrappedValue.artworkUrl ?? "")) { image in
         image.resizable().scaledToFill()
       } placeholder: {
         Color(.tertiarySystemBackground)
@@ -206,9 +282,13 @@ struct SetlistDraftEditorView: View {
       .clipShape(RoundedRectangle(cornerRadius: 8))
 
       VStack(alignment: .leading, spacing: 2) {
-        Text(item.songName ?? "-").font(.subheadline.weight(.semibold)).lineLimit(1)
-        if let artistName = item.artistName, !artistName.isEmpty {
+        Text(item.wrappedValue.songName ?? "-").font(.subheadline.weight(.semibold)).lineLimit(1)
+        if let artistName = item.wrappedValue.artistName, !artistName.isEmpty {
           Text(artistName).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+        }
+        if showsPerformerPicker {
+          performerMenu(item)
+            .padding(.top, 2)
         }
       }
     }
