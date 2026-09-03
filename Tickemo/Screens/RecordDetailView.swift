@@ -544,7 +544,10 @@ struct RecordDetailView: View {
         if isCreatingPlaylist {
           ProgressView()
         } else {
-          HugeIconView(icon: HugeIcons.playList, size: 15)
+          Image("Export")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 18,height: 18)
             .foregroundStyle(primaryTextColor)
         }
       }
