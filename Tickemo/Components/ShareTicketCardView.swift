@@ -51,16 +51,27 @@ struct ShareTicketCardView: View {
       coverPhoto
         .offset(x: width * 0.07, y: height * 0.5 - imageSize / 2)
 
-      liveNameText
-        .frame(width: width - textLeft - width * 0.13, alignment: .leading)
-        .offset(x: textLeft, y: height * 0.33)
-
-      Text(artistText)
-        .font(appFont.bold(height * 0.03))
-        .foregroundStyle(Color.black.opacity(0.62))
-        .lineLimit(2)
-        .frame(width: width - textLeft - width * 0.13, alignment: .leading)
-        .offset(x: textLeft, y: isShortLiveName ? height * 0.42 : height * 0.455)
+      // ライブ名のすぐ下にアーティストをぶら下げて詰める。高さは DATE 行
+      // (y = height * 0.5) の手前までにクリップしておくので、長いタイトル
+      // ＋多数のアーティストでも下の行に食い込まない（その場合は
+      // minimumScaleFactor で縮小 → 収まらない分だけ切れる）。
+      VStack(alignment: .leading, spacing: height * 0.018) {
+        liveNameText
+          .fixedSize(horizontal: false, vertical: true)
+          .layoutPriority(1)
+        Text(artistText)
+          .font(appFont.bold(height * 0.03))
+          .foregroundStyle(Color.black.opacity(0.62))
+          .lineLimit(3)
+          .minimumScaleFactor(0.6)
+      }
+      .frame(
+        width: width - textLeft - width * 0.13,
+        height: height * 0.5 - height * 0.33 - height * 0.02,
+        alignment: .topLeading
+      )
+      .clipped()
+      .offset(x: textLeft, y: height * 0.33)
 
       labelValueRow(label: "DATE", value: record.date?.isEmpty == false ? record.date! : "-")
         .offset(x: textLeft, y: height * 0.5)
