@@ -28,3 +28,10 @@ project.xcworkspace
 
 # CocoaPods
 /Pods/
+
+# Signing / secrets
+*.p8
+*.p12
+*.mobileprovision
+.env
+.env.*
