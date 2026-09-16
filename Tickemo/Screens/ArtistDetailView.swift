@@ -191,11 +191,20 @@ struct ArtistDetailView: View {
           if let urlString = resolvedHeroImageUrl, let url = URL(string: urlString) {
             AsyncImage(url: url) { image in
               image.resizable().scaledToFill()
+                // 単純な cover fit だと写真の余白が目立つことがあるため、
+                // 最初から少し拡大しておく（海外音楽アプリのアーティスト
+                // ヘッダーと同じ狙い）。下の .clipped() で枠外は切れる。
+                .scaleEffect(1.12)
             } placeholder: {
-              Color(red: 0.839, green: 0.839, blue: 0.839)
+              // 写真の取得を待っている間の一時的な状態なので、ロード中と
+              // わかるグレーでよい
+              Color(.systemGray5)
             }
           } else {
-            Color(red: 0.839, green: 0.839, blue: 0.839)
+            // 写真が最終的に1枚も無い確定状態。ここだけ浮いた色のボックスに
+            // 見えないよう、ページ背景（.systemBackground、!hasHeroImage
+            // 時の .background と同色）に完全に溶け込ませる
+            Color(.systemBackground)
           }
         }
         .frame(width: geo.size.width, height: h + pullDown)
