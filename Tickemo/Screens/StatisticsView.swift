@@ -69,12 +69,12 @@ struct StatisticsView: View {
   var body: some View {
     NavigationStack {
       ScrollView {
-        VStack(alignment: .leading, spacing: 28) {
+        VStack(alignment: .leading, spacing: 36) {
           yearChips
           authorizationWarning
 
           ZStack {
-            VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading, spacing: 36) {
               summarySection
               topArtistsSection
               allArtistsSection
