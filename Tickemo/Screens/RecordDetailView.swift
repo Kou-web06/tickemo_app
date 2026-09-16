@@ -155,7 +155,8 @@ struct RecordDetailView: View {
       }
     }
     .navigationBarTitleDisplayMode(.inline)
-    .toolbarBackground(.hidden, for: .navigationBar)
+    // デフォルトのナビゲーションバーに戻す（戻るボタン・背景ともシステム
+    // 標準）。カスタムのバー非表示/自前ボタンは全部やめた。
     .toolbar {
       // ToolbarItemGroup だと 1 つのグループにまとめて表示されるため、
       // 独立したボタンとして並ぶよう個別の ToolbarItem に分ける

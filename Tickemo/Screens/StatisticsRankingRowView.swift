@@ -1,5 +1,7 @@
 import SwiftUI
 
+private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
+
 /// Ports StatisticsScreen.tsx's rank medal (`MedalFirstPlaceIcon` etc., from
 /// HugeIcons) as a plain colored numbered circle instead — this app has no
 /// HugeIcons dependency, and a single-screen icon import isn't worth adding
@@ -92,6 +94,63 @@ struct StatisticsRankingRow: View {
     switch imageShape {
     case .circle: AnyShape(Circle())
     case .square: AnyShape(RoundedRectangle(cornerRadius: 8))
+    }
+  }
+}
+
+/// TOP SONGS 専用の横スクロールカード。海外の音楽ストリーミングアプリ風に、順位メダルを
+/// 廃止して（並び順で順位を表現）大きな正方形アートワークを主役にする — TOP ARTISTS/TOP
+/// VENUES が使う `StatisticsRankingRow` とはレイアウトが根本的に異なるため共有しない。
+struct TopSongCardView: View {
+  let song: RankedSong
+  let artworkUrl: String?          // 保存済み ?? バックフィル結果
+  @Environment(\.appFontChoice) private var appFont
+  private let side: CGFloat = 115
+
+  var body: some View {
+    VStack(alignment: .center, spacing: 8) {
+      artwork
+        .frame(width: side, height: side)
+        .clipped()                                   // 角丸なし
+        .overlay(Rectangle().strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+      Text("\(song.count) plays")
+        .font(appFont.bold(13))
+        .foregroundStyle(accentPurple)
+        .padding(.horizontal, 34)
+        .padding(.vertical, 5)
+        .background(Capsule().fill(accentPurple.opacity(0.14)))
+      Text(song.name)
+        .font(appFont.bold(14))
+        .foregroundStyle(Color.primary)
+        .lineLimit(1)
+      if let artist = song.artistName, !artist.isEmpty {
+        Text(artist)
+          .font(appFont.regular(12))
+          .foregroundStyle(.secondary)
+          .lineLimit(1)
+      }
+    }
+    .frame(width: side, alignment: .leading)
+  }
+
+  @ViewBuilder
+  private var artwork: some View {
+    if let urlString = artworkUrl, let url = URL(string: urlString) {
+      AsyncImage(url: url) { image in
+        image.resizable().scaledToFill()
+      } placeholder: {
+        fallback
+      }
+    } else {
+      fallback
+    }
+  }
+
+  private var fallback: some View {
+    ZStack {
+      Color(.tertiarySystemBackground)
+      HugeIconView(icon: HugeIcons.musicNote01, size: 34)
+        .foregroundStyle(Color.secondary)
     }
   }
 }

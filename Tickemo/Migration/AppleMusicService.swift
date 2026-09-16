@@ -233,6 +233,14 @@ final class AppleMusicService {
     return url
   }
 
+  /// TOP SONGS バックフィル用。RN の searchAppleMusicSongs(name, 1) と同じく limit=1、
+  /// name-similarity スコアリングなしで先頭をそのまま採用。
+  func bestMatchSongArtworkUrl(for name: String) async -> String? {
+    let results = (try? await searchSongs(term: name, limit: 1)) ?? []
+    guard let url = results.first?.artworkUrl, !url.isEmpty else { return nil }
+    return url
+  }
+
   // ArtistDetailView's genre + editorial-notes lookup. Shares searchArtists'
   // cache/in-flight de-dup, so this costs no extra network call when
   // bestMatchArtistImageUrl already ran for the same name.

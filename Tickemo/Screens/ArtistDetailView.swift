@@ -26,8 +26,13 @@ struct ArtistDetailView: View {
   @State private var dominantColor: Color = DominantColorExtractor.fallback.color
   @State private var backgroundIsDark: Bool = DominantColorExtractor.fallback.isDark
 
+  // 写真が1枚もない場合は抽出色を持たないので、固定の白黒ではなく
+  // システムの明暗に追従する Color.primary にフォールバックする
+  // （そうしないとダークモードでも常に黒文字のままになり、
+  // 同じく色なしの背景と合わさって読めなくなる）。
   private var primaryTextColor: Color {
-    backgroundIsDark ? .white : Color(red: 0.188, green: 0.188, blue: 0.212)
+    guard hasHeroImage else { return .primary }
+    return backgroundIsDark ? .white : Color(red: 0.188, green: 0.188, blue: 0.212)
   }
   // メインテキストと同じ黒/白に連動させ、透明度だけで主従の差をつける
   private var secondaryTextColor: Color {
@@ -81,14 +86,18 @@ struct ArtistDetailView: View {
       }
     }
     .coordinateSpace(name: "scroll")
+    // デフォルトのナビゲーションバーに戻す（戻るボタン・背景ともシステム
+    //標準）。カスタムのバー非表示/自前ボタンは全部やめた。
     .navigationTitle(artistName)
     .navigationBarTitleDisplayMode(.inline)
-    // RecordDetailView と同じ没入型ヘッダー: 画像を画面最上部まで届かせる
-    .toolbarBackground(.hidden, for: .navigationBar)
     .ignoresSafeArea(edges: .top)
     // 画像の最支配色でベタ塗りし、ヘッダー下端のフェードがそのまま
-    // 背景に溶け込むようにする（白ミックスすると色がずれて境目が見える）
-    .background(dominantColor.ignoresSafeArea())
+    // 背景に溶け込むようにする（白ミックスすると色がずれて境目が見える）。
+    // 写真が1枚もない場合は塗る色の根拠が無いので、フォールバックの
+    // ほぼ白 (DominantColorExtractor.fallback) を全画面に敷かず、通常の
+    // システム背景（ダークモード追従）に任せる — でないと写真無しの
+    // アーティストページだけダークモードでもヘッダーが白っぽく浮いて見える。
+    .background((hasHeroImage ? dominantColor : Color(.systemBackground)).ignoresSafeArea())
     .task(id: artistName) {
       guard heroImageUrl == nil, backfillImageUrl == nil else { return }
       guard let url = await appleMusicService.bestMatchArtistImageUrl(for: artistName) else { return }
@@ -160,6 +169,12 @@ struct ArtistDetailView: View {
     heroImageUrl ?? backfillImageUrl
   }
 
+  // 抽出色を塗る根拠（写真）があるかどうか。ここが false の間は
+  // 背景・文字色ともシステムのダーク/ライトに追従させる。
+  private var hasHeroImage: Bool {
+    resolvedHeroImageUrl != nil
+  }
+
   // RecordDetailView.header と同じストレッチヘッダー: オーバースクロール量
   // (pullDown) だけ画像を伸ばし、offset で引き戻して上端を画面最上部に固定する。
   @ViewBuilder
@@ -176,11 +191,20 @@ struct ArtistDetailView: View {
           if let urlString = resolvedHeroImageUrl, let url = URL(string: urlString) {
             AsyncImage(url: url) { image in
               image.resizable().scaledToFill()
+                // 単純な cover fit だと写真の余白が目立つことがあるため、
+                // 最初から少し拡大しておく（海外音楽アプリのアーティスト
+                // ヘッダーと同じ狙い）。下の .clipped() で枠外は切れる。
+                .scaleEffect(1.12)
             } placeholder: {
-              Color(red: 0.839, green: 0.839, blue: 0.839)
+              // 写真の取得を待っている間の一時的な状態なので、ロード中と
+              // わかるグレーでよい
+              Color(.systemGray5)
             }
           } else {
-            Color(red: 0.839, green: 0.839, blue: 0.839)
+            // 写真が最終的に1枚も無い確定状態。ここだけ浮いた色のボックスに
+            // 見えないよう、ページ背景（.systemBackground、!hasHeroImage
+            // 時の .background と同色）に完全に溶け込ませる
+            Color(.systemBackground)
           }
         }
         .frame(width: geo.size.width, height: h + pullDown)
@@ -218,9 +242,9 @@ struct ArtistDetailView: View {
           .padding(16)
       }
     }
-    // 340pt: 従来の 260pt からの拡大分に加え、ignoresSafeArea で画像が
-    // ステータスバー裏まで届くようになった分の視覚的な目減りも補う
-    .frame(height: 340)
+    // 460pt: 指で軽く引っ張った状態がデフォルトの見た目であってほしい、
+    // という要望を受けて 340pt から拡大
+    .frame(height: 460)
     .frame(maxWidth: .infinity)
   }
 

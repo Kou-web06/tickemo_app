@@ -27,6 +27,7 @@ final class ShareCardDataTests: XCTestCase {
     kind: String = "song",
     songName: String? = nil,
     artistName: String? = nil,
+    performerName: String? = nil,
     title: String? = nil,
     orderIndex: Int32 = 0,
     for record: CD_ChekiRecord
@@ -36,6 +37,7 @@ final class ShareCardDataTests: XCTestCase {
     item.kind = kind
     item.songName = songName
     item.artistName = artistName
+    item.performerName = performerName
     item.title = title
     item.orderIndex = orderIndex
     item.record = record
@@ -204,6 +206,33 @@ final class ShareCardDataTests: XCTestCase {
 
     XCTAssertEqual(label, "Fallback Artist")
     XCTAssertFalse(ShareCardData.hasMultipleDistinctSongArtists(setlistItems: record.sortedSetlistItems))
+  }
+
+  func testReceiptArtistLabelUsesPerformerOverSourceArtistForCovers() {
+    let record = makeRecord(artist: "Fallback Artist")
+    // カバー曲: 音源のアーティストは原曲側、実際に歌ったのは出演者側。
+    makeSetlistItem(songName: "Cover Song", artistName: "Original Band", performerName: "Cover Idol", orderIndex: 0, for: record)
+    makeSetlistItem(songName: "Own Song", artistName: "Cover Idol", orderIndex: 1, for: record)
+    try? context.save()
+
+    let label = ShareCardData.receiptArtistLabel(setlistItems: record.sortedSetlistItems, fallbackArtist: record.artist)
+
+    XCTAssertEqual(label, "Cover Idol")
+    XCTAssertFalse(ShareCardData.hasMultipleDistinctSongArtists(setlistItems: record.sortedSetlistItems))
+  }
+
+  func testReceiptRowsCreditCoverSongToPerformerNotOriginalArtist() {
+    let record = makeRecord(artist: "Fallback Artist")
+    makeSetlistItem(songName: "Song A", artistName: "Band A", performerName: "Band A", orderIndex: 0, for: record)
+    makeSetlistItem(songName: "Cover Of X", artistName: "Original X", performerName: "Band B", orderIndex: 1, for: record)
+    try? context.save()
+
+    let rows = ShareCardData.receiptRows(setlistItems: record.sortedSetlistItems)
+
+    guard case .song(_, let firstName, _) = rows[0] else { return XCTFail("expected a song row") }
+    guard case .song(_, let secondName, _) = rows[1] else { return XCTFail("expected a song row") }
+    XCTAssertEqual(firstName, "Song A - Band A")
+    XCTAssertEqual(secondName, "Cover Of X - Band B")
   }
 
   func testReceiptArtistLabelExcludesWhitespaceOnlyValues() {

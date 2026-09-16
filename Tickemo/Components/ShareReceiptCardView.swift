@@ -24,7 +24,11 @@ struct ShareReceiptCardView: View {
   }
 
   private var artistLabel: String {
-    ShareCardData.receiptArtistLabel(setlistItems: record.sortedSetlistItems, fallbackArtist: record.artist)
+    let allNames = ArtistGrouping.names(for: record).joined(separator: " / ")
+    return ShareCardData.receiptArtistLabel(
+      setlistItems: record.sortedSetlistItems,
+      fallbackArtist: allNames.isEmpty ? record.artist : allNames
+    )
   }
 
   var body: some View {
@@ -44,7 +48,7 @@ struct ShareReceiptCardView: View {
           infoLine("VENUE: \(record.venue?.isEmpty == false ? record.venue! : "-")")
           infoLine("DATE : \(record.date?.isEmpty == false ? record.date! : "-")")
           infoLine("EVENT: \(record.liveName?.isEmpty == false ? record.liveName! : "-")")
-          infoLine("ARTIST: \(artistLabel)")
+          artistInfoLine("ARTIST: \(artistLabel)")
         }
         .padding(.top, 54)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -115,6 +119,16 @@ struct ShareReceiptCardView: View {
       .font(.system(size: 26, weight: .bold, design: .monospaced))
       .foregroundStyle(receiptTextColor)
       .lineLimit(1)
+  }
+  
+  private func artistInfoLine(_ text: String) -> some View {
+    Text(text)
+      .font(.system(size: 26, weight: .bold, design: .monospaced))
+      .foregroundStyle(receiptTextColor)
+      .lineLimit(8)
+      .minimumScaleFactor(0.6)
+      .fixedSize(horizontal: false, vertical: true)
+      .frame(maxWidth: .infinity, alignment: .leading)
   }
 
   private func headerText(_ text: String) -> some View {

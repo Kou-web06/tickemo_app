@@ -29,6 +29,10 @@ struct StatisticsView: View {
   // React state exactly: keyed by lowercased name, top-1-result search,
   // never written back to the record.
   @State private var artistImageBackfill: [String: String] = [:]
+  // Same shape as artistImageBackfill but for TOP SONGS artwork: keyed by
+  // lowercased song name, top-1 MusicKit search per missing name, never
+  // persisted back to the record.
+  @State private var songImageBackfill: [String: String] = [:]
   // Refreshed after every backfill attempt (see backfillArtistImages) so a
   // denied/restricted Apple Music permission — which otherwise makes every
   // backfill search silently return nothing — is visible here too. Someone
@@ -65,12 +69,12 @@ struct StatisticsView: View {
   var body: some View {
     NavigationStack {
       ScrollView {
-        VStack(alignment: .leading, spacing: 28) {
+        VStack(alignment: .leading, spacing: 36) {
           yearChips
           authorizationWarning
 
           ZStack {
-            VStack(alignment: .leading, spacing: 28) {
+            VStack(alignment: .leading, spacing: 36) {
               summarySection
               topArtistsSection
               allArtistsSection
@@ -126,7 +130,7 @@ struct StatisticsView: View {
           .font(appFont.regular(12))
           .multilineTextAlignment(.center)
       }
-      .foregroundStyle(Color(white: 0.18))
+      .foregroundStyle(Color.primary)
       .padding(.horizontal, 22)
       .padding(.vertical, 14)
       .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
@@ -205,11 +209,11 @@ struct StatisticsView: View {
     VStack(alignment: .leading, spacing: 4) {
       Text(label)
         .font(appFont.bold(12))
-        .foregroundStyle(Color(white: 0.557))
+        .foregroundStyle(Color.secondary)
         .tracking(1)
       Text(value)
         .font(appFont.bold(20))
-        .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
+        .foregroundStyle(Color.primary)
     }
   }
 
@@ -301,6 +305,21 @@ struct StatisticsView: View {
     musicAuthorizationStatus = MusicAuthorization.currentStatus
   }
 
+  /// Mirrors backfillArtistImages for TOP SONGS artwork. No
+  /// DominantColorCache prewarm here — unlike artist photos, song artwork
+  /// has no detail screen that consumes a prewarmed dominant color.
+  private func backfillSongImages(names: [String]) async {
+    guard !isLocked else { return }
+    for name in names {
+      let key = name.lowercased()
+      if songImageBackfill[key] != nil { continue }
+      if let url = await appleMusicService.bestMatchSongArtworkUrl(for: name) {
+        songImageBackfill[key] = url
+      }
+    }
+    musicAuthorizationStatus = MusicAuthorization.currentStatus
+  }
+
   private var monthlyChartSection: some View {
     let buckets = StatisticsData.monthlyBuckets(filteredRecords)
     return sectionContainer(title: "MONTHLY LIVES") {
@@ -331,22 +350,24 @@ struct StatisticsView: View {
 
   private var topSongsSection: some View {
     let items = StatisticsData.topSongs(filteredRecords)
+    let missingNames = items.filter { $0.artworkUrl == nil }.map(\.name)
     return sectionContainer(title: "TOP SONGS") {
       if items.isEmpty {
         emptyRow
       } else {
-        VStack(spacing: 12) {
-          ForEach(items) { item in
-            StatisticsRankingRow(
-              rank: item.rank,
-              name: item.name,
-              detail: "\(item.count) plays",
-              thumbnail: .artworkUrl(item.artworkUrl)
-            )
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack(alignment: .top, spacing: 24) {
+            ForEach(items) { item in
+              TopSongCardView(
+                song: item,
+                artworkUrl: item.artworkUrl ?? songImageBackfill[item.name.lowercased()]
+              )
+            }
           }
         }
       }
     }
+    .task(id: missingNames) { await backfillSongImages(names: missingNames) }
   }
 
   private var spendingSection: some View {
@@ -355,7 +376,7 @@ struct StatisticsView: View {
       HStack {
         Text(priceHidden ? "¥ ••••••" : total.formatted(.currency(code: "JPY").precision(.fractionLength(0))))
           .font(appFont.bold(22))
-          .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
+          .foregroundStyle(Color.primary)
         Spacer()
         Button {
           priceHidden.toggle()
@@ -372,7 +393,7 @@ struct StatisticsView: View {
     VStack(alignment: .leading, spacing: 12) {
       Text(title)
         .font(appFont.bold(13))
-        .foregroundStyle(Color(white: 0.557))
+        .foregroundStyle(Color.secondary)
         .tracking(1)
       content()
     }

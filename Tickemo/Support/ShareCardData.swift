@@ -106,11 +106,20 @@ enum ShareCardData {
 
   // MARK: - Receipt card
 
+  /// その曲を「実際に歌った人」。対バン／フェスで設定された出演者
+  /// (`performerName`) を優先し、無ければ音源のアーティスト
+  /// (`artistName`) にフォールバックする — カバー曲を原曲アーティスト名で
+  /// 出さないための `SetlistPerformers.displayName` と同じ規則。曲カードや
+  /// プレイリスト書き出し・外部検索と表示がそろう。
+  static func songPerformerName(_ item: CD_SetlistItem) -> String? {
+    SetlistPerformers.displayName(performer: item.performerName, songArtist: item.artistName)
+  }
+
   private static func distinctSongArtistNames(_ items: [CD_SetlistItem]) -> [String] {
     var seen = Set<String>()
     var order: [String] = []
     for item in items where item.kind == "song" {
-      guard let name = item.artistName?.trimmingCharacters(in: .whitespaces), !name.isEmpty else { continue }
+      guard let name = songPerformerName(item) else { continue }
       if seen.insert(name).inserted {
         order.append(name)
       }
@@ -122,9 +131,12 @@ enum ShareCardData {
     distinctSongArtistNames(setlistItems).count > 1
   }
 
-  /// Distinct (first-seen order) song-level artist names joined " / ",
-  /// falling back to `fallbackArtist` (record.artist) when the setlist has
-  /// no song-level artist names at all.
+  /// Distinct (first-seen order) per-song performer names joined " / "
+  /// (see `songPerformerName` — actual performer, cover-song aware),
+  /// falling back to `fallbackArtist` when the setlist has no performer
+  /// names at all. Callers pass the record's full artist list as
+  /// `fallbackArtist` so a many-artist show without a tagged setlist
+  /// still lists everyone, not just `record.artist`.
   static func receiptArtistLabel(setlistItems: [CD_SetlistItem], fallbackArtist: String?) -> String {
     let names = distinctSongArtistNames(setlistItems)
     if !names.isEmpty {
@@ -139,21 +151,6 @@ enum ShareCardData {
     raw.lowercased().unicodeScalars.filter { !encoreMarkerStripSet.contains($0) }.map(String.init).joined()
   }
 
-  /// Both the reference words ("encore"/"アンコール") and the candidate
-  /// go through the same strip-then-lowercase normalization, so this
-  /// still matches decorated variants ("[ENCORE]", "-- encore --") while
-  /// also matching the bare word itself. Normalizing the reference words
-  /// too (rather than comparing the candidate against un-normalized
-  /// literals, as the RN source does) matters specifically for
-  /// "アンコール": it contains "ー" (a katakana long-vowel mark, not a
-  /// decorative dash) as an intrinsic part of the word, so stripping
-  /// dash-like characters from only one side would make the plain,
-  /// undecorated word never match its own reference — comparing two
-  /// equally-normalized strings avoids that. Applied to "mc"-kind item
-  /// titles and to "song"-kind item names (a song whose name IS an
-  /// encore marker renders as a marker line, not a numbered song) —
-  /// never to "encore"-kind items, which are always markers regardless
-  /// of text.
   private static let encoreMarkerTargets: Set<String> = Set(["encore", "アンコール"].map(normalizedForEncoreComparison))
 
   static func isEncoreMarkerText(_ raw: String?) -> Bool {
@@ -178,8 +175,10 @@ enum ShareCardData {
   ///    always mark; "mc"-kind items mark only if isEncoreMarkerText(title);
   ///    "song"-kind items with an encore-marker-looking name also mark
   ///    (and don't consume a song index); everything else is skipped.
-  ///    A song's display name gets " - {artistName}" appended when the
-  ///    setlist has multiple distinct song artists.
+  ///    A song's display name gets " - {performer}" appended when the
+  ///    setlist has multiple distinct performers (the actual performer
+  ///    per `songPerformerName`, not the source `artistName` — so a cover
+  ///    is credited to whoever played it, not the original artist).
   /// 2. If total song count <= 20: return every entry as a row, no ellipsis.
   /// 3. If total song count > 20: walk forward keeping entries until 10
   ///    songs have been consumed (stopping BEFORE any entry once 10 is
@@ -207,7 +206,7 @@ enum ShareCardData {
           entries.append(.encore)
         } else {
           songNumber += 1
-          let artistSuffix = item.artistName?.trimmingCharacters(in: .whitespaces)
+          let artistSuffix = songPerformerName(item)
           let displayName = (multiArtist && artistSuffix?.isEmpty == false) ? "\(rawName) - \(artistSuffix!)" : rawName
           entries.append(.song(number: songNumber, name: displayName))
         }
