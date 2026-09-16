@@ -130,7 +130,7 @@ struct StatisticsView: View {
           .font(appFont.regular(12))
           .multilineTextAlignment(.center)
       }
-      .foregroundStyle(Color(white: 0.18))
+      .foregroundStyle(Color.primary)
       .padding(.horizontal, 22)
       .padding(.vertical, 14)
       .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
@@ -209,11 +209,11 @@ struct StatisticsView: View {
     VStack(alignment: .leading, spacing: 4) {
       Text(label)
         .font(appFont.bold(12))
-        .foregroundStyle(Color(white: 0.557))
+        .foregroundStyle(Color.secondary)
         .tracking(1)
       Text(value)
         .font(appFont.bold(20))
-        .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
+        .foregroundStyle(Color.primary)
     }
   }
 
@@ -376,7 +376,7 @@ struct StatisticsView: View {
       HStack {
         Text(priceHidden ? "¥ ••••••" : total.formatted(.currency(code: "JPY").precision(.fractionLength(0))))
           .font(appFont.bold(22))
-          .foregroundStyle(Color(red: 0.188, green: 0.188, blue: 0.212))
+          .foregroundStyle(Color.primary)
         Spacer()
         Button {
           priceHidden.toggle()
@@ -393,7 +393,7 @@ struct StatisticsView: View {
     VStack(alignment: .leading, spacing: 12) {
       Text(title)
         .font(appFont.bold(13))
-        .foregroundStyle(Color(white: 0.557))
+        .foregroundStyle(Color.secondary)
         .tracking(1)
       content()
     }
