@@ -40,6 +40,7 @@ struct RankedSong: Identifiable {
   let name: String
   let count: Int
   let artworkUrl: String?
+  let artistName: String?
 }
 
 /// Ports the section-by-section grouping/sorting logic of
@@ -225,6 +226,7 @@ enum StatisticsData {
       var name: String
       var count: Int
       var artworkUrl: String?
+      var artistName: String?
     }
 
     var buckets: [String: Bucket] = [:]
@@ -234,14 +236,19 @@ enum StatisticsData {
       for item in record.sortedSetlistItems where item.kind == "song" {
         guard let rawName = item.songName?.trimmingCharacters(in: .whitespaces), !rawName.isEmpty else { continue }
         let key = item.songId ?? rawName.lowercased()
+        let trimmedArtist = item.artistName?.trimmingCharacters(in: .whitespaces)
+        let artistName = (trimmedArtist?.isEmpty ?? true) ? nil : trimmedArtist
         if var existing = buckets[key] {
           existing.count += 1
           if existing.artworkUrl == nil, let artwork = item.artworkUrl {
             existing.artworkUrl = artwork
           }
+          if existing.artistName == nil, let artistName {
+            existing.artistName = artistName
+          }
           buckets[key] = existing
         } else {
-          buckets[key] = Bucket(name: rawName, count: 1, artworkUrl: item.artworkUrl)
+          buckets[key] = Bucket(name: rawName, count: 1, artworkUrl: item.artworkUrl, artistName: artistName)
           order.append(key)
         }
       }
@@ -264,7 +271,8 @@ enum StatisticsData {
         rank: rank(for: entry.bucket.count, among: topCounts),
         name: entry.bucket.name,
         count: entry.bucket.count,
-        artworkUrl: entry.bucket.artworkUrl
+        artworkUrl: entry.bucket.artworkUrl,
+        artistName: entry.bucket.artistName
       )
     }
   }

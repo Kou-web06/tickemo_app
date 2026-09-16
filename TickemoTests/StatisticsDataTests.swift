@@ -49,6 +49,7 @@ final class StatisticsDataTests: XCTestCase {
     songId: String? = nil,
     songName: String? = nil,
     artworkUrl: String? = nil,
+    artistName: String? = nil,
     orderIndex: Int32 = 0,
     for record: CD_ChekiRecord
   ) -> CD_SetlistItem {
@@ -58,6 +59,7 @@ final class StatisticsDataTests: XCTestCase {
     item.songId = songId
     item.songName = songName
     item.artworkUrl = artworkUrl
+    item.artistName = artistName
     item.orderIndex = orderIndex
     item.record = record
     return item
@@ -163,6 +165,33 @@ final class StatisticsDataTests: XCTestCase {
     let songTwo = ranked.first { $0.name.lowercased() == "song two" }
     XCTAssertEqual(songTwo?.count, 2, "grouped case-insensitively via trimmed/lowercased songName fallback")
     XCTAssertFalse(ranked.contains { $0.name == "MC Talk" })
+  }
+
+  func testTopSongsArtistNameKeepsFirstNonEmptyValueAndTrimsEmptyToNil() {
+    let recordA = makeRecord(date: "2020-01-01")
+    makeSetlistItem(songId: "id-1", songName: "Song One", artistName: "  ", for: recordA)
+
+    let recordB = makeRecord(date: "2020-02-01")
+    makeSetlistItem(songId: "id-1", songName: "Song One (Live)", artistName: "Artist A", for: recordB)
+
+    let recordC = makeRecord(date: "2020-03-01")
+    makeSetlistItem(songId: "id-1", songName: "Song One (Acoustic)", artistName: "Artist B", for: recordC)
+    try? context.save()
+
+    let ranked = StatisticsData.topSongs([recordA, recordB, recordC])
+
+    let songOne = ranked.first { $0.id == "id-1" }
+    XCTAssertEqual(songOne?.artistName, "Artist A", "first non-empty artistName wins; later rows never overwrite it")
+  }
+
+  func testTopSongsArtistNameNilWhenNeverProvided() {
+    let record = makeRecord(date: "2020-01-01")
+    makeSetlistItem(songId: "id-1", songName: "Song One", for: record)
+    try? context.save()
+
+    let ranked = StatisticsData.topSongs([record])
+
+    XCTAssertNil(ranked.first { $0.id == "id-1" }?.artistName)
   }
 
   // MARK: - Total spending

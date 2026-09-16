@@ -29,6 +29,10 @@ struct StatisticsView: View {
   // React state exactly: keyed by lowercased name, top-1-result search,
   // never written back to the record.
   @State private var artistImageBackfill: [String: String] = [:]
+  // Same shape as artistImageBackfill but for TOP SONGS artwork: keyed by
+  // lowercased song name, top-1 MusicKit search per missing name, never
+  // persisted back to the record.
+  @State private var songImageBackfill: [String: String] = [:]
   // Refreshed after every backfill attempt (see backfillArtistImages) so a
   // denied/restricted Apple Music permission — which otherwise makes every
   // backfill search silently return nothing — is visible here too. Someone
@@ -301,6 +305,21 @@ struct StatisticsView: View {
     musicAuthorizationStatus = MusicAuthorization.currentStatus
   }
 
+  /// Mirrors backfillArtistImages for TOP SONGS artwork. No
+  /// DominantColorCache prewarm here — unlike artist photos, song artwork
+  /// has no detail screen that consumes a prewarmed dominant color.
+  private func backfillSongImages(names: [String]) async {
+    guard !isLocked else { return }
+    for name in names {
+      let key = name.lowercased()
+      if songImageBackfill[key] != nil { continue }
+      if let url = await appleMusicService.bestMatchSongArtworkUrl(for: name) {
+        songImageBackfill[key] = url
+      }
+    }
+    musicAuthorizationStatus = MusicAuthorization.currentStatus
+  }
+
   private var monthlyChartSection: some View {
     let buckets = StatisticsData.monthlyBuckets(filteredRecords)
     return sectionContainer(title: "MONTHLY LIVES") {
@@ -331,22 +350,24 @@ struct StatisticsView: View {
 
   private var topSongsSection: some View {
     let items = StatisticsData.topSongs(filteredRecords)
+    let missingNames = items.filter { $0.artworkUrl == nil }.map(\.name)
     return sectionContainer(title: "TOP SONGS") {
       if items.isEmpty {
         emptyRow
       } else {
-        VStack(spacing: 12) {
-          ForEach(items) { item in
-            StatisticsRankingRow(
-              rank: item.rank,
-              name: item.name,
-              detail: "\(item.count) plays",
-              thumbnail: .artworkUrl(item.artworkUrl)
-            )
+        ScrollView(.horizontal, showsIndicators: false) {
+          HStack(alignment: .top, spacing: 24) {
+            ForEach(items) { item in
+              TopSongCardView(
+                song: item,
+                artworkUrl: item.artworkUrl ?? songImageBackfill[item.name.lowercased()]
+              )
+            }
           }
         }
       }
     }
+    .task(id: missingNames) { await backfillSongImages(names: missingNames) }
   }
 
   private var spendingSection: some View {
