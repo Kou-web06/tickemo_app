@@ -106,20 +106,27 @@ enum ShareCardData {
 
   // MARK: - Receipt card
 
-  /// その曲を「実際に歌った人」。対バン／フェスで設定された出演者
-  /// (`performerName`) を優先し、無ければ音源のアーティスト
-  /// (`artistName`) にフォールバックする — カバー曲を原曲アーティスト名で
-  /// 出さないための `SetlistPerformers.displayName` と同じ規則。曲カードや
-  /// プレイリスト書き出し・外部検索と表示がそろう。
-  static func songPerformerName(_ item: CD_SetlistItem) -> String? {
-    SetlistPerformers.displayName(performer: item.performerName, songArtist: item.artistName)
+  /// その曲を「実際に歌った人」。優先順は 1) 対バン／フェスで設定された
+  /// 出演者 (`performerName`)、2) 出演者が1組しかいない公演ではその1組
+  /// （`SetlistPerformers.soleArtist` と同じ規則 — ワンマンのカバー曲を
+  /// 原曲アーティスト名で出さないため）、3) 音源のアーティスト
+  /// (`artistName`)。2) が無いと、`performerName` 未タグの旧データ
+  /// （`SetlistDraftItem.normalizingPerformers` は保存時にしか効かない
+  /// ので、一度も編集保存されていないレガシー移行データはこれに該当）を
+  /// 一度も編集せずに共有した場合、ワンマンのカバー曲が原曲側の
+  /// アーティスト名で出てしまう。`artistNames` は呼び出し側が渡す
+  /// その公演の登録アーティスト一覧（未指定なら 2) は素通りする）。
+  static func songPerformerName(_ item: CD_SetlistItem, artistNames: [String] = []) -> String? {
+    SetlistPerformers.normalized(item.performerName)
+      ?? SetlistPerformers.soleArtist(in: artistNames)
+      ?? SetlistPerformers.normalized(item.artistName)
   }
 
-  private static func distinctSongArtistNames(_ items: [CD_SetlistItem]) -> [String] {
+  private static func distinctSongArtistNames(_ items: [CD_SetlistItem], artistNames: [String]) -> [String] {
     var seen = Set<String>()
     var order: [String] = []
     for item in items where item.kind == "song" {
-      guard let name = songPerformerName(item) else { continue }
+      guard let name = songPerformerName(item, artistNames: artistNames) else { continue }
       if seen.insert(name).inserted {
         order.append(name)
       }
@@ -127,18 +134,19 @@ enum ShareCardData {
     return order
   }
 
-  static func hasMultipleDistinctSongArtists(setlistItems: [CD_SetlistItem]) -> Bool {
-    distinctSongArtistNames(setlistItems).count > 1
+  static func hasMultipleDistinctSongArtists(setlistItems: [CD_SetlistItem], artistNames: [String] = []) -> Bool {
+    distinctSongArtistNames(setlistItems, artistNames: artistNames).count > 1
   }
 
   /// Distinct (first-seen order) per-song performer names joined " / "
   /// (see `songPerformerName` — actual performer, cover-song aware),
   /// falling back to `fallbackArtist` when the setlist has no performer
-  /// names at all. Callers pass the record's full artist list as
-  /// `fallbackArtist` so a many-artist show without a tagged setlist
-  /// still lists everyone, not just `record.artist`.
-  static func receiptArtistLabel(setlistItems: [CD_SetlistItem], fallbackArtist: String?) -> String {
-    let names = distinctSongArtistNames(setlistItems)
+  /// names at all. Callers pass the record's full artist list as both
+  /// `fallbackArtist` (joined, many-artist show without a tagged setlist
+  /// still lists everyone) and `artistNames` (the same list, unjoined —
+  /// used for the sole-artist cover-song fallback above).
+  static func receiptArtistLabel(setlistItems: [CD_SetlistItem], fallbackArtist: String?, artistNames: [String] = []) -> String {
+    let names = distinctSongArtistNames(setlistItems, artistNames: artistNames)
     if !names.isEmpty {
       return names.joined(separator: " / ")
     }
@@ -185,10 +193,10 @@ enum ShareCardData {
   ///    reached, so a marker immediately after the 10th song is dropped,
   ///    not kept), walk backward the same way for the trailing 10 songs,
   ///    and join head + [.ellipsis] + tail.
-  static func receiptRows(setlistItems: [CD_SetlistItem]) -> [ReceiptRow] {
+  static func receiptRows(setlistItems: [CD_SetlistItem], artistNames: [String] = []) -> [ReceiptRow] {
     enum Entry { case song(number: Int, name: String), encore }
 
-    let multiArtist = hasMultipleDistinctSongArtists(setlistItems: setlistItems)
+    let multiArtist = hasMultipleDistinctSongArtists(setlistItems: setlistItems, artistNames: artistNames)
     var entries: [Entry] = []
     var songNumber = 0
 
@@ -206,7 +214,7 @@ enum ShareCardData {
           entries.append(.encore)
         } else {
           songNumber += 1
-          let artistSuffix = songPerformerName(item)
+          let artistSuffix = songPerformerName(item, artistNames: artistNames)
           let displayName = (multiArtist && artistSuffix?.isEmpty == false) ? "\(rawName) - \(artistSuffix!)" : rawName
           entries.append(.song(number: songNumber, name: displayName))
         }

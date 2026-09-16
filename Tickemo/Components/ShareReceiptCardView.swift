@@ -15,8 +15,16 @@ struct ShareReceiptCardView: View {
   private let height: CGFloat = 2044
   private let receiptTextColor = Color(red: 0.2, green: 0.2, blue: 0.2)
 
+  // ワンマンのカバー曲を原曲アーティスト名で出さないための sole-artist
+  // フォールバック用（`ShareCardData.songPerformerName` 参照）。一度も
+  // 編集保存されていないレガシーデータは performerName が全曲 nil のため
+  // これが無いと必要になる。
+  private var registeredArtistNames: [String] {
+    ArtistGrouping.names(for: record)
+  }
+
   private var rows: [ShareCardData.ReceiptRow] {
-    ShareCardData.receiptRows(setlistItems: record.sortedSetlistItems)
+    ShareCardData.receiptRows(setlistItems: record.sortedSetlistItems, artistNames: registeredArtistNames)
   }
 
   private var totalTracks: Int {
@@ -24,10 +32,11 @@ struct ShareReceiptCardView: View {
   }
 
   private var artistLabel: String {
-    let allNames = ArtistGrouping.names(for: record).joined(separator: " / ")
+    let allNames = registeredArtistNames.joined(separator: " / ")
     return ShareCardData.receiptArtistLabel(
       setlistItems: record.sortedSetlistItems,
-      fallbackArtist: allNames.isEmpty ? record.artist : allNames
+      fallbackArtist: allNames.isEmpty ? record.artist : allNames,
+      artistNames: registeredArtistNames
     )
   }
 
@@ -121,13 +130,18 @@ struct ShareReceiptCardView: View {
       .lineLimit(1)
   }
   
+  // 対バン/フェスでアーティストが多いと " / " 区切りのラベルが長くなり
+  // 複数行に折り返す。以前は lineLimit(8) で実際に必要な行数ぶんそのまま
+  // 伸ばしていたが、これだと固定 2044pt キャンバスの下端（QR/お礼
+  // メッセージ）を押し出してクリップされてしまうケースがあった。
+  // 3行までに抑え、それでも収まらない分は minimumScaleFactor で縮小、
+  // 最終的に収まらなければ通常の末尾省略に任せる。
   private func artistInfoLine(_ text: String) -> some View {
     Text(text)
       .font(.system(size: 26, weight: .bold, design: .monospaced))
       .foregroundStyle(receiptTextColor)
-      .lineLimit(8)
+      .lineLimit(3)
       .minimumScaleFactor(0.6)
-      .fixedSize(horizontal: false, vertical: true)
       .frame(maxWidth: .infinity, alignment: .leading)
   }
 
