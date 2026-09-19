@@ -49,6 +49,12 @@ extension View {
   }
 }
 
+/// `items` は `RecordFormView` の `@State` を親経由で共有しているため、
+/// 検索結果の書き戻しは必ずメインスレッドで行う必要がある（バックグラウンドの
+/// 書き戻しとユーザーの行削除がぶつかると、配列への同時アクセスでクラッシュする
+/// — 実際に「まとめて追加でいらない曲を削除中に落ちた」という報告があった）。
+/// 型ごと `@MainActor` にして、`body` 以外のメソッドも含め安全側に倒す。
+@MainActor
 private struct SetlistOcrImportModifier: ViewModifier {
   @Binding var items: [SetlistDraftItem]
   var artistHint: String?
@@ -170,26 +176,50 @@ private struct SetlistOcrImportModifier: ViewModifier {
   /// OCR で追加した曲はテキストしか持たずジャケ写が空になるため、
   /// Apple Music 検索の先頭ヒットから artworkUrl などのメタデータを補完する。
   /// songName は OCR レビューでユーザーが確認したテキストなので上書きしない。
+  /// 曲数ぶん1件ずつ逐次 await すると待ち時間が件数に比例して伸びるため、
+  /// 検索自体は最大5件まで並行実行する（Apple Music 側への配慮でここだけ上限を
+  /// 設ける）。`items` への書き戻しはこの型が `@MainActor` なので常にメイン
+  /// スレッドでまとめて行われ、並行実行中の検索そのものは `items` に触れない。
   private func backfillSongMetadata(ids: [UUID]) async {
     let hint = artistHint?.trimmingCharacters(in: .whitespaces) ?? ""
-    for id in ids {
-      guard let name = items.first(where: { $0.id == id })?.songName, !name.isEmpty else { continue }
+    let targets = ids.compactMap { id -> (id: UUID, name: String)? in
+      guard let name = items.first(where: { $0.id == id })?.songName, !name.isEmpty else { return nil }
+      return (id, name)
+    }
+    guard !targets.isEmpty else { return }
 
-      var match = hint.isEmpty
-        ? nil
-        : (try? await appleMusicService.searchSongs(term: "\(name) \(hint)", limit: 1))?.first
-      if match == nil {
-        // アーティスト名込みでヒットしない場合（表記ゆれ等）は曲名だけで再検索
-        match = (try? await appleMusicService.searchSongs(term: name, limit: 1))?.first
+    let service = appleMusicService
+    let maxConcurrent = 5
+
+    await withTaskGroup(of: (UUID, AppleMusicService.SongResult?).self) { group in
+      var nextIndex = 0
+      func addNext() {
+        guard nextIndex < targets.count else { return }
+        let target = targets[nextIndex]
+        nextIndex += 1
+        group.addTask {
+          var match = hint.isEmpty
+            ? nil
+            : (try? await service.searchSongs(term: "\(target.name) \(hint)", limit: 1))?.first
+          if match == nil {
+            // アーティスト名込みでヒットしない場合（表記ゆれ等）は曲名だけで再検索
+            match = (try? await service.searchSongs(term: target.name, limit: 1))?.first
+          }
+          return (target.id, match)
+        }
       }
-      guard let match else { continue }
 
-      // 検索中に並べ替え・削除されている可能性があるので ID で引き直す
-      guard let index = items.firstIndex(where: { $0.id == id }) else { continue }
-      items[index].songId = match.id
-      items[index].artistName = match.artistName
-      items[index].albumName = match.albumName
-      items[index].artworkUrl = match.artworkUrl
+      for _ in 0..<min(maxConcurrent, targets.count) { addNext() }
+
+      for await (id, match) in group {
+        addNext()
+        // 検索中に並べ替え・削除されている可能性があるので ID で引き直す
+        guard let match, let index = items.firstIndex(where: { $0.id == id }) else { continue }
+        items[index].songId = match.id
+        items[index].artistName = match.artistName
+        items[index].albumName = match.albumName
+        items[index].artworkUrl = match.artworkUrl
+      }
     }
   }
 }
