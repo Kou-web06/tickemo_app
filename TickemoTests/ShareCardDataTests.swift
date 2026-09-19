@@ -221,6 +221,28 @@ final class ShareCardDataTests: XCTestCase {
     XCTAssertFalse(ShareCardData.hasMultipleDistinctSongArtists(setlistItems: record.sortedSetlistItems))
   }
 
+  // 旧RNデータからの移行直後など、一度も編集保存されず performerName が
+  // 全曲 nil のワンマン公演（SetlistDraftItem.normalizingPerformers は
+  // 保存時にしか効かないため、この状態であり得る）。カバー曲の原曲側
+  // artistName にフォールバックしてしまうと、単独公演なのに原曲の
+  // アーティスト名で表示されてしまう。
+  func testReceiptArtistLabelUsesSoleArtistForUntaggedLegacyCoverSong() {
+    let record = makeRecord(artist: "Cover Idol")
+    makeSetlistItem(songName: "Cover Song", artistName: "Original Band", performerName: nil, orderIndex: 0, for: record)
+    try? context.save()
+
+    let label = ShareCardData.receiptArtistLabel(
+      setlistItems: record.sortedSetlistItems,
+      fallbackArtist: record.artist,
+      artistNames: ["Cover Idol"]
+    )
+
+    XCTAssertEqual(label, "Cover Idol")
+    XCTAssertFalse(
+      ShareCardData.hasMultipleDistinctSongArtists(setlistItems: record.sortedSetlistItems, artistNames: ["Cover Idol"])
+    )
+  }
+
   func testReceiptRowsCreditCoverSongToPerformerNotOriginalArtist() {
     let record = makeRecord(artist: "Fallback Artist")
     makeSetlistItem(songName: "Song A", artistName: "Band A", performerName: "Band A", orderIndex: 0, for: record)
