@@ -36,7 +36,7 @@ struct SettingsPalette {
   let faqAnswerLabel: Color
 
   init(isDarkMode: Bool) {
-    screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F8F8F8")
+    screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F3F2F8")
     cardBackground = isDarkMode ? Color(hex: "#1A1A1A") : Color(hex: "#FFFFFF")
     mutedCardBackground = isDarkMode ? Color(hex: "#202024") : Color(hex: "#F0F0F0")
     titleText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#333333")

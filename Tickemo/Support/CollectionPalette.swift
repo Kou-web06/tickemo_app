@@ -16,8 +16,8 @@ struct CollectionPalette {
   let emptyText: Color
 
   init(isDarkMode: Bool) {
-    screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F8F8F8")
-    headerBackground = isDarkMode ? Color(hex: "#121212", opacity: 0.74) : Color(hex: "#F8F8F8", opacity: 0.62)
+    screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F3F2F8")
+    headerBackground = isDarkMode ? Color(hex: "#121212", opacity: 0.74) : Color(hex: "#F3F2F8", opacity: 0.62)
     headerBorder = .clear
     primaryText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#333333")
     secondaryText = isDarkMode ? Color(hex: "#B7B7C2") : Color(hex: "#777777")
