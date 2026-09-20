@@ -11,6 +11,10 @@ private let appStoreURL = URL(string: "https://apps.apple.com/ja/app/tickemo-%E3
 
 private let settingsAccentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 struct SettingsView: View {
+  // タブではなく ContentView の丸いアバターボタンから開くオーバーレイに
+  // なったため、閉じ方を呼び出し元から渡してもらう必要がある。
+  var onClose: (() -> Void)? = nil
+
   @Environment(\.managedObjectContext) private var viewContext
   @Environment(\.requestReview) private var requestReview
   @Environment(\.colorScheme) private var systemColorScheme
@@ -64,6 +68,16 @@ struct SettingsView: View {
         }
       }
       .navigationTitle("マイページ")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        if let onClose {
+          ToolbarItem(placement: .cancellationAction) {
+            Button { onClose() } label: {
+              HugeIconView(icon: HugeIcons.cancel01, size: 17)
+            }
+          }
+        }
+      }
       .task {
         guard profiles.first == nil, resolvedProfile == nil else { return }
         let created = UserProfileFetching.fetchOrCreateUserProfile(context: viewContext)
