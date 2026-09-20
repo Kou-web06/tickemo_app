@@ -211,25 +211,33 @@ struct StatisticsView: View {
 
   private var summarySection: some View {
     let summary = StatisticsData.summary(filteredRecords)
-    return HStack {
-      statBlock(label: "LIVE", value: "\(summary.totalLives)")
-      Spacer()
-      statBlock(label: "ARTISTS", value: "\(summary.totalArtists)")
-      Spacer()
-      statBlock(label: "VENUES", value: "\(summary.totalVenues)")
+    return HStack(spacing: 0) {
+      statBlock(iconName: "microphone", value: "\(summary.totalLives)", title: "LIVE")
+      statBlock(iconName: "arthist", value: "\(summary.totalArtists)", title: "ARTISTS")
+      statBlock(iconName: "map-pinned", value: "\(summary.totalVenues)", title: "VENUES")
     }
+    .padding(.horizontal, 12)
   }
 
-  private func statBlock(label: String, value: String) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(label)
+  private func statBlock(iconName: String, value: String, title: String) -> some View {
+    VStack(spacing: 4) {
+      HStack(spacing: 6) {
+        Image(iconName)
+          .renderingMode(.template)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 16, height: 16)
+          .foregroundStyle(Color.secondary)
+        Text(value)
+          .font(appFont.bold(20))
+          .foregroundStyle(Color.primary)
+      }
+      Text(title)
         .font(appFont.bold(12))
         .foregroundStyle(Color.secondary)
         .tracking(1)
-      Text(value)
-        .font(appFont.bold(20))
-        .foregroundStyle(Color.primary)
     }
+    .frame(maxWidth: .infinity)
   }
 
   // MARK: - Sections
