@@ -7,6 +7,13 @@ struct ContentView: View {
   @State private var showingMyPage = false
   @Environment(\.openURL) private var openURL
 
+  // アバターボタンに表示するプロフィール画像。SettingsView と同じ
+  // CD_UserProfile.avatarImageData を参照する（設定済みならそちらを優先）。
+  @FetchRequest(sortDescriptors: []) private var profiles: FetchedResults<CD_UserProfile>
+  private var avatarImage: UIImage? {
+    profiles.first?.avatarImageData.flatMap(UIImage.init(data:))
+  }
+
   var body: some View {
     // Bound inside `body` rather than stored: `MigrationCoordinator` is
     // main-actor isolated, and a stored-property initializer would run
@@ -59,19 +66,34 @@ struct ContentView: View {
   }
 
   // どのタブからでもマイページへ飛べる、左上固定の丸いアバターボタン。
+  // 縦位置・高さは RecordListView のチケット追加ボタン（primaryAction の
+  // ツールバーボタン、ナビゲーションバーの固定44pt行に配置される）に
+  // 揃えるため、セーフエリア上端からの追加パディングは付けない。
   private var avatarButton: some View {
     Button {
       HapticsPreferenceService.shared.impact(.light)
       openMyPage()
     } label: {
-      HugeIconView(icon: HugeIcons.user, size: 20)
-        .foregroundStyle(.primary)
+      avatarIcon
         .frame(width: 44, height: 44)
     }
     .buttonStyle(.plain)
     .modifier(GlassCircleBackground())
     .padding(.leading, 16)
-    .padding(.top, 8)
+  }
+
+  @ViewBuilder
+  private var avatarIcon: some View {
+    if let avatarImage {
+      Image(uiImage: avatarImage)
+        .resizable()
+        .scaledToFill()
+        .frame(width: 44, height: 44)
+        .clipShape(Circle())
+    } else {
+      HugeIconView(icon: HugeIcons.user, size: 20)
+        .foregroundStyle(.primary)
+    }
   }
 
   private var tabs: some View {
