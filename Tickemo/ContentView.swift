@@ -79,6 +79,7 @@ struct ContentView: View {
     }
     .buttonStyle(.plain)
     .modifier(GlassCircleBackground())
+    .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
     .padding(.leading, 16)
   }
 
@@ -136,7 +137,6 @@ private struct GlassCircleBackground: ViewModifier {
       content
         .background(.ultraThinMaterial, in: Circle())
         .overlay(Circle().strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-        .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
     }
   }
 }
