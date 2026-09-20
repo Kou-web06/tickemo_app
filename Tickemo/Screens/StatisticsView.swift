@@ -212,9 +212,9 @@ struct StatisticsView: View {
   private var summarySection: some View {
     let summary = StatisticsData.summary(filteredRecords)
     return HStack(spacing: 0) {
-      statBlock(iconName: "microphone", value: "\(summary.totalLives)", title: "LIVE")
-      statBlock(iconName: "arthist", value: "\(summary.totalArtists)", title: "ARTISTS")
-      statBlock(iconName: "map-pinned", value: "\(summary.totalVenues)", title: "VENUES")
+      statBlock(iconName: "microphone", value: "\(summary.totalLives)", title: "Live")
+      statBlock(iconName: "arthist", value: "\(summary.totalArtists)", title: "Arthist")
+      statBlock(iconName: "map-pinned", value: "\(summary.totalVenues)", title: "Venue")
     }
     .padding(.horizontal, 12)
   }
@@ -226,16 +226,15 @@ struct StatisticsView: View {
           .renderingMode(.template)
           .resizable()
           .scaledToFit()
-          .frame(width: 16, height: 16)
-          .foregroundStyle(Color.secondary)
+          .frame(width: 22, height: 22)
+          .foregroundStyle(Color.primary)
         Text(value)
-          .font(appFont.bold(20))
+          .font(appFont.bold(18))
           .foregroundStyle(Color.primary)
       }
       Text(title)
-        .font(appFont.bold(12))
+        .font(appFont.regular(12))
         .foregroundStyle(Color.secondary)
-        .tracking(1)
     }
     .frame(maxWidth: .infinity)
   }
