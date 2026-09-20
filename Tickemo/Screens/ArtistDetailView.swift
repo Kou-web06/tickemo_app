@@ -254,23 +254,23 @@ struct ArtistDetailView: View {
   // 従来のレイアウトから、左揃え固定間隔 + 横スクロールに変更
   private var statsRow: some View {
     ScrollView(.horizontal, showsIndicators: false) {
-      HStack(spacing: 24) {
-        statBlock(value: "\(records.count)", title: "LIVE") {
+      HStack(spacing: 28) {
+        statBlock(value: "\(records.count)", title: "Live") {
           Image("microphone")
             .renderingMode(.template)
             .resizable()
             .scaledToFit()
-            .frame(width: 22, height: 22)
+            .frame(width: 18, height: 18)
         }
-        statBlock(value: firstShowText, title: "FIRST") {
-          HugeIconView(icon: HugeIcons.calendar03, size: 22)
+        statBlock(value: firstShowText, title: "First") {
+          HugeIconView(icon: HugeIcons.calendar03, size: 18)
         }
-        statBlock(value: spentText, title: "SPENT") {
-          HugeIconView(icon: HugeIcons.wallet01, size: 22)
+        statBlock(value: spentText, title: "Spent") {
+          HugeIconView(icon: HugeIcons.wallet01, size: 18)
         }
         if let genre = artistGenre {
-          statBlock(value: genre, title: "GENRE") {
-            HugeIconView(icon: HugeIcons.musicNote01, size: 22)
+          statBlock(value: genre, title: "Genre") {
+            HugeIconView(icon: HugeIcons.musicNote01, size: 18)
           }
         }
       }
@@ -286,11 +286,11 @@ struct ArtistDetailView: View {
         icon()
           .foregroundStyle(primaryTextColor)
         Text(value)
-          .font(appFont.bold(18))
+          .font(appFont.bold(16))
           .foregroundStyle(primaryTextColor)
       }
       Text(title)
-        .font(appFont.regular(12))
+        .font(appFont.regular(10))
         .foregroundStyle(secondaryTextColor)
     }
   }
