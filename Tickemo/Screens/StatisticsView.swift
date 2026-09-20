@@ -17,6 +17,10 @@ private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 /// NavigationStack for its own title bar but has no dismiss chrome — it's a
 /// permanent tab page, not a sheet.
 struct StatisticsView: View {
+  // ContentView が「タブのルートにいるか」を判定してアバターボタンの
+  // 表示を切り替えるための、外部から渡されるナビゲーション経路。
+  @Binding var path: NavigationPath
+
   @FetchRequest(sortDescriptors: []) private var records: FetchedResults<CD_ChekiRecord>
 
   @State private var selectedYear: Int?
@@ -78,7 +82,7 @@ struct StatisticsView: View {
   }
 
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $path) {
       ScrollView {
         VStack(alignment: .leading, spacing: 36) {
           yearChips

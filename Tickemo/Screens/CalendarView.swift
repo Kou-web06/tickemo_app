@@ -14,6 +14,10 @@ private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 /// "Calendar" tab (see ContentView), so it self-wraps a NavigationStack for
 /// its own title bar but has no dismiss chrome — it's a permanent tab page.
 struct CalendarView: View {
+  // ContentView が「タブのルートにいるか」を判定してアバターボタンの
+  // 表示を切り替えるための、外部から渡されるナビゲーション経路。
+  @Binding var path: NavigationPath
+
   @FetchRequest(sortDescriptors: []) private var records: FetchedResults<CD_ChekiRecord>
 
   @State private var displayedMonth = CalendarMonth.current
@@ -60,7 +64,7 @@ struct CalendarView: View {
   }
 
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $path) {
       ScrollView {
         VStack(spacing: 16) {
           header

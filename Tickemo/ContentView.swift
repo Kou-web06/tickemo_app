@@ -7,6 +7,22 @@ struct ContentView: View {
   @State private var showingMyPage = false
   @Environment(\.openURL) private var openURL
 
+  // タブごとのナビゲーション経路。子ページ（ライブ詳細・アーティスト詳細
+  // など）に入っているタブではアバターボタンを隠す判定に使う——子ページ
+  // では戻るボタンと同じ位置になり邪魔なため。
+  @State private var homePath = NavigationPath()
+  @State private var calendarPath = NavigationPath()
+  @State private var reportPath = NavigationPath()
+
+  private var isAtTabRoot: Bool {
+    switch selectedTab {
+    case 0: homePath.isEmpty
+    case 1: calendarPath.isEmpty
+    case 2: reportPath.isEmpty
+    default: true
+    }
+  }
+
   // アバターボタンに表示するプロフィール画像。SettingsView と同じ
   // CD_UserProfile.avatarImageData を参照する（設定済みならそちらを優先）。
   @FetchRequest(sortDescriptors: []) private var profiles: FetchedResults<CD_UserProfile>
@@ -24,8 +40,11 @@ struct ContentView: View {
       tabs
         .zIndex(0)
 
-      avatarButton
-        .zIndex(1)
+      if isAtTabRoot {
+        avatarButton
+          .zIndex(1)
+          .transition(.opacity)
+      }
 
       if showingMyPage {
         SettingsView(onClose: closeMyPage)
@@ -46,6 +65,7 @@ struct ContentView: View {
     }
     .animation(.easeInOut(duration: 0.2), value: migration.isBusy)
     .animation(.spring(response: 0.45, dampingFraction: 0.86), value: showingMyPage)
+    .animation(.easeInOut(duration: 0.2), value: isAtTabRoot)
     // `initial: true` so a cold launch via the shortcut (flag already set
     // before this view exists) is handled too, not just warm/background
     // taps that flip the flag while the view is already on screen.
@@ -99,7 +119,7 @@ struct ContentView: View {
 
   private var tabs: some View {
     TabView(selection: $selectedTab) {
-      NavigationStack {
+      NavigationStack(path: $homePath) {
         RecordListView()
       }
       .tag(0)
@@ -107,13 +127,13 @@ struct ContentView: View {
         Label("Home", image: selectedTab == 0 ? "Home Active" : "Home")
       }
 
-      CalendarView()
+      CalendarView(path: $calendarPath)
         .tag(1)
         .tabItem {
           Label("Calendar", image: selectedTab == 1 ? "Calendar Active" : "Calendar")
         }
 
-      StatisticsView()
+      StatisticsView(path: $reportPath)
         .tag(2)
         .tabItem {
           Label("Report", image: selectedTab == 2 ? "Chart Active" : "Chart")
