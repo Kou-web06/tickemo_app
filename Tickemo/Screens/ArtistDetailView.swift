@@ -254,26 +254,44 @@ struct ArtistDetailView: View {
   // 従来のレイアウトから、左揃え固定間隔 + 横スクロールに変更
   private var statsRow: some View {
     ScrollView(.horizontal, showsIndicators: false) {
-      HStack(alignment: .top, spacing: 28) {
-        statColumn(label: "LIVE", value: "\(records.count)")
-        statColumn(label: "FIRST", value: firstShowText)
-        statColumn(label: "SPENT", value: spentText)
+      HStack(spacing: 24) {
+        statBlock(value: "\(records.count)", title: "LIVE") {
+          Image("microphone")
+            .renderingMode(.template)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 22, height: 22)
+        }
+        statBlock(value: firstShowText, title: "FIRST") {
+          HugeIconView(icon: HugeIcons.calendar03, size: 22)
+        }
+        statBlock(value: spentText, title: "SPENT") {
+          HugeIconView(icon: HugeIcons.wallet01, size: 22)
+        }
         if let genre = artistGenre {
-          statColumn(label: "GENRE", value: genre)
+          statBlock(value: genre, title: "GENRE") {
+            HugeIconView(icon: HugeIcons.musicNote01, size: 22)
+          }
         }
       }
+      .padding(.horizontal, 12)
     }
   }
 
-  private func statColumn(label: String, value: String) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(label)
-        .font(appFont.bold(12))
+  // Report タブのサマリー（アイコン+値を上段、タイトルを下段）と揃えた
+  // 2段構成。個々の値の幅が揃わないため中央揃えにしている。
+  private func statBlock(value: String, title: String, @ViewBuilder icon: () -> some View) -> some View {
+    VStack(spacing: 4) {
+      HStack(spacing: 6) {
+        icon()
+          .foregroundStyle(primaryTextColor)
+        Text(value)
+          .font(appFont.bold(18))
+          .foregroundStyle(primaryTextColor)
+      }
+      Text(title)
+        .font(appFont.regular(12))
         .foregroundStyle(secondaryTextColor)
-        .tracking(1)
-      Text(value)
-        .font(appFont.bold(17))
-        .foregroundStyle(primaryTextColor)
     }
   }
 

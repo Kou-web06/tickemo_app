@@ -213,7 +213,7 @@ struct StatisticsView: View {
     let summary = StatisticsData.summary(filteredRecords)
     return HStack(spacing: 0) {
       statBlock(iconName: "microphone", value: "\(summary.totalLives)", title: "Live")
-      statBlock(iconName: "arthist", value: "\(summary.totalArtists)", title: "Arthist")
+      statBlock(iconName: "arthist", value: "\(summary.totalArtists)", title: "Artist")
       statBlock(iconName: "map-pinned", value: "\(summary.totalVenues)", title: "Venue")
     }
     .padding(.horizontal, 12)
