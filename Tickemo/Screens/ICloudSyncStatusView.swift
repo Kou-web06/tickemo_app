@@ -39,7 +39,13 @@ struct ICloudSyncStatusView: View {
             .font(appFont.regular(13))
             .foregroundStyle(palette.syncTimeText)
             .padding(.horizontal, 20)
-            .padding(.bottom, 32)
+            .padding(.bottom, 16)
+
+          if let failure = syncService.lastFailure {
+            lastFailureCard(failure)
+              .padding(.horizontal, 20)
+              .padding(.bottom, 16)
+          }
 
           syncButton
         }
@@ -110,6 +116,29 @@ struct ICloudSyncStatusView: View {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy/MM/dd HH:mm"
     return formatter.string(from: date)
+  }
+
+  // MARK: - Last failure
+
+  // 「同期できている」のか「毎回拒否されている」のかを、デバッグビルドを
+  // 使わずともこの画面だけで見分けられるようにする。ステータスが同期済み/
+  // 未同期のどちらであっても、直近に失敗イベントがあれば理由をそのまま出す
+  // （CloudSyncStatusService.reduce はヘッドライン状態を失敗で退行させない
+  // ため、エラー自体はここでしか見えない）。
+  private func lastFailureCard(_ failure: SyncEventLogEntry) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+      Text("直近の同期エラー（\(failure.typeLabel)）")
+        .font(appFont.bold(12))
+        .foregroundStyle(Color(hex: "#FF453A"))
+      Text(failure.errorDescription ?? "詳細不明のエラー")
+        .font(appFont.regular(12))
+        .foregroundStyle(palette.descriptionText)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+    .padding(14)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color(hex: "#FF453A").opacity(0.08))
+    .clipShape(RoundedRectangle(cornerRadius: 16))
   }
 
   // MARK: - Sync button
