@@ -61,6 +61,54 @@ final class SetlistPerformersTests: XCTestCase {
     XCTAssertEqual(resolved, [nil])
   }
 
+  // MARK: - defaultForNewSong
+
+  /// 元のバグ: カバー曲の次に別アーティスト本来の曲を足しても、出演者欄が
+  /// カバー曲の演者のまま引き継がれてしまっていた。曲の音源アーティストが
+  /// 出演者候補に一致するなら、直前の曲より優先してそちらを使う。
+  func testDefaultForNewSongPrefersTheSongsOwnArtistOverThePreviousPerformer() {
+    let result = SetlistPerformers.defaultForNewSong(
+      songArtist: "MyGO!!!!!",
+      priorPerformers: ["sumimi"],
+      artistNames: ["sumimi", "MyGO!!!!!"]
+    )
+    XCTAssertEqual(result, "MyGO!!!!!")
+  }
+
+  func testDefaultForNewSongMatchesCaseInsensitivelyAndAdoptsTheRegisteredSpelling() {
+    let result = SetlistPerformers.defaultForNewSong(
+      songArtist: " mygo!!!!! ",
+      priorPerformers: [],
+      artistNames: ["sumimi", "MyGO!!!!!"]
+    )
+    XCTAssertEqual(result, "MyGO!!!!!")
+  }
+
+  /// カバー曲（音源のアーティストが出演者候補のどれとも一致しない）は
+  /// 直前の曲の出演者を引き継ぐ — 交互演奏で切り替わる行だけピッカーを
+  /// 触ればいいようにするため。
+  func testDefaultForNewSongFallsBackToThePreviousPerformerForCovers() {
+    let result = SetlistPerformers.defaultForNewSong(
+      songArtist: "Roselia",
+      priorPerformers: ["sumimi", "MyGO!!!!!"],
+      artistNames: ["sumimi", "MyGO!!!!!"]
+    )
+    XCTAssertEqual(result, "MyGO!!!!!")
+  }
+
+  func testDefaultForNewSongFallsBackToTheFirstCandidateWhenNothingElseMatches() {
+    let result = SetlistPerformers.defaultForNewSong(
+      songArtist: "Roselia",
+      priorPerformers: [],
+      artistNames: ["sumimi", "MyGO!!!!!"]
+    )
+    XCTAssertEqual(result, "sumimi")
+  }
+
+  func testDefaultForNewSongIsNilWhenNoPerformersAreRegistered() {
+    XCTAssertNil(SetlistPerformers.defaultForNewSong(songArtist: "sumimi", priorPerformers: [], artistNames: []))
+  }
+
   // MARK: - canonical / soleArtist
 
   func testCanonicalMatchesRegisteredArtistsCaseInsensitivelyAndAdoptsTheirSpelling() {

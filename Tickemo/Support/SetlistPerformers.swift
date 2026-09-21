@@ -54,6 +54,24 @@ enum SetlistPerformers {
     return artistNames.compactMap(normalized).first { $0.caseInsensitiveCompare(name) == .orderedSame }
   }
 
+  /// 新しく追加する曲1件の出演者のデフォルト値を決める。優先順は
+  /// `resolve` と同じ考え方: 1) その曲の音源アーティストが出演者候補に
+  /// 一致すればそれ（表記は候補側に寄せる） —— カバーではない曲を続けて
+  /// 入力していく分にはこれだけで正しい出演者に自動で切り替わる。
+  /// 2) 一致しなければ直前に演奏していた出演者（A→A→A→B→B→A のように
+  /// カバー曲が続く場合、切り替わる行でだけピッカーを触れば済む）。
+  /// 3) それも無ければ出演者候補の先頭。
+  static func defaultForNewSong(songArtist: String?, priorPerformers: [String?], artistNames: [String]) -> String? {
+    let candidates = artistNames.compactMap(normalized)
+    guard !candidates.isEmpty else { return nil }
+    if let songArtist = normalized(songArtist),
+       let matched = candidates.first(where: { $0.caseInsensitiveCompare(songArtist) == .orderedSame }) {
+      return matched
+    }
+    let carried = priorPerformers.reversed().compactMap(normalized).first
+    return carried ?? candidates.first
+  }
+
   /// 出演者が1組しかいない公演（ワンマン・FC限定・配信）の、その1組。
   /// この場合は全曲をその1組が演奏しているので、未指定の曲は自動でこの
   /// 名前になる。カバー曲が原曲のアーティスト名のまま表示・検索されて

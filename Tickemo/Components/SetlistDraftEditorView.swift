@@ -143,7 +143,7 @@ struct SetlistDraftEditorView: View {
       artistName: result.artistName,
       albumName: result.albumName,
       artworkUrl: result.artworkUrl,
-      performerName: performerForNewSong
+      performerName: performerForNewSong(songArtist: result.artistName)
     ))
     searchText = ""
     searchResults = []
@@ -157,13 +157,16 @@ struct SetlistDraftEditorView: View {
 
   private var showsPerformerPicker: Bool { !namedPerformerChoices.isEmpty }
 
-  /// 新しく追加する曲の出演者は直前の曲から引き継ぐ。A→A→A→B→B→A の
-  /// ように上から順に入力していく場合、切り替わる行でだけピッカーを
-  /// 触れば済む。
-  private var performerForNewSong: String? {
-    guard showsPerformerPicker else { return nil }
-    let carried = items.reversed().compactMap { SetlistPerformers.normalized($0.performerName) }.first
-    return carried ?? namedPerformerChoices.first
+  /// 新しく追加する曲の出演者のデフォルト値。以前はここが常に直前の曲の
+  /// 出演者をそのまま引き継いでいたため、カバー曲の次に別アーティスト
+  /// 本来の曲を足しても出演者欄がカバー曲のまま残ってしまっていた。
+  /// ロジックは SetlistPerformers.defaultForNewSong 参照。
+  private func performerForNewSong(songArtist: String?) -> String? {
+    SetlistPerformers.defaultForNewSong(
+      songArtist: songArtist,
+      priorPerformers: items.map(\.performerName),
+      artistNames: performerChoices
+    )
   }
 
   /// 入力済みのセトリに後から出演者を割り当てるとき、1行ずつ選び直すのは
