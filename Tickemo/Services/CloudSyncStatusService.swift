@@ -130,9 +130,21 @@ final class CloudSyncStatusService {
   /// `CloudSyncStatusServiceTests` via `SyncEventSnapshot`. `.setup`-type
   /// events are ignored (not a real sync signal); an in-progress event
   /// (`endDate == nil`) reports `.syncing`; a successfully completed event
-  /// reports `.synced` and records its end date; a failed completed event
-  /// leaves the current status/timestamp untouched rather than regressing
-  /// to `.notSyncedYet` on a transient failure.
+  /// reports `.synced` and records its end date.
+  ///
+  /// A failed completed event settles to `.synced` (if a sync has ever
+  /// succeeded before) or `.notSyncedYet` (if it never has), rather than
+  /// leaving the state completely untouched. The previous behavior — return
+  /// `current` as-is — was meant to avoid regressing a headline `.synced`
+  /// status on a transient failure, but it had a bug: when the failure
+  /// arrives right after this same attempt's own in-progress event (the
+  /// normal sequence — start, then finish), `current.status` is that
+  /// attempt's own `.syncing`, not the state from before it started, so
+  /// "leave it untouched" left the UI spinning on "同期中…" forever even
+  /// though the attempt had already finished (see `ICloudSyncStatusView`).
+  /// Settling by `lastSuccess` instead fixes that while still not
+  /// regressing an actually-synced state, and the failure itself remains
+  /// visible via `recentEvents`/`lastFailure`.
   static func reduce(
     current: (status: CloudSyncStatus, lastSuccess: Date?),
     event: SyncEventSnapshot
@@ -144,7 +156,8 @@ final class CloudSyncStatusService {
       return (.syncing, current.lastSuccess)
     }
     guard event.succeeded else {
-      return current
+      let settledStatus: CloudSyncStatus = current.lastSuccess != nil ? .synced : .notSyncedYet
+      return (settledStatus, current.lastSuccess)
     }
     return (.synced, endDate)
   }
