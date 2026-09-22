@@ -22,7 +22,6 @@ struct SettingsPalette {
   let avatarFallbackText: Color
   let freeBadgeBackground: Color
   let freeBadgeText: Color
-  let profileEditIcon: Color
   let sectionShadow: Color
   let paywallGradientStart: Color
   let paywallGradientEnd: Color
@@ -36,7 +35,7 @@ struct SettingsPalette {
   let faqAnswerLabel: Color
 
   init(isDarkMode: Bool) {
-    screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F8F8F8")
+    screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F3F2F8")
     cardBackground = isDarkMode ? Color(hex: "#1A1A1A") : Color(hex: "#FFFFFF")
     mutedCardBackground = isDarkMode ? Color(hex: "#202024") : Color(hex: "#F0F0F0")
     titleText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#333333")
@@ -52,7 +51,6 @@ struct SettingsPalette {
     avatarFallbackText = isDarkMode ? Color(hex: "#E8EBF4") : Color(hex: "#3B4454")
     freeBadgeBackground = isDarkMode ? Color(hex: "#2D2D34") : Color(hex: "#E7E7E7")
     freeBadgeText = isDarkMode ? Color(hex: "#CFCFDD") : Color(hex: "#5A5A5A")
-    profileEditIcon = isDarkMode ? Color(hex: "#DADAE6") : Color(hex: "#2F2F2F")
     sectionShadow = isDarkMode ? Color(hex: "#000000") : Color(hex: "#D2D2D2")
     paywallGradientStart = Color(hex: "#2B2B2B")
     paywallGradientEnd = Color(hex: "#121212")
@@ -95,43 +93,6 @@ struct ICloudSyncPalette {
     buttonText = isDarkMode ? Color(hex: "#CFCFDD") : Color(hex: "#666666")
     indicatorColor = isDarkMode ? Color(hex: "#A1A1AA") : Color(hex: "#888888")
     success = Color(hex: "#34C759")
-  }
-}
-
-/// Ports screens/ProfileEditScreen.tsx's own `buildPalette`.
-struct ProfileEditPalette {
-  let screenBackground: Color
-  let primaryText: Color
-  let cardBackground: Color
-  let sectionShadow: Color
-  let avatarBackground: Color
-  let avatarFallbackBackground: Color
-  let avatarText: Color
-  let borderColor: Color
-  let subText: Color
-  let valueText: Color
-  let inputBackground: Color
-  let inputText: Color
-  let placeholderText: Color
-  let editIcon: Color
-  let loadingIndicator: Color
-
-  init(isDarkMode: Bool) {
-    screenBackground = isDarkMode ? Color(hex: "#121212") : Color(hex: "#F8F8F8")
-    primaryText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#000000")
-    cardBackground = isDarkMode ? Color(hex: "#1A1A1A") : Color(hex: "#FFFFFF")
-    sectionShadow = isDarkMode ? Color(hex: "#000000") : Color(hex: "#D2D2D2")
-    avatarBackground = isDarkMode ? Color(hex: "#2B2B32") : Color(hex: "#111111")
-    avatarFallbackBackground = isDarkMode ? Color(hex: "#3A3A45") : Color(hex: "#1F1F1F")
-    avatarText = Color(hex: "#FFFFFF")
-    borderColor = isDarkMode ? Color(hex: "#1A1A1A") : Color(hex: "#FFFFFF")
-    subText = isDarkMode ? Color(hex: "#A1A1AA") : Color(hex: "#9A9A9A")
-    valueText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#111111")
-    inputBackground = isDarkMode ? Color(hex: "#26262C") : Color(hex: "#F5F5F5")
-    inputText = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#111111")
-    placeholderText = isDarkMode ? Color(hex: "#8A8A94") : Color(hex: "#B8B8B8")
-    editIcon = Color(hex: "#FFFFFF")
-    loadingIndicator = isDarkMode ? Color(hex: "#F5F5F7") : Color(hex: "#000000")
   }
 }
 

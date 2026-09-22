@@ -14,6 +14,10 @@ private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 /// "Calendar" tab (see ContentView), so it self-wraps a NavigationStack for
 /// its own title bar but has no dismiss chrome — it's a permanent tab page.
 struct CalendarView: View {
+  // ContentView が「タブのルートにいるか」を判定してアバターボタンの
+  // 表示を切り替えるための、外部から渡されるナビゲーション経路。
+  @Binding var path: NavigationPath
+
   @FetchRequest(sortDescriptors: []) private var records: FetchedResults<CD_ChekiRecord>
 
   @State private var displayedMonth = CalendarMonth.current
@@ -47,9 +51,20 @@ struct CalendarView: View {
 
   @Environment(\.appFontChoice) private var appFont
   @Environment(\.appBgColor) private var bgColor
+  @Environment(\.colorScheme) private var systemColorScheme
+
+  private var isDarkMode: Bool {
+    ThemePreferenceService.shared.effectiveIsDark(systemIsDark: systemColorScheme == .dark)
+  }
+
+  // Home/MyPage タブと揃えたデフォルト背景（#F3F2F8）。ダークモードは
+  // 既存どおり systemBackground のまま変更しない。
+  private var defaultScreenBackground: Color {
+    isDarkMode ? Color(.systemBackground) : Color(hex: "#F3F2F8")
+  }
 
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $path) {
       ScrollView {
         VStack(spacing: 16) {
           header
@@ -77,7 +92,7 @@ struct CalendarView: View {
       .navigationDestination(for: ArtistRoute.self) { route in
         ArtistDetailView(artistName: route.name)
       }
-      .background((bgColor ?? Color(.systemBackground)).ignoresSafeArea())
+      .background((bgColor ?? defaultScreenBackground).ignoresSafeArea())
     }
   }
 

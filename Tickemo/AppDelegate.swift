@@ -1,7 +1,51 @@
 import SwiftUI
 import UIKit
+import os
 
 final class TickemoAppDelegate: NSObject, UIApplicationDelegate {
+  private static let logger = Logger(subsystem: "com.anonymous.Tickemo", category: "RemoteNotifications")
+
+  func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+  ) -> Bool {
+    // NSPersistentCloudKitContainer が自前で張る CloudKit のサブスクリプション
+    // 通知を実際に受け取れるようにするための土台。これが無いと、他デバイス
+    // での変更はこのデバイスのアプリを開いた時にしか反映されない
+    // （UIBackgroundModes の remote-notification と対で必要）。
+    application.registerForRemoteNotifications()
+    return true
+  }
+
+  func application(
+    _ application: UIApplication,
+    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    Self.logger.info("Registered for remote notifications")
+  }
+
+  func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    // シミュレータや、プロビジョニングが揃っていないビルドではここに来る。
+    // CloudKit のプッシュ経由の即時同期が効いていないことのわかりやすい
+    // 手がかりになるので、握りつぶさずログに残す。
+    Self.logger.error("Failed to register for remote notifications: \(error.localizedDescription)")
+  }
+
+  func application(
+    _ application: UIApplication,
+    didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+    fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+  ) {
+    // CloudKit のサイレントプッシュはペイロード自体を自分でパースする必要は
+    // ない — NSPersistentCloudKitContainer が既に張っているサブスクリプション
+    // が、プロセスが起こされたこのタイミングで自律的にインポートを進める。
+    // ここでの役目はアプリを一瞬起こして机上に上げることそのもの。
+    completionHandler(.newData)
+  }
+
   func application(
     _ application: UIApplication,
     configurationForConnecting connectingSceneSession: UISceneSession,

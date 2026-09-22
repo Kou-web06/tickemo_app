@@ -11,6 +11,10 @@ private let appStoreURL = URL(string: "https://apps.apple.com/ja/app/tickemo-%E3
 
 private let settingsAccentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 struct SettingsView: View {
+  // タブではなく ContentView の丸いアバターボタンから開くオーバーレイに
+  // なったため、閉じ方を呼び出し元から渡してもらう必要がある。
+  var onClose: (() -> Void)? = nil
+
   @Environment(\.managedObjectContext) private var viewContext
   @Environment(\.requestReview) private var requestReview
   @Environment(\.colorScheme) private var systemColorScheme
@@ -18,7 +22,11 @@ struct SettingsView: View {
 
   @FetchRequest(sortDescriptors: []) private var profiles: FetchedResults<CD_UserProfile>
 
-  @State private var showingProfileEdit = false
+  @State private var showingAvatarPicker = false
+  @State private var isEditingName = false
+  @State private var isEditingUsername = false
+  @State private var nameDraft = ""
+  @State private var usernameDraft = ""
   @State private var showingDeleteConfirmation = false
   @State private var showingLegacyReimportConfirmation = false
   @State private var legacyReimportResult: String?
@@ -64,6 +72,16 @@ struct SettingsView: View {
         }
       }
       .navigationTitle("マイページ")
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbar {
+        if let onClose {
+          ToolbarItem(placement: .cancellationAction) {
+            Button { onClose() } label: {
+              HugeIconView(icon: HugeIcons.cancel01, size: 17)
+            }
+          }
+        }
+      }
       .task {
         guard profiles.first == nil, resolvedProfile == nil else { return }
         let created = UserProfileFetching.fetchOrCreateUserProfile(context: viewContext)
@@ -94,8 +112,35 @@ struct SettingsView: View {
       .padding(.bottom, 120)
     }
     .background((bgColor ?? palette.screenBackground).ignoresSafeArea())
-    .sheet(isPresented: $showingProfileEdit) {
-      ProfileEditView(profile: profile)
+    .sheet(isPresented: $showingAvatarPicker) {
+      ImagePickerRepresentable { data in
+        profile.avatarImageData = data
+        try? viewContext.save()
+      }
+      .ignoresSafeArea()
+    }
+    .alert("表示名を編集", isPresented: $isEditingName) {
+      TextField("表示名", text: $nameDraft)
+      Button("キャンセル", role: .cancel) {}
+      Button("保存") {
+        let trimmed = nameDraft.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        profile.name = String(trimmed.prefix(8))
+        try? viewContext.save()
+      }
+    }
+    .alert("ユーザーネームを編集", isPresented: $isEditingUsername) {
+      TextField("ユーザーネーム", text: $usernameDraft)
+        .textInputAutocapitalization(.never)
+        .autocorrectionDisabled()
+      Button("キャンセル", role: .cancel) {}
+      Button("保存") {
+        var trimmed = usernameDraft.trimmingCharacters(in: .whitespaces)
+        while trimmed.hasPrefix("@") { trimmed.removeFirst() }
+        guard !trimmed.isEmpty else { return }
+        profile.username = trimmed
+        try? viewContext.save()
+      }
     }
     .sheet(isPresented: $showingFontPicker) {
       FontPickerView()
@@ -156,37 +201,45 @@ struct SettingsView: View {
 
   // MARK: - Profile header
 
+  // 2段構成: 上段にアイコン画像、下段に名前・バッジ・ユーザー名などの
+  // その他の情報をまとめる。編集画面は廃止し、各要素タップでその場編集
+  // できるようにしている（アイコン→画像ピッカー、名前/ユーザーネーム→
+  // アラートのテキストフィールド）。
   private func profileHeader(_ profile: CD_UserProfile) -> some View {
     let isPremium = PurchasesService.shared.isPremium
-    return HStack {
-      HStack(spacing: 12) {
+    return VStack(spacing: 12) {
+      Button {
+        showingAvatarPicker = true
+      } label: {
         avatarView(profile, isPremium: isPremium)
+      }
+      .buttonStyle(.plain)
 
-        VStack(alignment: .leading, spacing: 8) {
-          HStack(spacing: 8) {
+      VStack(spacing: 8) {
+        HStack(spacing: 8) {
+          Button {
+            nameDraft = profile.name ?? ""
+            isEditingName = true
+          } label: {
             Text(profile.name?.isEmpty == false ? profile.name! : "ユーザー")
               .font(appFont.bold(20))
               .foregroundStyle(palette.titleText)
-            membershipBadge(isPremium: isPremium)
           }
+          .buttonStyle(.plain)
+          membershipBadge(isPremium: isPremium)
+        }
+        Button {
+          usernameDraft = displayUsername(profile)
+          isEditingUsername = true
+        } label: {
           Text("@\(displayUsername(profile)) • joined \(JoinedDateFormatting.relativeString(from: profile.joinedAt))")
             .font(appFont.regular(12))
             .foregroundStyle(palette.secondaryText)
         }
-      }
-      Spacer(minLength: 0)
-      Button {
-        showingProfileEdit = true
-      } label: {
-        Image("Edit")
-          .renderingMode(.template)
-          .resizable()
-          .scaledToFit()
-          .frame(width: 20, height: 20)
-          .foregroundStyle(palette.profileEditIcon)
-          .frame(width: 30, height: 30)
+        .buttonStyle(.plain)
       }
     }
+    .frame(maxWidth: .infinity)
     .padding(.horizontal, 8)
     .padding(.vertical, 18)
     .background(bgColor ?? palette.screenBackground)
@@ -206,19 +259,19 @@ struct SettingsView: View {
         colors: [palette.plusGradientStart, palette.plusGradientEnd],
         startPoint: .topLeading, endPoint: .bottomTrailing
       )
-      .frame(width: 68, height: 68)
+      .frame(width: 108, height: 108)
       .clipShape(Circle())
       .overlay {
         Circle()
           .fill(palette.avatarRingBackground)
-          .frame(width: 64, height: 64)
-          .overlay { avatarContent(profile).frame(width: 60, height: 60).clipShape(Circle()) }
+          .frame(width: 102, height: 102)
+          .overlay { avatarContent(profile).frame(width: 96, height: 96).clipShape(Circle()) }
       }
     } else {
       Circle()
         .fill(palette.avatarRingBackground)
-        .frame(width: 68, height: 68)
-        .overlay { avatarContent(profile).frame(width: 60, height: 60).clipShape(Circle()) }
+        .frame(width: 108, height: 108)
+        .overlay { avatarContent(profile).frame(width: 96, height: 96).clipShape(Circle()) }
     }
   }
 
@@ -230,7 +283,7 @@ struct SettingsView: View {
       ZStack {
         palette.avatarFallbackBackground
         Text(initials(profile))
-          .font(appFont.bold(18))
+          .font(appFont.bold(28))
           .foregroundStyle(palette.avatarFallbackText)
       }
     }

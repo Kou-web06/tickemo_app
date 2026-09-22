@@ -13,7 +13,6 @@
 		06103D883AE95BBC14312886 /* CalendarEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A46977CD287EA4809AF52CF /* CalendarEvents.swift */; };
 		08596C0216AAB9F6583476E3 /* ShareSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96477F0BDC644C6585C10B98 /* ShareSheetView.swift */; };
 		09247DE84CF37FBB2AE7E496 /* ChekiRecordVenue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C4874D2D96E89FA289584CF /* ChekiRecordVenue.swift */; };
-		0B05F35A0911333F8B607931 /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED9AE9C35C5B074506951858 /* ProfileEditView.swift */; };
 		0B351B3E542B62E4389EFF54 /* PurchasesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC8097D167570A73C9B4DE5 /* PurchasesService.swift */; };
 		0C8BB93A1F456B2717A9886B /* CalendarMonthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC38A042A5BFB1CD699F666 /* CalendarMonthTests.swift */; };
 		0E0C3FBACC56007B29311519 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 533F2487C9C6F1664BADB87E /* PersistenceController.swift */; };
@@ -342,7 +341,6 @@
 		EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageCropping.swift; sourceTree = "<group>"; };
 		EBE3BF7DB44DF1DFBBA4BD4B /* RecordDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordDetailView.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		ED9AE9C35C5B074506951858 /* ProfileEditView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProfileEditView.swift; sourceTree = "<group>"; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Tickemo/AppDelegate.swift; sourceTree = "<group>"; };
 		F14C20B3287A528FE5B2D35B /* RecordRowView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordRowView.swift; sourceTree = "<group>"; };
 		F1F591D62D4319D60280E41F /* ImagePickerRepresentable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImagePickerRepresentable.swift; sourceTree = "<group>"; };
@@ -356,7 +354,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		E0962EA32F853CAE00CE3EF6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		E0962EA32F853CAE00CE3EF6 /* Exceptions for "LiveWidget" folder in "LiveWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -366,7 +364,18 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		E0962E912F853CAD00CE3EF6 /* LiveWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (E0962EA32F853CAE00CE3EF6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = LiveWidget; sourceTree = "<group>"; };
+		E0962E912F853CAD00CE3EF6 /* LiveWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E0962EA32F853CAE00CE3EF6 /* Exceptions for "LiveWidget" folder in "LiveWidgetExtension" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = LiveWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -612,7 +621,6 @@
 				0B543535289EADF7BBEDE3E3 /* ArtistDetailView.swift */,
 				FA3B340E7E4AFF0BA3EF673F /* PaywallView.swift */,
 				84F2C15210F8E73A8598F6DA /* SettingsView.swift */,
-				ED9AE9C35C5B074506951858 /* ProfileEditView.swift */,
 				2A3984D275EFEC4030F2FFC1 /* CalendarView.swift */,
 				72645012E927C7402CB88893 /* CalendarDayEventsView.swift */,
 				9A44EAD7E3182AEE71372C12 /* StatisticsView.swift */,
@@ -898,7 +906,6 @@
 				47D8C4792678470A8E38150A /* EarlyOfferService.swift in Sources */,
 				64C3FC5628F64D241709D1ED /* PaywallView.swift in Sources */,
 				7901BF40FB3DF96C71D46422 /* SettingsView.swift in Sources */,
-				0B05F35A0911333F8B607931 /* ProfileEditView.swift in Sources */,
 				BEE817BE6ACC130361BEE53A /* UserProfileFetching.swift in Sources */,
 				E06ACB6130295CA1005FD9D3 /* DominantColorCache.swift in Sources */,
 				FC5A00852FE69092E8AFF124 /* CalendarView.swift in Sources */,
@@ -1388,8 +1395,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
-				kind = exactVersion;
-				version = 5.59.0;
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.90.2;
 			};
 		};
 		E04D034D3042EBE70073058E /* XCRemoteSwiftPackageReference "lottie-ios" */ = {

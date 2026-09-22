@@ -17,6 +17,10 @@ private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
 /// NavigationStack for its own title bar but has no dismiss chrome — it's a
 /// permanent tab page, not a sheet.
 struct StatisticsView: View {
+  // ContentView が「タブのルートにいるか」を判定してアバターボタンの
+  // 表示を切り替えるための、外部から渡されるナビゲーション経路。
+  @Binding var path: NavigationPath
+
   @FetchRequest(sortDescriptors: []) private var records: FetchedResults<CD_ChekiRecord>
 
   @State private var selectedYear: Int?
@@ -65,9 +69,20 @@ struct StatisticsView: View {
 
   @Environment(\.appFontChoice) private var appFont
   @Environment(\.appBgColor) private var bgColor
+  @Environment(\.colorScheme) private var systemColorScheme
+
+  private var isDarkMode: Bool {
+    ThemePreferenceService.shared.effectiveIsDark(systemIsDark: systemColorScheme == .dark)
+  }
+
+  // Home/MyPage タブと揃えたデフォルト背景（#F3F2F8）。ダークモードは
+  // 既存どおり systemBackground のまま変更しない。
+  private var defaultScreenBackground: Color {
+    isDarkMode ? Color(.systemBackground) : Color(hex: "#F3F2F8")
+  }
 
   var body: some View {
-    NavigationStack {
+    NavigationStack(path: $path) {
       ScrollView {
         VStack(alignment: .leading, spacing: 36) {
           yearChips
@@ -112,7 +127,7 @@ struct StatisticsView: View {
       .sheet(isPresented: $showingPaywall) {
         PaywallView()
       }
-      .background((bgColor ?? Color(.systemBackground)).ignoresSafeArea())
+      .background((bgColor ?? defaultScreenBackground).ignoresSafeArea())
     }
   }
 
@@ -196,25 +211,32 @@ struct StatisticsView: View {
 
   private var summarySection: some View {
     let summary = StatisticsData.summary(filteredRecords)
-    return HStack {
-      statBlock(label: "LIVE", value: "\(summary.totalLives)")
-      Spacer()
-      statBlock(label: "ARTISTS", value: "\(summary.totalArtists)")
-      Spacer()
-      statBlock(label: "VENUES", value: "\(summary.totalVenues)")
+    return HStack(spacing: 0) {
+      statBlock(iconName: "microphone", value: "\(summary.totalLives)", title: "Live")
+      statBlock(iconName: "arthist", value: "\(summary.totalArtists)", title: "Artist")
+      statBlock(iconName: "map-pinned", value: "\(summary.totalVenues)", title: "Venue")
     }
+    .padding(.horizontal, 12)
   }
 
-  private func statBlock(label: String, value: String) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(label)
-        .font(appFont.bold(12))
+  private func statBlock(iconName: String, value: String, title: String) -> some View {
+    VStack(spacing: 4) {
+      HStack(spacing: 6) {
+        Image(iconName)
+          .renderingMode(.template)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 22, height: 22)
+          .foregroundStyle(Color.primary)
+        Text(value)
+          .font(appFont.bold(18))
+          .foregroundStyle(Color.primary)
+      }
+      Text(title)
+        .font(appFont.regular(12))
         .foregroundStyle(Color.secondary)
-        .tracking(1)
-      Text(value)
-        .font(appFont.bold(20))
-        .foregroundStyle(Color.primary)
     }
+    .frame(maxWidth: .infinity)
   }
 
   // MARK: - Sections
