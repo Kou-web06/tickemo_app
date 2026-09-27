@@ -8,6 +8,9 @@ import Foundation
 enum DateFormatting {
   static let dateFormat = "yyyy-MM-dd"
   static let timeFormat = "HH:mm"
+  /// チケットの予定（座席発表・チケット申込・支払い期限）の保存形式。
+  /// `date` / `startTime` と同じく日本時間の壁時計の文字列として持つ。
+  static let dateTimeFormat = "yyyy-MM-dd HH:mm"
 
   /// The single fixed timezone all date/time string conversions use.
   /// SwiftUI views that let the user pick a `date`/`startTime`/`endTime`
@@ -48,6 +51,14 @@ enum DateFormatting {
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.timeZone = timeZone
     formatter.dateFormat = timeFormat
+    return formatter
+  }()
+
+  private static let dateTimeFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = timeZone
+    formatter.dateFormat = dateTimeFormat
     return formatter
   }()
 
@@ -102,6 +113,15 @@ enum DateFormatting {
 
   static func timeString(from date: Date) -> String {
     timeFormatter.string(from: date)
+  }
+
+  static func dateTime(from string: String?) -> Date? {
+    guard let string, !string.isEmpty else { return nil }
+    return dateTimeFormatter.date(from: string)
+  }
+
+  static func dateTimeString(from date: Date) -> String {
+    dateTimeFormatter.string(from: date)
   }
 
   static func isoNow() -> String {

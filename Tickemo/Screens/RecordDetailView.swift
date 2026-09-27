@@ -101,6 +101,11 @@ struct RecordDetailView: View {
           dateTimeGrid
             .padding(.top, 28)
 
+          if !ticketScheduleEntries.isEmpty {
+            ticketScheduleSection
+              .padding(.top, 40)
+          }
+
           if !artistCards.isEmpty {
             artistSection
               .padding(.top, 60)
@@ -825,6 +830,42 @@ struct RecordDetailView: View {
   }
 
   // MARK: - Memo
+
+  // MARK: - Ticket schedule
+
+  // Plus を解約した後も、入力済みの予定は表示する（編集と通知だけ止まる）
+  private var ticketScheduleEntries: [TicketScheduleEntry] {
+    TicketSchedule.entries(for: record)
+  }
+
+  private var ticketScheduleSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("#ticket")
+        .font(appFont.bold(18))
+        .foregroundStyle(primaryTextColor)
+
+      VStack(alignment: .leading, spacing: 10) {
+        ForEach(ticketScheduleEntries, id: \.kind) { entry in
+          let isDone = entry.instant < now
+          HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(entry.kind.label)
+              .font(appFont.bold(14))
+              .foregroundStyle(secondaryTextColor)
+              .frame(width: 96, alignment: .leading)
+            Text(ticketScheduleDateText(entry))
+              .font(appFont.bold(17))
+              .foregroundStyle(primaryTextColor)
+          }
+          .opacity(isDone ? 0.45 : 1)
+        }
+      }
+    }
+  }
+
+  private func ticketScheduleDateText(_ entry: TicketScheduleEntry) -> String {
+    let dotted = DateFormatting.date(from: entry.dateString).map(DateFormatting.dottedString(from:)) ?? entry.dateString
+    return "\(dotted) \(entry.timeString)"
+  }
 
   private func memoSection(_ memo: String) -> some View {
     VStack(alignment: .leading, spacing: 12) {

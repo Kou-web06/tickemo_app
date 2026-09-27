@@ -115,5 +115,7 @@ final class PurchasesService {
 
     UserDefaults(suiteName: Self.widgetAppGroup)?.set(isPremium, forKey: Self.widgetIsPremiumKey)
     WidgetReloaderService.reloadTimelines()
+    // チケットの予定の通知は Plus 限定なので、加入・解約に合わせて作り直す
+    LiveNotificationService.syncFromStore()
   }
 }

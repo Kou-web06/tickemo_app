@@ -50,6 +50,11 @@ struct RecordFormView: View {
   @State private var setlistItems: [SetlistDraftItem]
   @State private var memo: String
   @State private var qrCode: String
+  // チケットの予定（TicketSchedule、Plus 限定）。値があるものだけ入る。
+  // DatePicker は他の日付と同じくフォーム全体の UTC 固定の上で動くので、
+  // ここの Date は日本時間の壁時計を UTC として持っている
+  @State private var ticketSchedules: [TicketScheduleKind: Date]
+  @State private var showingPaywall = false
 
   @State private var selectedPhotoItem: PhotosPickerItem?
   @State private var coverImageData: Data?
@@ -82,6 +87,15 @@ struct RecordFormView: View {
     } ?? [])
     _memo = State(initialValue: record?.memo ?? "")
     _qrCode = State(initialValue: record?.qrCode ?? "")
+    var schedules: [TicketScheduleKind: Date] = [:]
+    if let record {
+      for kind in TicketScheduleKind.allCases {
+        if let value = DateFormatting.dateTime(from: TicketSchedule.rawValue(kind, of: record)) {
+          schedules[kind] = value
+        }
+      }
+    }
+    _ticketSchedules = State(initialValue: schedules)
     _coverImageData = State(initialValue: record?.coverImageData)
     _gamePhotosData = State(initialValue: record?.galleryImages.compactMap(\.data) ?? [])
   }
@@ -229,6 +243,23 @@ struct RecordFormView: View {
         .listRowBackground(rowBg)
 
         Section {
+          ticketScheduleSection
+        } header: {
+          HStack(spacing: 6) {
+            Text("チケットの予定")
+            Text("Plus")
+              .font(.caption2.weight(.bold))
+              .foregroundStyle(.white)
+              .padding(.horizontal, 6)
+              .padding(.vertical, 1)
+              .background(Capsule().fill(Color(red: 0.604, green: 0.486, blue: 0.973)))
+          }
+        } footer: {
+          Text("入力した日時はカレンダーに表示され、通知でお知らせします。")
+        }
+        .listRowBackground(rowBg)
+
+        Section {
           artistSection
         } header: {
           sectionHeader("アーティスト", isFulfilled: isArtistFulfilled)
@@ -305,6 +336,10 @@ struct RecordFormView: View {
       } message: {
         Text("変更内容は失われます。")
       }
+      // チケットの予定（Plus）の入口。OCR と同じく Section の外にアンカーする
+      .sheet(isPresented: $showingPaywall) {
+        PaywallView()
+      }
       .onChange(of: selectedPhotoItem) { _, newItem in
         Task {
           guard let newItem, let data = try? await newItem.loadTransferable(type: Data.self) else { return }
@@ -340,6 +375,57 @@ struct RecordFormView: View {
     // "HH:mm" strings edited via TimeWheelPickerField, so they need no such
     // pinning.
     .environment(\.timeZone, DateFormatting.timeZone)
+  }
+
+  // MARK: - Ticket schedule section
+
+  @ViewBuilder
+  private var ticketScheduleSection: some View {
+    if PurchasesService.shared.isPremium {
+      ForEach(TicketScheduleKind.allCases) { kind in
+        Toggle(kind.label, isOn: scheduleEnabledBinding(kind))
+        if let value = ticketSchedules[kind] {
+          // ラベルが長いと「チケット申込の日時」だけ2行に折り返して
+          // 崩れるので、直上のスイッチで種類が分かる前提で短くしている
+          DatePicker(
+            "日時",
+            selection: Binding(get: { value }, set: { ticketSchedules[kind] = $0 }),
+            displayedComponents: [.date, .hourAndMinute]
+          )
+        }
+      }
+    } else {
+      // Plus を解約した後も、入力済みの値は見えるようにしておく（編集と
+      // 通知だけ止める）
+      ForEach(TicketScheduleKind.allCases) { kind in
+        if let value = ticketSchedules[kind] {
+          LabeledContent(kind.label, value: "\(DateFormatting.dottedString(from: value)) \(DateFormatting.timeString(from: value))")
+        }
+      }
+      Button {
+        showingPaywall = true
+      } label: {
+        HugeIconLabel(icon: HugeIcons.squareLock02, size: 15) {
+          Text("Plusで座席発表・チケット申込・支払い期限を登録")
+        }
+      }
+    }
+  }
+
+  private func scheduleEnabledBinding(_ kind: TicketScheduleKind) -> Binding<Bool> {
+    Binding(
+      get: { ticketSchedules[kind] != nil },
+      set: { enabled in
+        ticketSchedules[kind] = enabled ? defaultScheduleDate() : nil
+      }
+    )
+  }
+
+  /// スイッチを入れた直後の初期値。今日の 10:00（日本時間の壁時計）
+  private func defaultScheduleDate() -> Date {
+    let calendar = DateFormatting.utcCalendar
+    let today = calendar.startOfDay(for: Date())
+    return calendar.date(bySettingHour: 10, minute: 0, second: 0, of: today) ?? today
   }
 
   // MARK: - Artist section
@@ -491,6 +577,13 @@ struct RecordFormView: View {
 
     target.memo = memo.isEmpty ? nil : memo
     target.qrCode = qrCode.isEmpty ? nil : qrCode
+
+    // Plus でない間は編集できないので、既存の値には触らない
+    if PurchasesService.shared.isPremium {
+      for kind in TicketScheduleKind.allCases {
+        TicketSchedule.setRawValue(ticketSchedules[kind].map(DateFormatting.dateTimeString(from:)), kind, of: target)
+      }
+    }
 
     applyCoverImage(to: target)
     applyGamePhotos(to: target)

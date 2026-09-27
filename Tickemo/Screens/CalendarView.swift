@@ -1,6 +1,9 @@
 import SwiftUI
 
 private let accentPurple = Color(red: 0.604, green: 0.486, blue: 0.973)
+// チケットの予定（座席発表・チケット申込・支払い期限）の印。ライブ当日の
+// 紫と見分けられる色にしている
+private let ticketScheduleColor = Color.orange
 
 /// Ports screens/CalendarScreen.tsx to a month-at-a-time grid (prev/next +
 /// Today button) instead of react-native-calendars' 72-month infinite
@@ -49,6 +52,14 @@ struct CalendarView: View {
     CalendarEvents.recordsByDate(records: Array(records))
   }
 
+  private var scheduleItemsByDate: [String: [TicketSchedule.CalendarItem]] {
+    TicketSchedule.itemsByDate(records: Array(records))
+  }
+
+  private func hasContent(on dateString: String) -> Bool {
+    !(recordsByDate[dateString] ?? []).isEmpty || !(scheduleItemsByDate[dateString] ?? []).isEmpty
+  }
+
   @Environment(\.appFontChoice) private var appFont
   @Environment(\.appBgColor) private var bgColor
   @Environment(\.colorScheme) private var systemColorScheme
@@ -71,7 +82,7 @@ struct CalendarView: View {
           weekdayRow
           grid
 
-          if let day = selectedDay, !(recordsByDate[day.dateString] ?? []).isEmpty {
+          if let day = selectedDay, hasContent(on: day.dateString) {
             dayEventsSection(day: day)
               .transition(.opacity.combined(with: .move(edge: .bottom)))
           }
@@ -161,12 +172,13 @@ struct CalendarView: View {
   private func dayCell(_ cell: CalendarDayCell, isWeekend: Bool) -> some View {
     if let date = cell.date, let dateString = cell.dateString {
       let event = eventsByDate[dateString]
+      let hasSchedule = !(scheduleItemsByDate[dateString] ?? []).isEmpty
       let isToday = DateFormatting.utcCalendar.isDate(date, inSameDayAs: DateFormatting.utcCalendar.startOfDay(for: Date()))
       let isSelected = selectedDay?.dateString == dateString
       let dayNumber = DateFormatting.utcCalendar.component(.day, from: date)
 
       Button {
-        guard event != nil else { return }
+        guard event != nil || hasSchedule else { return }
         selectedDay = (selectedDay?.dateString == dateString) ? nil : SelectedCalendarDay(dateString: dateString)
       } label: {
         VStack(spacing: 4) {
@@ -183,12 +195,20 @@ struct CalendarView: View {
               isToday ? accentPurple.opacity(0.15) : Color.clear
             )
             .clipShape(Circle())
+            .overlay(alignment: .topTrailing) {
+              if hasSchedule {
+                Circle()
+                  .fill(ticketScheduleColor)
+                  .frame(width: 6, height: 6)
+                  .offset(x: 2, y: -1)
+              }
+            }
 
           thumbnailOrDot(for: event)
         }
       }
       .buttonStyle(.plain)
-      .disabled(event == nil)
+      .disabled(event == nil && !hasSchedule)
     } else {
       Color.clear.frame(height: 44)
     }
@@ -240,6 +260,13 @@ struct CalendarView: View {
         .tracking(0.5)
         .padding(.top, 4)
 
+      ForEach(scheduleItemsByDate[day.dateString] ?? [], id: \.id) { item in
+        NavigationLink(value: item.record) {
+          scheduleRow(item)
+        }
+        .buttonStyle(.plain)
+      }
+
       ForEach(dayRecords, id: \.objectID) { record in
         NavigationLink(value: record) {
           RecordRowView(record: record)
@@ -247,5 +274,31 @@ struct CalendarView: View {
         .buttonStyle(.plain)
       }
     }
+  }
+
+  /// チケットの予定1件。タップでそのライブの詳細へ
+  private func scheduleRow(_ item: TicketSchedule.CalendarItem) -> some View {
+    HStack(spacing: 10) {
+      Text(item.entry.kind.label)
+        .font(appFont.bold(11))
+        .foregroundStyle(.white)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Capsule().fill(ticketScheduleColor))
+      Text(item.entry.timeString)
+        .font(appFont.bold(14))
+        .foregroundStyle(Color.primary)
+      Text(item.record.liveName?.isEmpty == false ? item.record.liveName! : "-")
+        .font(appFont.regular(14))
+        .foregroundStyle(Color.primary)
+        .lineLimit(1)
+      Spacer(minLength: 0)
+      HugeIconView(icon: HugeIcons.arrowRight01, size: 14)
+        .foregroundStyle(Color.secondary)
+    }
+    .padding(.horizontal, 14)
+    .padding(.vertical, 12)
+    .background(RoundedRectangle(cornerRadius: 14).fill(Color(.secondarySystemGroupedBackground)))
+    .contentShape(Rectangle())
   }
 }
