@@ -84,8 +84,32 @@ enum TodaySongCache {
       return nil
     }
 
-    let historyForArtist = defaults.stringArray(forKey: historyKey(for: trimmedArtist)) ?? []
     var rng = SystemRandomNumberGenerator()
+    return commitDailyPick(from: songs, artistName: trimmedArtist, pickKey: pickKey, defaults: defaults, using: &rng)
+  }
+
+  /// 選曲から保存までを1つの処理として直列化する。同じアーティスト・同じ日の
+  /// 取得が並行すると（一覧を素早く出入りしたときなど）、どちらも検索前に
+  /// キャッシュを外し、それぞれ別の曲を乱数で選んで後勝ちで上書きしてしまう。
+  /// ここで改めてキャッシュを確認し、先に保存された曲があればそれを返す。
+  private static let pickLock = NSLock()
+
+  static func commitDailyPick<R: RandomNumberGenerator>(
+    from songs: [AppleMusicService.SongResult],
+    artistName trimmedArtist: String,
+    pickKey: String,
+    defaults: UserDefaults,
+    using rng: inout R
+  ) -> TodaySongResult? {
+    pickLock.lock()
+    defer { pickLock.unlock() }
+
+    if let cached = defaults.data(forKey: pickKey),
+       let decoded = try? JSONDecoder().decode(TodaySongResult.self, from: cached) {
+      return decoded
+    }
+
+    let historyForArtist = defaults.stringArray(forKey: historyKey(for: trimmedArtist)) ?? []
     guard let pick = pickSong(from: songs, matching: trimmedArtist, history: historyForArtist, using: &rng) else {
       return nil
     }

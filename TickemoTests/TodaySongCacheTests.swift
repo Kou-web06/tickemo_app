@@ -124,4 +124,22 @@ final class TodaySongCacheTests: XCTestCase {
     }
     XCTAssertGreaterThan(picks.count, 5)
   }
+
+  /// 同じアーティスト・同じ日の取得が並行しても、後から来た方は先に保存された
+  /// 曲を返し、キャッシュも履歴も上書きしない（Codex レビューの指摘）
+  func testCommitDailyPickKeepsTheFirstPickWhenTwoFetchesOverlap() {
+    let suiteName = "TodaySongCacheTests.\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    defer { defaults.removePersistentDomain(forName: suiteName) }
+    let songs = (0..<30).map { song(id: "s\($0)", artistName: "Ado") }
+
+    var first = SeededGenerator(state: 1)
+    var second = SeededGenerator(state: 999)
+    let a = TodaySongCache.commitDailyPick(from: songs, artistName: "Ado", pickKey: "pick", defaults: defaults, using: &first)
+    let b = TodaySongCache.commitDailyPick(from: songs, artistName: "Ado", pickKey: "pick", defaults: defaults, using: &second)
+
+    XCTAssertNotNil(a)
+    XCTAssertEqual(a, b)
+    XCTAssertEqual(defaults.stringArray(forKey: "todaySongHistory:ado"), [a!.id])
+  }
 }
