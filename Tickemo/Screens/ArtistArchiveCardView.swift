@@ -24,7 +24,8 @@ struct ArtistArchiveCardView: View {
         .fill(Color.black.opacity(0.2))
 
       VStack(alignment: .leading, spacing: 2) {
-        Text(entry.name)
+        // entry.name は遷移・集計のキーなのでそのまま、表示だけあだ名にする
+        Text(ArtistNicknameStore.shared.displayName(for: entry.name))
           .font(appFont.bold(15))
           .foregroundStyle(.white)
           .lineLimit(2)

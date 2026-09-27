@@ -23,6 +23,7 @@ struct ArtistSearchField: View {
   // Music permission looks identical to "no matching artists" and the
   // user has no way to tell why photos never show up.
   @State private var authorizationStatus = MusicAuthorization.currentStatus
+  @State private var isEditingNickname = false
 
   private let service = AppleMusicService()
 
@@ -44,6 +45,7 @@ struct ArtistSearchField: View {
         }
       }
     }
+    .artistNicknameEditor(isPresented: $isEditingNickname, artistName: name)
     .task {
       // Request access as soon as the field appears, rather than waiting
       // for the user's first keystroke to discover (mid-typing) that a
@@ -81,9 +83,22 @@ struct ArtistSearchField: View {
   private var selectedChip: some View {
     HStack(spacing: 12) {
       thumbnail(urlString: imageUrl, size: 40)
-      Text(name)
-        .font(appFont.bold(16))
-        .lineLimit(1)
+      // 記録に保存するのは検索で確定した正式名（Report の集計キー）の
+      // まま。カタカナ表記などが気になる場合は、ここから表示名（あだ名）
+      // だけを付けられる（ArtistNicknames）。
+      Button {
+        isEditingNickname = true
+      } label: {
+        HStack(spacing: 6) {
+          Text(ArtistNicknameStore.shared.displayName(for: name))
+            .font(appFont.bold(16))
+            .lineLimit(1)
+          HugeIconView(icon: HugeIcons.pencilEdit01, size: 14)
+            .foregroundStyle(Color(white: 0.6))
+        }
+      }
+      .buttonStyle(.plain)
+      .accessibilityLabel("表示名を編集")
       Spacer(minLength: 8)
       Button {
         name = ""

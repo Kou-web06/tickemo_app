@@ -252,7 +252,7 @@ struct StatisticsView: View {
           ForEach(items) { item in
             StatisticsRankingRow(
               rank: item.rank,
-              name: item.name,
+              name: ArtistNicknameStore.shared.displayName(for: item.name),
               detail: "\(item.count) lives",
               thumbnail: .artworkUrl(item.artistImageUrl ?? artistImageBackfill[item.name.lowercased()]),
               imageShape: .circle

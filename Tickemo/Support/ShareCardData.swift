@@ -145,10 +145,17 @@ enum ShareCardData {
   /// `fallbackArtist` (joined, many-artist show without a tagged setlist
   /// still lists everyone) and `artistNames` (the same list, unjoined —
   /// used for the sole-artist cover-song fallback above).
-  static func receiptArtistLabel(setlistItems: [CD_SetlistItem], fallbackArtist: String?, artistNames: [String] = []) -> String {
+  /// `nicknames` はアーティストのあだ名（ArtistNicknames）。重複排除は
+  /// 正式名で行い、表示する直前にだけあだ名へ差し替える。
+  static func receiptArtistLabel(
+    setlistItems: [CD_SetlistItem],
+    fallbackArtist: String?,
+    artistNames: [String] = [],
+    nicknames: [String: String] = [:]
+  ) -> String {
     let names = distinctSongArtistNames(setlistItems, artistNames: artistNames)
     if !names.isEmpty {
-      return names.joined(separator: " / ")
+      return names.map { ArtistNicknames.displayName(for: $0, in: nicknames) }.joined(separator: " / ")
     }
     return (fallbackArtist?.isEmpty == false) ? fallbackArtist! : "-"
   }
@@ -193,7 +200,11 @@ enum ShareCardData {
   ///    reached, so a marker immediately after the 10th song is dropped,
   ///    not kept), walk backward the same way for the trailing 10 songs,
   ///    and join head + [.ellipsis] + tail.
-  static func receiptRows(setlistItems: [CD_SetlistItem], artistNames: [String] = []) -> [ReceiptRow] {
+  static func receiptRows(
+    setlistItems: [CD_SetlistItem],
+    artistNames: [String] = [],
+    nicknames: [String: String] = [:]
+  ) -> [ReceiptRow] {
     enum Entry { case song(number: Int, name: String), encore }
 
     let multiArtist = hasMultipleDistinctSongArtists(setlistItems: setlistItems, artistNames: artistNames)
@@ -215,6 +226,7 @@ enum ShareCardData {
         } else {
           songNumber += 1
           let artistSuffix = songPerformerName(item, artistNames: artistNames)
+            .map { ArtistNicknames.displayName(for: $0, in: nicknames) }
           let displayName = (multiArtist && artistSuffix?.isEmpty == false) ? "\(rawName) - \(artistSuffix!)" : rawName
           entries.append(.song(number: songNumber, name: displayName))
         }

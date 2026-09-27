@@ -356,7 +356,7 @@ struct RecordDetailView: View {
     let unique = (names?.isEmpty == false ? names! : [record.artist ?? "-"])
     var seen = Set<String>()
     let deduped = unique.filter { seen.insert($0.lowercased()).inserted }
-    return deduped.isEmpty ? "-" : deduped.joined(separator: " / ")
+    return deduped.isEmpty ? "-" : deduped.map(ArtistNicknameStore.shared.displayName(for:)).joined(separator: " / ")
   }
 
   private var priceText: String {
@@ -613,7 +613,7 @@ struct RecordDetailView: View {
           performer: item.performerName,
           songArtist: item.artistName
         ) {
-          Text(artistName)
+          Text(ArtistNicknameStore.shared.displayName(for: artistName))
             .font(appFont.regular(12))
             .foregroundStyle(secondaryTextColor)
             .lineLimit(1)
