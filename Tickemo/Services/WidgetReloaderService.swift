@@ -122,7 +122,8 @@ enum WidgetReloaderService {
     }
 
     let jacketPath = saveCoverImage(record.coverImageData)
-    let artistName = ArtistGrouping.names(for: record).first ?? ""
+    // ウィジェットも表示用なのであだ名で出す（ArtistNicknames）
+    let artistName = ArtistGrouping.names(for: record).first.map(ArtistNicknameStore.shared.displayName(for:)) ?? ""
 
     // liveTime: endTime（開演）優先、なければ startTime（開場）、両方なければ省略
     let liveTime: String?

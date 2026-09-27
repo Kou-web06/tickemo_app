@@ -24,7 +24,11 @@ struct ShareReceiptCardView: View {
   }
 
   private var rows: [ShareCardData.ReceiptRow] {
-    ShareCardData.receiptRows(setlistItems: record.sortedSetlistItems, artistNames: registeredArtistNames)
+    ShareCardData.receiptRows(
+      setlistItems: record.sortedSetlistItems,
+      artistNames: registeredArtistNames,
+      nicknames: ArtistNicknameStore.shared.nicknames
+    )
   }
 
   private var totalTracks: Int {
@@ -32,11 +36,15 @@ struct ShareReceiptCardView: View {
   }
 
   private var artistLabel: String {
-    let allNames = registeredArtistNames.joined(separator: " / ")
+    let nicknames = ArtistNicknameStore.shared.nicknames
+    let allNames = registeredArtistNames
+      .map { ArtistNicknames.displayName(for: $0, in: nicknames) }
+      .joined(separator: " / ")
     return ShareCardData.receiptArtistLabel(
       setlistItems: record.sortedSetlistItems,
       fallbackArtist: allNames.isEmpty ? record.artist : allNames,
-      artistNames: registeredArtistNames
+      artistNames: registeredArtistNames,
+      nicknames: nicknames
     )
   }
 

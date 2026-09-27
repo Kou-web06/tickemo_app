@@ -124,7 +124,7 @@ struct TopSongCardView: View {
         .foregroundStyle(Color.primary)
         .lineLimit(1)
       if let artist = song.artistName, !artist.isEmpty {
-        Text(artist)
+        Text(ArtistNicknameStore.shared.displayName(for: artist))
           .font(appFont.regular(12))
           .foregroundStyle(.secondary)
           .lineLimit(1)

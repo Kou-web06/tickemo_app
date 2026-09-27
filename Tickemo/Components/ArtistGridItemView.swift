@@ -32,7 +32,7 @@ struct ArtistGridItemView: View {
         .frame(maxHeight: .infinity, alignment: .bottom)
 
         VStack(alignment: .leading, spacing: 6) {
-          Text(tile.name)
+          Text(ArtistNicknameStore.shared.displayName(for: tile.name))
             .font(appFont.bold(14))
             .foregroundStyle(.white)
             .lineLimit(1)

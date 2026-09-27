@@ -20,6 +20,15 @@ struct ArtistDetailView: View {
   @State private var artistGenre: String?
   @State private var editorialNote: String?
 
+  // あだ名（表示名）。`artistName` は記録と Report の集計キーなので
+  // 触らず、見出しなど表示だけを差し替える（ArtistNicknames 参照）。
+  private let nicknameStore = ArtistNicknameStore.shared
+  @State private var isEditingNickname = false
+
+  private var displayName: String {
+    nicknameStore.displayName(for: artistName)
+  }
+
   // RecordDetailView と同じ動的カラー背景。ヒーロー画像はリモート URL なので
   // ダウンロード完了後に抽出する（AsyncImage と同じ URLCache に乗るため
   // 画像の二重取得にはならない）。
@@ -88,8 +97,19 @@ struct ArtistDetailView: View {
     .coordinateSpace(name: "scroll")
     // デフォルトのナビゲーションバーに戻す（戻るボタン・背景ともシステム
     //標準）。カスタムのバー非表示/自前ボタンは全部やめた。
-    .navigationTitle(artistName)
+    .navigationTitle(displayName)
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .topBarTrailing) {
+        Button {
+          isEditingNickname = true
+        } label: {
+          HugeIconView(icon: HugeIcons.pencilEdit01, size: 20)
+        }
+        .accessibilityLabel("表示名を編集")
+      }
+    }
+    .artistNicknameEditor(isPresented: $isEditingNickname, artistName: artistName)
     .ignoresSafeArea(edges: .top)
     // 画像の最支配色でベタ塗りし、ヘッダー下端のフェードがそのまま
     // 背景に溶け込むようにする（白ミックスすると色がずれて境目が見える）。
@@ -236,10 +256,18 @@ struct ArtistDetailView: View {
 
         // 黒スクリムは画像下端のフェードを覆い隠して背景との境目を
         // 作ってしまうため廃止。名前の可読性は背景色の明暗連動で確保する。
-        Text(artistName)
-          .font(appFont.bold(26))
-          .foregroundStyle(primaryTextColor)
-          .padding(16)
+        VStack(alignment: .leading, spacing: 2) {
+          Text(displayName)
+            .font(appFont.bold(26))
+            .foregroundStyle(primaryTextColor)
+          // あだ名を付けていても、どのアーティストかわかるよう正式名を添える
+          if displayName != artistName {
+            Text(artistName)
+              .font(appFont.regular(13))
+              .foregroundStyle(secondaryTextColor)
+          }
+        }
+        .padding(16)
       }
     }
     // 460pt: 指で軽く引っ張った状態がデフォルトの見た目であってほしい、

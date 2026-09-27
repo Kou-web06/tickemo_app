@@ -179,6 +179,12 @@ struct SetlistDraftEditorView: View {
     }
   }
 
+  /// 出演者の選択肢に出す名前。保存する値は正式名のまま、ラベルだけ
+  /// あだ名にする（ArtistNicknames）。
+  private func performerLabel(_ name: String) -> String {
+    ArtistNicknameStore.shared.displayName(for: name)
+  }
+
   private func performerMenu(_ item: Binding<SetlistDraftItem>) -> some View {
     let current = SetlistPerformers.normalized(item.wrappedValue.performerName)
     return Menu {
@@ -187,9 +193,9 @@ struct SetlistDraftEditorView: View {
           item.wrappedValue.performerName = choice
         } label: {
           if choice.caseInsensitiveCompare(current ?? "") == .orderedSame {
-            Label(choice, systemImage: "checkmark")
+            Label(performerLabel(choice), systemImage: "checkmark")
           } else {
-            Text(choice)
+            Text(performerLabel(choice))
           }
         }
       }
@@ -201,7 +207,7 @@ struct SetlistDraftEditorView: View {
       Divider()
       Menu("ここから下をまとめて変更") {
         ForEach(namedPerformerChoices, id: \.self) { choice in
-          Button(choice) {
+          Button(performerLabel(choice)) {
             applyPerformer(choice, from: item.wrappedValue.id)
           }
         }
@@ -209,7 +215,7 @@ struct SetlistDraftEditorView: View {
     } label: {
       HStack(spacing: 4) {
         HugeIconView(icon: HugeIcons.userGroup03, size: 11)
-        Text(current ?? "出演者を選択")
+        Text(current.map(performerLabel) ?? "出演者を選択")
           .lineLimit(1)
         Image(systemName: "chevron.down")
           .font(.system(size: 8, weight: .bold))

@@ -25,7 +25,7 @@ struct ShareTicketCardView: View {
   private var isShortLiveName: Bool { liveName.count <= 8 }
 
   private var artistText: String {
-    let names = ArtistGrouping.names(for: record)
+    let names = ArtistGrouping.names(for: record).map(ArtistNicknameStore.shared.displayName(for:))
     return names.isEmpty ? "-" : names.joined(separator: " / ")
   }
 

@@ -323,7 +323,11 @@ struct ShareSheetView: View {
       return
     }
 
-    let caption = ShareCardData.systemShareCaptionText(date: record.date, artist: record.artist, liveName: record.liveName)
+    let caption = ShareCardData.systemShareCaptionText(
+      date: record.date,
+      artist: record.artist.map(ArtistNicknameStore.shared.displayName(for:)),
+      liveName: record.liveName
+    )
     activityShareItems = ActivityShareItems(items: [uiImage, caption])
   }
 
