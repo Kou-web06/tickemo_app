@@ -11,6 +11,10 @@ import SwiftUI
 struct ShareTicketCardView: View {
   let record: CD_ChekiRecord
   let showsBlurredBackground: Bool
+  /// シェア画面で選んだ写真（ライブ写真の1枚など）。nil なら従来どおり表紙
+  var photoData: Data? = nil
+
+  private var jacketImageData: Data? { photoData ?? record.coverImageData }
 
   private let width: CGFloat = 1480
   private let height: CGFloat = 1200
@@ -126,7 +130,7 @@ struct ShareTicketCardView: View {
   @ViewBuilder
   private var coverPhoto: some View {
     Group {
-      if let data = record.coverImageData, let uiImage = UIImage(data: data) {
+      if let data = jacketImageData, let uiImage = UIImage(data: data) {
         Image(uiImage: uiImage)
           .resizable()
           .scaledToFill()
@@ -172,7 +176,7 @@ struct ShareTicketCardView: View {
   @ViewBuilder
   private var blurredBackground: some View {
     Group {
-      if let data = record.coverImageData, let uiImage = UIImage(data: data) {
+      if let data = jacketImageData, let uiImage = UIImage(data: data) {
         Image(uiImage: uiImage)
           .resizable()
           .scaledToFill()

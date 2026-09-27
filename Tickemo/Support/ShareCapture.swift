@@ -4,8 +4,9 @@ import SwiftUI
 /// card type needs (ports the RN `cardType` switch plus the per-card props
 /// ShareImageGenerator.tsx threads through).
 enum ShareCardKind {
-  case ticket(record: CD_ChekiRecord, blurredBackground: Bool)
-  case cd(record: CD_ChekiRecord, textColor: ShareCDTextColor, username: String?)
+  /// `photoData` はシェア画面で選んだ写真（nil なら表紙）
+  case ticket(record: CD_ChekiRecord, blurredBackground: Bool, photoData: Data? = nil)
+  case cd(record: CD_ChekiRecord, textColor: ShareCDTextColor, username: String?, photoData: Data? = nil)
   case receipt(record: CD_ChekiRecord, username: String?)
 }
 
@@ -27,12 +28,12 @@ enum ShareCapture {
     let view: AnyView
 
     switch kind {
-    case .ticket(let record, let blurredBackground):
+    case .ticket(let record, let blurredBackground, let photoData):
       size = ticketCanvasSize
-      view = AnyView(ShareTicketCardView(record: record, showsBlurredBackground: blurredBackground))
-    case .cd(let record, let textColor, let username):
+      view = AnyView(ShareTicketCardView(record: record, showsBlurredBackground: blurredBackground, photoData: photoData))
+    case .cd(let record, let textColor, let username, let photoData):
       size = cdCanvasSize
-      view = AnyView(ShareCDCardView(record: record, textColor: textColor, username: username))
+      view = AnyView(ShareCDCardView(record: record, textColor: textColor, username: username, photoData: photoData))
     case .receipt(let record, let username):
       size = receiptCanvasSize
       view = AnyView(ShareReceiptCardView(record: record, username: username))

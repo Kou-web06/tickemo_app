@@ -301,4 +301,21 @@ final class ShareCardDataTests: XCTestCase {
     let text = ShareCardData.systemShareCaptionText(date: "2024-05-10", artist: "Solo Artist", liveName: "Big Show")
     XCTAssertEqual(text, "2024-05-10 Solo Artist - Big Show \n #Tickemo")
   }
+
+  // MARK: - photoOptions（シェア画面の「カードに載せる写真」）
+
+  func testPhotoOptionsPutsTheStoredCoverFirstThenGalleryPhotos() {
+    let cover = Data([0x00]), a = Data([0x01]), b = Data([0x02])
+    XCTAssertEqual(ShareCardData.photoOptions(storedCover: cover, gallery: [a, b]), [cover, a, b])
+  }
+
+  func testPhotoOptionsWithoutCoverAreJustTheGalleryInOrder() {
+    // 表紙なしの記録はカードが写真1枚目を表紙の代わりに使うので、先頭＝初期表示のまま重複しない
+    let a = Data([0x01]), b = Data([0x02])
+    XCTAssertEqual(ShareCardData.photoOptions(storedCover: nil, gallery: [a, b]), [a, b])
+  }
+
+  func testPhotoOptionsWithOnlyACoverHasNothingToChooseFrom() {
+    XCTAssertEqual(ShareCardData.photoOptions(storedCover: Data([0x00]), gallery: []).count, 1)
+  }
 }
