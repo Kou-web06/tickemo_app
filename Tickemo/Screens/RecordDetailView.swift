@@ -53,6 +53,9 @@ struct RecordDetailView: View {
   // logic/format as NextLiveCardView's home-screen card) rather than a
   // second implementation of the same "D : HH : MM : SS" ticking text.
   @State private var now = Date()
+  // ライブ写真（表紙以外の CD_LiveImage）。一覧用に縮小した画像を一度だけ作る
+  @State private var photoThumbnails: [UIImage] = []
+  @State private var photoViewerRoute: PhotoViewerRoute?
   private let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
   private var isPast: Bool { NextLiveCardData.isPast(record, now: now) }
   private var countdown: (text: String, isMessage: Bool) { NextLiveCardData.countdownText(for: record, now: now) }
@@ -108,6 +111,11 @@ struct RecordDetailView: View {
 
           if !artistCards.isEmpty {
             artistSection
+              .padding(.top, 60)
+          }
+
+          if !photoThumbnails.isEmpty {
+            photosSection
               .padding(.top, 60)
           }
 
@@ -192,6 +200,12 @@ struct RecordDetailView: View {
     }
     .sheet(isPresented: $showingEditSheet) {
       RecordFormView(record: record)
+    }
+    .task(id: galleryImageKey) {
+      photoThumbnails = await Self.makeThumbnails(from: record.galleryImages.compactMap(\.data))
+    }
+    .fullScreenCover(item: $photoViewerRoute) { route in
+      LivePhotoViewer(photos: record.galleryImages.compactMap(\.data), initialIndex: route.index)
     }
     .sheet(isPresented: $showingSetlistEditor) {
       SetlistEditorView(record: record)
@@ -486,6 +500,48 @@ struct RecordDetailView: View {
           ForEach(artistCards) { entry in
             NavigationLink(value: ArtistRoute(name: entry.name)) {
               ArtistArchiveBackfillCardView(entry: entry)
+            }
+            .buttonStyle(.plain)
+          }
+        }
+      }
+    }
+  }
+
+  // MARK: - Photos
+
+  // 編集で写真が差し替わると CD_LiveImage が作り直されるので、objectID の
+  // 並びでサムネイルの作り直しを判定する
+  private var galleryImageKey: String {
+    record.galleryImages.map { $0.objectID.uriRepresentation().absoluteString }.joined(separator: ",")
+  }
+
+  private static func makeThumbnails(from photos: [Data]) async -> [UIImage] {
+    await Task.detached(priority: .userInitiated) {
+      photos.compactMap { data in
+        UIImage(data: data)?.preparingThumbnail(of: CGSize(width: 360, height: 360))
+      }
+    }.value
+  }
+
+  private var photosSection: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text("#photos")
+        .font(appFont.bold(18))
+        .foregroundStyle(primaryTextColor)
+
+      ScrollView(.horizontal, showsIndicators: false) {
+        HStack(spacing: 10) {
+          ForEach(Array(photoThumbnails.enumerated()), id: \.offset) { index, image in
+            Button {
+              HapticsPreferenceService.shared.impact(.light)
+              photoViewerRoute = PhotoViewerRoute(index: index)
+            } label: {
+              Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 132, height: 132)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
             }
             .buttonStyle(.plain)
           }
@@ -902,4 +958,56 @@ struct RecordDetailView: View {
     dismiss()
   }
 
+}
+
+private struct PhotoViewerRoute: Identifiable {
+  let index: Int
+  var id: Int { index }
+}
+
+/// ライブ写真の全画面表示。左右スワイプで切り替え、右上で閉じる。
+private struct LivePhotoViewer: View {
+  let photos: [Data]
+  @State private var selection: Int
+  @Environment(\.dismiss) private var dismiss
+
+  init(photos: [Data], initialIndex: Int) {
+    self.photos = photos
+    _selection = State(initialValue: initialIndex)
+  }
+
+  var body: some View {
+    ZStack(alignment: .topTrailing) {
+      Color.black.ignoresSafeArea()
+
+      TabView(selection: $selection) {
+        ForEach(Array(photos.enumerated()), id: \.offset) { index, data in
+          Group {
+            if let image = UIImage(data: data) {
+              Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+            } else {
+              Color.clear
+            }
+          }
+          .tag(index)
+        }
+      }
+      .tabViewStyle(.page(indexDisplayMode: photos.count > 1 ? .automatic : .never))
+      .ignoresSafeArea()
+
+      Button {
+        dismiss()
+      } label: {
+        HugeIconView(icon: HugeIcons.cancel01, size: 18)
+          .foregroundStyle(.white)
+          .frame(width: 40, height: 40)
+          .background(Circle().fill(Color.white.opacity(0.18)))
+      }
+      .accessibilityLabel("閉じる")
+      .padding(.trailing, 16)
+      .padding(.top, 8)
+    }
+  }
 }

@@ -20,9 +20,11 @@ private let ticketPricePresets: [Int] = [3000, 5000, 8000, 10000, 15000]
 /// the catalog, no free-typed artist" rule via `hasDictionaryRegistered`.
 /// Sports lives get RN's dual photo treatment: the single cover-image slot
 /// (orderIndex 0) doubles as "Player / Team Photo", just relabeled, and a
-/// separate up-to-6 "Game Photos" gallery (orderIndex 1...6) ports
+/// separate "Game Photos" gallery (orderIndex 1...) ports
 /// `LiveEditScreen.tsx`'s sports-only `imageUrls` grid — both ride the same
 /// `CD_LiveImage`/CloudKit CKAsset sync path, no schema change needed.
+/// RN と違い、この写真欄は全ライブ種別で使える「写真」に広げてある
+/// （ライブ詳細に写真を貼りたいという要望。枚数は LivePhotoGallery）。
 struct RecordFormView: View {
   private let record: CD_ChekiRecord?
 
@@ -58,8 +60,12 @@ struct RecordFormView: View {
 
   @State private var selectedPhotoItem: PhotosPickerItem?
   @State private var coverImageData: Data?
-  @State private var selectedGamePhotoItem: PhotosPickerItem?
-  @State private var gamePhotosData: [Data]
+  // ライブ写真（LivePhotoGallery）。元はスポーツの「観戦写真」専用だった
+  @State private var selectedGalleryItems: [PhotosPickerItem] = []
+  @State private var galleryPhotosData: [Data]
+  // 保存のたびに全写真を作り直して iCloud に再アップロードしないよう、
+  // 写真を触ったときだけ書き直す
+  @State private var galleryPhotosChanged = false
   @State private var showingDiscardConfirmation = false
 
   // セットリスト OCR「まとめて追加」の呈示は Form レベルにアンカーする。
@@ -96,11 +102,21 @@ struct RecordFormView: View {
       }
     }
     _ticketSchedules = State(initialValue: schedules)
-    _coverImageData = State(initialValue: record?.coverImageData)
-    _gamePhotosData = State(initialValue: record?.galleryImages.compactMap(\.data) ?? [])
+    _coverImageData = State(initialValue: record?.storedCoverImage?.data)
+    _galleryPhotosData = State(initialValue: record?.galleryImages.compactMap(\.data) ?? [])
   }
 
-  private static let maxGamePhotos = 6
+  private var galleryRemaining: Int {
+    LivePhotoGallery.remaining(
+      currentCount: galleryPhotosData.count,
+      isPremium: PurchasesService.shared.isPremium,
+      liveType: liveType
+    )
+  }
+
+  private var gallerySectionTitle: String {
+    isSportsLive ? "観戦写真" : "写真"
+  }
 
   private static func initialArtistEntries(for record: CD_ChekiRecord?) -> [ArtistEntry] {
     guard let record else { return [ArtistEntry(name: "", imageUrl: nil)] }
@@ -206,9 +222,6 @@ struct RecordFormView: View {
               let keep = artistEntries.first { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty } ?? artistEntries[0]
               artistEntries = [keep]
             }
-            if newValue != .sports {
-              gamePhotosData = []
-            }
           }
           DatePicker("日付", selection: $date, displayedComponents: .date)
         }
@@ -294,12 +307,14 @@ struct RecordFormView: View {
         }
         .listRowBackground(rowBg)
 
-        if isSportsLive {
-          Section("観戦写真") {
-            gamePhotosGrid
-          }
-          .listRowBackground(rowBg)
+        Section {
+          galleryPhotosGrid
+        } header: {
+          Text(gallerySectionTitle)
+        } footer: {
+          galleryFooter
         }
+        .listRowBackground(rowBg)
 
         Section {
           TextField("感想", text: $memo, axis: .vertical)
@@ -346,13 +361,17 @@ struct RecordFormView: View {
           coverImageData = ImageCropping.squareCroppedJPEGData(from: data) ?? data
         }
       }
-      .onChange(of: selectedGamePhotoItem) { _, newItem in
+      .onChange(of: selectedGalleryItems) { _, newItems in
+        guard !newItems.isEmpty else { return }
         Task {
-          guard let newItem, gamePhotosData.count < Self.maxGamePhotos,
-                let data = try? await newItem.loadTransferable(type: Data.self)
-          else { return }
-          gamePhotosData.append(ImageCropping.downsizedJPEGData(from: data) ?? data)
-          selectedGamePhotoItem = nil
+          for item in newItems {
+            guard galleryRemaining > 0,
+                  let data = try? await item.loadTransferable(type: Data.self)
+            else { continue }
+            galleryPhotosData.append(ImageCropping.downsizedJPEGData(from: data) ?? data)
+            galleryPhotosChanged = true
+          }
+          selectedGalleryItems = []
         }
       }
       // OCR「まとめて追加」の呈示系は Form 直付け（Section の外＝安定アンカー）。
@@ -511,11 +530,11 @@ struct RecordFormView: View {
     }
   }
 
-  // MARK: - Game photos (sports lives only, up to 6)
+  // MARK: - Photos (LivePhotoGallery: 無料3枚 / スポーツ無料6枚 / Plus 20枚)
 
-  private var gamePhotosGrid: some View {
+  private var galleryPhotosGrid: some View {
     LazyVGrid(columns: [GridItem(.adaptive(minimum: 84, maximum: 96), spacing: 8)], spacing: 8) {
-      ForEach(Array(gamePhotosData.enumerated()), id: \.offset) { index, data in
+      ForEach(Array(galleryPhotosData.enumerated()), id: \.offset) { index, data in
         if let uiImage = UIImage(data: data) {
           ZStack(alignment: .topTrailing) {
             Image(uiImage: uiImage)
@@ -524,7 +543,8 @@ struct RecordFormView: View {
               .frame(width: 88, height: 88)
               .clipShape(RoundedRectangle(cornerRadius: 8))
             Button {
-              gamePhotosData.remove(at: index)
+              galleryPhotosData.remove(at: index)
+              galleryPhotosChanged = true
             } label: {
               HugeIconView(icon: HugeIcons.cancelCircle, size: 20)
                 .foregroundStyle(.red)
@@ -536,8 +556,12 @@ struct RecordFormView: View {
         }
       }
 
-      if gamePhotosData.count < Self.maxGamePhotos {
-        PhotosPicker(selection: $selectedGamePhotoItem, matching: .images) {
+      if galleryRemaining > 0 {
+        PhotosPicker(
+          selection: $selectedGalleryItems,
+          maxSelectionCount: galleryRemaining,
+          matching: .images
+        ) {
           RoundedRectangle(cornerRadius: 8)
             .strokeBorder(Color.secondary.opacity(0.35), lineWidth: 1)
             .frame(width: 88, height: 88)
@@ -549,6 +573,22 @@ struct RecordFormView: View {
       }
     }
     .padding(.vertical, 4)
+  }
+
+  @ViewBuilder
+  private var galleryFooter: some View {
+    let limit = LivePhotoGallery.limit(isPremium: PurchasesService.shared.isPremium, liveType: liveType)
+    if PurchasesService.shared.isPremium {
+      Text("\(limit)枚まで追加できます。ライブ詳細に表示されます。")
+    } else {
+      VStack(alignment: .leading, spacing: 6) {
+        Text("無料プランは\(limit)枚まで追加できます。ライブ詳細に表示されます。")
+        Button("Plusなら\(LivePhotoGallery.plusLimit)枚まで追加できます") {
+          showingPaywall = true
+        }
+        .font(.footnote.weight(.semibold))
+      }
+    }
   }
 
   // MARK: - Save
@@ -586,7 +626,7 @@ struct RecordFormView: View {
     }
 
     applyCoverImage(to: target)
-    applyGamePhotos(to: target)
+    applyGalleryPhotos(to: target)
 
     try? viewContext.save()
     HapticsPreferenceService.shared.notify(.success)
@@ -648,12 +688,12 @@ struct RecordFormView: View {
   private func applyCoverImage(to target: CD_ChekiRecord) {
     guard let coverImageData else {
       // Explicit removal: drop the existing cover image row, if any.
-      if let existing = target.coverImage {
+      if let existing = target.storedCoverImage {
         viewContext.delete(existing)
       }
       return
     }
-    let image = target.coverImage ?? CD_LiveImage(context: viewContext)
+    let image = target.storedCoverImage ?? CD_LiveImage(context: viewContext)
     if image.id == nil {
       image.id = UUID()
     }
@@ -666,12 +706,12 @@ struct RecordFormView: View {
   // to-many-relationship-as-ordered-list problem: simpler than diffing
   // against the previous set, and correct here because orderIndex is only
   // ever assigned from this array's current order.
-  private func applyGamePhotos(to target: CD_ChekiRecord) {
+  private func applyGalleryPhotos(to target: CD_ChekiRecord) {
+    guard galleryPhotosChanged else { return }
     for existing in target.galleryImages {
       viewContext.delete(existing)
     }
-    guard isSportsLive else { return }
-    for (index, data) in gamePhotosData.enumerated() {
+    for (index, data) in galleryPhotosData.enumerated() {
       let image = CD_LiveImage(context: viewContext)
       image.id = UUID()
       image.orderIndex = Int16(index + 1)

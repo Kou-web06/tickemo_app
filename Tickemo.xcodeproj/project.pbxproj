@@ -109,6 +109,7 @@
 		BBA44572EF915D6CFA98D39B /* CalendarEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35F986A976F914A696837702 /* CalendarEventsTests.swift */; };
 		BEE817BE6ACC130361BEE53A /* UserProfileFetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CFF0E3AA54C736CBE34C4B2 /* UserProfileFetching.swift */; };
 		BEFB60167BDF2062C916F508 /* SetlistOcrCleanup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47957EC4D30003911DDDFB11 /* SetlistOcrCleanup.swift */; };
+		C22ED3FD24771170D57E9BC9 /* LivePhotoGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1C43A47CBDF6F9BDDCDF3A /* LivePhotoGallery.swift */; };
 		C3D5A82856B58EA1471E206A /* UbiquitousItemDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */; };
 		C44D18D2FF458852D7256202 /* SetlistPerformersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4791C412825872E2E6C43B9 /* SetlistPerformersTests.swift */; };
 		CB343E91A83A26DAC5822C0F /* CalendarMonth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEDEC93481A9822F3289DA5 /* CalendarMonth.swift */; };
@@ -146,6 +147,7 @@
 		E0F0E83C304422EA00EA98A8 /* tap.json in Resources */ = {isa = PBXBuildFile; fileRef = E0F0E83B304422E200EA98A8 /* tap.json */; };
 		E1B35F8E9EE2B9527B4BC8FE /* ShareReceiptCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0800A7D856FA6988684EA128 /* ShareReceiptCardView.swift */; };
 		E350B28E5DDDB949B33C927F /* ImageCropping.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAB642D766CF23B8ED2F0DF1 /* ImageCropping.swift */; };
+		E3B658D09243CE6DCAD01370 /* LivePhotoGalleryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B07D6825C3E25E9191C213 /* LivePhotoGalleryTests.swift */; };
 		E3FA2835D57DD6FA064C5853 /* SetlistEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8C29472BB0AB4450819C528 /* SetlistEditorView.swift */; };
 		E48F6C3505BACCF9FCA8E58C /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0C381A2EBEB7D3FB62EA74E1 /* PrivacyInfo.xcprivacy */; };
 		E4F24B37C7F412D6EA5A86DD /* AppleMusicServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8915654231D36C39E7ACA59 /* AppleMusicServiceTests.swift */; };
@@ -277,6 +279,7 @@
 		83CD0CE5134EA7D7CDD1F910 /* SetlistDraftPerformerNormalizationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistDraftPerformerNormalizationTests.swift; sourceTree = "<group>"; };
 		8430422B4835AB6789E607F7 /* ShareCardDataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareCardDataTests.swift; sourceTree = "<group>"; };
 		84F2C15210F8E73A8598F6DA /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		86B07D6825C3E25E9191C213 /* LivePhotoGalleryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LivePhotoGalleryTests.swift; sourceTree = "<group>"; };
 		86B595D70CE5D5B21791B8B4 /* WidgetLiveSelectionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WidgetLiveSelectionTests.swift; sourceTree = "<group>"; };
 		8869FABDDE291BE56B55B965 /* RecordFormValidationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordFormValidationTests.swift; sourceTree = "<group>"; };
 		8ABF0BAFCA22B746AA2BE6AC /* LegacyStoreModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModels.swift; sourceTree = "<group>"; };
@@ -290,6 +293,7 @@
 		98F5292EF133422D67579700 /* ApplePlaylistExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ApplePlaylistExporter.swift; sourceTree = "<group>"; };
 		9A44EAD7E3182AEE71372C12 /* StatisticsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 		9AE2706F569FFE252AC4593D /* CustomToggleSwitch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CustomToggleSwitch.swift; sourceTree = "<group>"; };
+		9C1C43A47CBDF6F9BDDCDF3A /* LivePhotoGallery.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LivePhotoGallery.swift; sourceTree = "<group>"; };
 		9C4874D2D96E89FA289584CF /* ChekiRecordVenue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordVenue.swift; sourceTree = "<group>"; };
 		A0C45BE9B9FDDAE7F4AFF6B2 /* ArtistSearchField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistSearchField.swift; sourceTree = "<group>"; };
 		A0E0A7A9A59F04D167F69708 /* DateFormatting.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DateFormatting.swift; sourceTree = "<group>"; };
@@ -461,6 +465,7 @@
 				6DD27D01C94866D43CADD990 /* ApplePlaylistExporterTimeoutTests.swift */,
 				14699E37537983D31344E8AB /* ArtistNicknamesTests.swift */,
 				5D2E6533746592558095061B /* TicketScheduleTests.swift */,
+				86B07D6825C3E25E9191C213 /* LivePhotoGalleryTests.swift */,
 			);
 			path = TickemoTests;
 			sourceTree = "<group>";
@@ -687,6 +692,7 @@
 				D76B3F78C61869FF10F355A8 /* SetlistPlaylistText.swift */,
 				3AED4AD8A0964E1672E395C9 /* ArtistNicknames.swift */,
 				44CD1280FB061E363735BB2C /* TicketSchedule.swift */,
+				9C1C43A47CBDF6F9BDDCDF3A /* LivePhotoGallery.swift */,
 			);
 			name = Support;
 			path = Tickemo/Support;
@@ -869,6 +875,7 @@
 				F89F9CC74C0E208C841C9C62 /* ApplePlaylistExporterTimeoutTests.swift in Sources */,
 				6CDCACF2646C8BA603912907 /* ArtistNicknamesTests.swift in Sources */,
 				B19F48D57A5DFB2B89AA00F1 /* TicketScheduleTests.swift in Sources */,
+				E3B658D09243CE6DCAD01370 /* LivePhotoGalleryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -989,6 +996,7 @@
 				B3F06B831FDCC8B051003758 /* ArtistNicknameStore.swift in Sources */,
 				892E100602A5967984232153 /* ArtistNicknameEditor.swift in Sources */,
 				761777C507DC4F4E5A53F7DD /* TicketSchedule.swift in Sources */,
+				C22ED3FD24771170D57E9BC9 /* LivePhotoGallery.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
