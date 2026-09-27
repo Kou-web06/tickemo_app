@@ -84,6 +84,16 @@ enum TicketSchedule {
       .sorted { $0.instant < $1.instant }
   }
 
+  /// フォームでスイッチを入れた直後の初期値。「日本時間の今日の 10:00」を、
+  /// フォームの DatePicker と同じ UTC の壁時計として返す。UTC の暦で今日を
+  /// 取ると、日本時間 0:00〜8:59 はまだ前日なので昨日になってしまう。
+  static func defaultWallClock(now: Date) -> Date {
+    var components = jstCalendar.dateComponents([.year, .month, .day], from: now)
+    components.hour = 10
+    components.minute = 0
+    return DateFormatting.utcCalendar.date(from: components) ?? now
+  }
+
   // MARK: - Calendar
 
   struct CalendarItem: Identifiable {

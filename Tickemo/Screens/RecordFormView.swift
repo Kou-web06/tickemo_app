@@ -440,11 +440,9 @@ struct RecordFormView: View {
     )
   }
 
-  /// スイッチを入れた直後の初期値。今日の 10:00（日本時間の壁時計）
+  /// スイッチを入れた直後の初期値。日本時間の今日の 10:00
   private func defaultScheduleDate() -> Date {
-    let calendar = DateFormatting.utcCalendar
-    let today = calendar.startOfDay(for: Date())
-    return calendar.date(bySettingHour: 10, minute: 0, second: 0, of: today) ?? today
+    TicketSchedule.defaultWallClock(now: Date())
   }
 
   // MARK: - Artist section

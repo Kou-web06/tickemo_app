@@ -113,4 +113,17 @@ final class TicketScheduleTests: XCTestCase {
     }
     XCTAssertFalse(LiveNotificationSettings.Kind.beforeLive.isPlusOnly)
   }
+
+  // MARK: - Default value in the form
+
+  func testDefaultWallClockUsesTheJapaneseCalendarDayEvenBeforeNineAM() {
+    // 日本時間 10/02 03:00 = UTC ではまだ 10/01。初期値は 10/02 10:00 であるべき
+    let value = TicketSchedule.defaultWallClock(now: jst("2026-10-02 03:00"))
+    XCTAssertEqual(DateFormatting.dateTimeString(from: value), "2026-10-02 10:00")
+  }
+
+  func testDefaultWallClockDuringTheDay() {
+    let value = TicketSchedule.defaultWallClock(now: jst("2026-10-02 21:30"))
+    XCTAssertEqual(DateFormatting.dateTimeString(from: value), "2026-10-02 10:00")
+  }
 }
