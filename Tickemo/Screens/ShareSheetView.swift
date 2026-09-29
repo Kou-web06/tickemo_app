@@ -263,7 +263,7 @@ struct ShareSheetView: View {
         .font(appFont.bold(12))
         .foregroundStyle(Color(white: 0.45))
 
-      ScrollView(.horizontal, showsIndicators: false) {
+      EdgeFadingScrollView {
         HStack(spacing: 10) {
           ForEach(Array(photoThumbnails.enumerated()), id: \.offset) { index, image in
             Button {

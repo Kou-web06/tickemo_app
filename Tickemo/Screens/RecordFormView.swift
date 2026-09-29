@@ -238,7 +238,7 @@ struct RecordFormView: View {
         Section("チケット料金") {
           TextField("金額", text: $ticketPriceText)
             .keyboardType(.numberPad)
-          ScrollView(.horizontal, showsIndicators: false) {
+          EdgeFadingScrollView {
             HStack {
               ForEach(ticketPricePresets, id: \.self) { preset in
                 Button("¥\(preset)") { ticketPriceText = String(preset) }

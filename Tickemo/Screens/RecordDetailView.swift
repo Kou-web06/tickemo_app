@@ -495,7 +495,7 @@ struct RecordDetailView: View {
         .font(appFont.bold(18))
         .foregroundStyle(primaryTextColor)
 
-      ScrollView(.horizontal, showsIndicators: false) {
+      EdgeFadingScrollView {
         HStack(spacing: 12) {
           ForEach(artistCards) { entry in
             NavigationLink(value: ArtistRoute(name: entry.name)) {
@@ -530,7 +530,8 @@ struct RecordDetailView: View {
         .font(appFont.bold(18))
         .foregroundStyle(primaryTextColor)
 
-      ScrollView(.horizontal, showsIndicators: false) {
+      // スクロールで見切れる境目をぼかす（EdgeFadingScrollView）
+      EdgeFadingScrollView {
         HStack(spacing: 10) {
           ForEach(Array(photoThumbnails.enumerated()), id: \.offset) { index, image in
             Button {
@@ -541,7 +542,7 @@ struct RecordDetailView: View {
                 .resizable()
                 .scaledToFill()
                 .frame(width: 132, height: 132)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .clipped()
             }
             .buttonStyle(.plain)
           }
