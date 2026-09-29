@@ -156,3 +156,23 @@ enum SetlistOcrCleanup {
     lines.map { ReviewItem(text: $0, isSuspicious: isSuspicious($0)) }
   }
 }
+
+/// OCR 確認画面で ENCORE / MC を挿入する位置の計算。UITextView の
+/// `selectedRange` と揃えるため、位置は UTF-16 のオフセットで扱う。
+enum SetlistMarkerInsertion {
+  /// カーソルのある行の末尾に「改行 + マーカー」を差し込み（曲名の行を
+  /// 分断しない）、挿入後のカーソル位置（マーカーの末尾）を返す。連続で
+  /// 押すとマーカーが下に積み重なる。
+  static func inserting(_ marker: String, into text: String, cursorUTF16: Int) -> (text: String, cursorUTF16: Int) {
+    guard !text.isEmpty else {
+      return (marker, (marker as NSString).length)
+    }
+    let ns = text as NSString
+    let cursor = min(max(0, cursorUTF16), ns.length)
+    let newline = ns.range(of: "\n", range: NSRange(location: cursor, length: ns.length - cursor))
+    let lineEnd = newline.location == NSNotFound ? ns.length : newline.location
+    let insertion = "\n" + marker
+    let updated = ns.replacingCharacters(in: NSRange(location: lineEnd, length: 0), with: insertion)
+    return (updated, lineEnd + (insertion as NSString).length)
+  }
+}
