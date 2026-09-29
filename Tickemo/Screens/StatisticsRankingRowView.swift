@@ -133,13 +133,38 @@ struct TopSongCardView: View {
     .frame(width: side, alignment: .leading)
   }
 
+  /// ジャケ写の左上に大きく出す順位。アプリのフォント設定に関係なく、
+  /// 縦長（字幅 compressed）・斜め・極太のゴシック（SF）で固定する。
+  /// ジャケ写の上では白文字＋左上の淡い影で読めるようにし、ジャケ写が無い
+  /// （読み込み中を含む）ときの明るい代替画像の上では濃い文字にする。
+  private func rankNumber(onArtwork: Bool) -> some View {
+    Text("\(song.rank)")
+      .font(.system(size: 52, weight: .heavy).width(.compressed))
+      .foregroundStyle(onArtwork ? Color.white : Color.primary.opacity(0.78))
+      // compressed 幅の SF にはイタリック体が無く `.italic()` が効かないので、
+      // 約12度のせん断変形で斜めにする（下端を左へずらし、全体を右へ戻す）
+      .transformEffect(CGAffineTransform(a: 1, b: 0, c: -0.21, d: 1, tx: 11, ty: 0))
+      .shadow(color: .black.opacity(onArtwork ? 0.45 : 0), radius: 3, x: 0, y: 1)
+      .padding(.leading, 4)
+      .padding(.top, 1)
+      .accessibilityLabel("\(song.rank)位")
+  }
+
   @ViewBuilder
   private var artwork: some View {
     if let urlString = artworkUrl, let url = URL(string: urlString) {
-      AsyncImage(url: url) { image in
-        image.resizable().scaledToFill()
-      } placeholder: {
-        fallback
+      AsyncImage(url: url) { phase in
+        if let image = phase.image {
+          image.resizable().scaledToFill()
+            .overlay(alignment: .topLeading) {
+              ZStack(alignment: .topLeading) {
+                LinearGradient(colors: [.black.opacity(0.35), .clear], startPoint: .topLeading, endPoint: .center)
+                rankNumber(onArtwork: true)
+              }
+            }
+        } else {
+          fallback
+        }
       }
     } else {
       fallback
@@ -152,5 +177,6 @@ struct TopSongCardView: View {
       HugeIconView(icon: HugeIcons.musicNote01, size: 34)
         .foregroundStyle(Color.secondary)
     }
+    .overlay(alignment: .topLeading) { rankNumber(onArtwork: false) }
   }
 }
