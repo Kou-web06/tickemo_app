@@ -29,6 +29,8 @@ struct ShareCDCardView: View {
   let record: CD_ChekiRecord
   let textColor: ShareCDTextColor
   let username: String?
+  /// シェア画面で選んだ写真（ライブ写真の1枚など）。nil なら従来どおり表紙
+  var photoData: Data? = nil
 
   private let width: CGFloat = 1480
   private let height: CGFloat = 1200
@@ -90,7 +92,7 @@ struct ShareCDCardView: View {
   private var jacket: some View {
     ZStack(alignment: .topLeading) {
       Group {
-        if let data = record.coverImageData, let uiImage = UIImage(data: data) {
+        if let data = photoData ?? record.coverImageData, let uiImage = UIImage(data: data) {
           Image(uiImage: uiImage).resizable().scaledToFill()
         } else {
           Color(red: 0.533, green: 0.133, blue: 0.067)

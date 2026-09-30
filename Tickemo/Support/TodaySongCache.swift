@@ -1,10 +1,21 @@
 import Foundation
 
 /// Ports screens/CollectionScreen.tsx's `fetchTodaySongForArtist` — a
-/// deterministic "song of the day" for the Next Live card's back face,
-/// searched via MusicKit, cached per artist+calendar-day in `UserDefaults`
-/// (RN's AsyncStorage equivalent), with a rolling history so the same song
-/// doesn't repeat too soon.
+/// "song of the day" for the Next Live card's back face, searched via
+/// MusicKit and cached per artist+calendar-day in `UserDefaults` (RN's
+/// AsyncStorage equivalent).
+///
+/// RN から意図して変えた点（「固定周期で回っている気がする」という指摘を
+/// 受けて）:
+/// - 選曲は RN の `seededRandom`（日付を種にした sin の小数部）をやめて
+///   普通の乱数にした。RN の式は点数が `sin(日付 + 曲番号×13)` なので、
+///   13日後には「今日のリストで1つ前の曲」がほぼ必ず選ばれるという周期が
+///   あった。その日の結果は日付キーでキャッシュするので、日付から同じ結果を
+///   再現できる必要はもう無い。
+/// - 履歴は「一巡するまで同じ曲を出さない」方式にした。RN は直近20件を
+///   除外していたが、候補も最大20曲なので2週間ほどで全曲が履歴に入り
+///   っぱなしになり、以降は除外が効かず2日連続で同じ曲が出ていた。
+/// - 候補を検索上位20件から30件に増やした。
 struct TodaySongResult: Codable, Equatable {
   let id: String
   let title: String
@@ -18,16 +29,14 @@ struct TodaySongResult: Codable, Equatable {
 }
 
 enum TodaySongCache {
-  private static let maxHistory = 20
+  /// 候補にする検索結果の件数。Apple Music の検索は1回25件までなので
+  /// 25件＋続きの5件の2回に分けて取る。
+  static let candidateLimit = 30
+  private static let firstPageLimit = 25
 
-  /// RN's `seededRandom`: `Math.sin(seed) * 10000`'s fractional part. Any
-  /// deterministic per-day pick would satisfy the actual user-facing
-  /// requirement, but this exact formula is trivial to port and keeps the
-  /// day-to-day song choice identical to what RN would have picked.
-  static func seededRandom(_ seed: Double) -> Double {
-    let x = sin(seed) * 10000
-    return x - x.rounded(.down)
-  }
+  /// 履歴は一巡ごとにリセットされるので候補数を超えることはないが、検索
+  /// 結果の入れ替わりで古い ID が残り続けないよう上限を置いておく。
+  private static let maxHistory = candidateLimit
 
   static func normalizeArtistName(_ value: String) -> String {
     value
@@ -71,17 +80,41 @@ enum TodaySongCache {
       return decoded
     }
 
-    guard let songs = try? await service.searchSongs(term: trimmedArtist, limit: 20), !songs.isEmpty else {
+    guard let songs = await searchCandidates(for: trimmedArtist, service: service), !songs.isEmpty else {
       return nil
+    }
+
+    var rng = SystemRandomNumberGenerator()
+    return commitDailyPick(from: songs, artistName: trimmedArtist, pickKey: pickKey, defaults: defaults, using: &rng)
+  }
+
+  /// 選曲から保存までを1つの処理として直列化する。同じアーティスト・同じ日の
+  /// 取得が並行すると（一覧を素早く出入りしたときなど）、どちらも検索前に
+  /// キャッシュを外し、それぞれ別の曲を乱数で選んで後勝ちで上書きしてしまう。
+  /// ここで改めてキャッシュを確認し、先に保存された曲があればそれを返す。
+  private static let pickLock = NSLock()
+
+  static func commitDailyPick<R: RandomNumberGenerator>(
+    from songs: [AppleMusicService.SongResult],
+    artistName trimmedArtist: String,
+    pickKey: String,
+    defaults: UserDefaults,
+    using rng: inout R
+  ) -> TodaySongResult? {
+    pickLock.lock()
+    defer { pickLock.unlock() }
+
+    if let cached = defaults.data(forKey: pickKey),
+       let decoded = try? JSONDecoder().decode(TodaySongResult.self, from: cached) {
+      return decoded
     }
 
     let historyForArtist = defaults.stringArray(forKey: historyKey(for: trimmedArtist)) ?? []
-    guard let selectedSong = pickSong(from: songs, matching: trimmedArtist, excluding: historyForArtist, dateKey: key) else {
+    guard let pick = pickSong(from: songs, matching: trimmedArtist, history: historyForArtist, using: &rng) else {
       return nil
     }
-
-    let nextHistory = Array(([selectedSong.id] + historyForArtist.filter { $0 != selectedSong.id }).prefix(maxHistory))
-    defaults.set(nextHistory, forKey: historyKey(for: trimmedArtist))
+    let selectedSong = pick.song
+    defaults.set(Array(pick.nextHistory.prefix(maxHistory)), forKey: historyKey(for: trimmedArtist))
 
     let result = TodaySongResult(
       id: selectedSong.id,
@@ -102,18 +135,44 @@ enum TodaySongCache {
     return result
   }
 
+  /// 1ページ目（25件）と続き（5件）を取り、ID で重複を除いて最大30件に
+  /// する。2ページ目の失敗は1ページ目だけで続行する。
+  private static func searchCandidates(
+    for artistName: String,
+    service: AppleMusicService
+  ) async -> [AppleMusicService.SongResult]? {
+    guard let firstPage = try? await service.searchSongs(term: artistName, limit: firstPageLimit) else {
+      return nil
+    }
+    guard firstPage.count == firstPageLimit else { return firstPage }
+    let secondPage = (try? await service.searchSongs(
+      term: artistName,
+      limit: candidateLimit - firstPageLimit,
+      offset: firstPageLimit
+    )) ?? []
+    var seen = Set<String>()
+    return (firstPage + secondPage).filter { seen.insert($0.id).inserted }.prefix(candidateLimit).map { $0 }
+  }
+
+  struct Pick {
+    let song: AppleMusicService.SongResult
+    /// 保存し直す履歴（新しい順）
+    let nextHistory: [String]
+  }
+
   /// Pure selection logic (no I/O), split out from `fetchTodaySong` so it's
   /// unit-testable: prefer songs whose artist name matches `artistName`
-  /// (falling back to the full unfiltered list if none match), then prefer
-  /// songs not in `excluding` (falling back to the full filtered list if
-  /// all have been shown before), then deterministically shuffle by
-  /// `dateKey`-seeded score and take the first.
-  static func pickSong(
+  /// (falling back to the full unfiltered list if none match), then pick
+  /// at random among songs not yet shown in the current round (`history`,
+  /// newest first). Once every candidate has been shown, a new round
+  /// starts: the history is reset, and the song shown last is skipped so
+  /// the round boundary can't produce the same song two days in a row.
+  static func pickSong<R: RandomNumberGenerator>(
     from songs: [AppleMusicService.SongResult],
     matching artistName: String,
-    excluding history: [String],
-    dateKey: String
-  ) -> AppleMusicService.SongResult? {
+    history: [String],
+    using rng: inout R
+  ) -> Pick? {
     guard !songs.isEmpty else { return nil }
 
     let normalizedTarget = normalizeArtistName(artistName)
@@ -127,12 +186,17 @@ enum TodaySongCache {
     let filteredSongs = exactMatched.isEmpty ? (looseMatched.isEmpty ? songs : looseMatched) : exactMatched
 
     let freshCandidates = filteredSongs.filter { !history.contains($0.id) }
-    let candidates = freshCandidates.isEmpty ? filteredSongs : freshCandidates
+    let isNewRound = freshCandidates.isEmpty
+    let candidates: [AppleMusicService.SongResult]
+    if isNewRound {
+      let withoutLastShown = filteredSongs.filter { $0.id != history.first }
+      candidates = withoutLastShown.isEmpty ? filteredSongs : withoutLastShown
+    } else {
+      candidates = freshCandidates
+    }
 
-    let seed = Double(dateKey.replacingOccurrences(of: "-", with: "")) ?? 0
-    let shuffled = candidates.enumerated()
-      .map { (item: $0.element, score: seededRandom(seed + Double($0.offset) * 13)) }
-      .sorted { $0.score < $1.score }
-    return shuffled.first?.item ?? candidates.first
+    guard let song = candidates.randomElement(using: &rng) else { return nil }
+    let base = isNewRound ? [] : history.filter { $0 != song.id }
+    return Pick(song: song, nextHistory: [song.id] + base)
   }
 }

@@ -281,7 +281,7 @@ struct ArtistDetailView: View {
   // 項目数が増えて画面幅をはみ出す場合があるため、Spacer で均等割りしていた
   // 従来のレイアウトから、左揃え固定間隔 + 横スクロールに変更
   private var statsRow: some View {
-    ScrollView(.horizontal, showsIndicators: false) {
+    EdgeFadingScrollView {
       HStack(spacing: 28) {
         statBlock(value: "\(records.count)", title: "Live") {
           Image("microphone")

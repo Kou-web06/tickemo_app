@@ -53,6 +53,21 @@ struct ShareSheetView: View {
   @State private var errorMessage: String?
   @State private var showingPaywall = false
   @State private var resolvedUsername: String?
+  // 「カードに載せる写真」（Ticket / CD のみ）。ライブ写真があるときだけ選べる。
+  // 候補の先頭がカードの初期表示（表紙）と同じ画像
+  @State private var photoOptions: [Data] = []
+  @State private var photoThumbnails: [UIImage] = []
+  @State private var selectedPhotoIndex = 0
+
+  private var showsPhotoPicker: Bool {
+    photoOptions.count > 1 && (cardType == .ticket || cardType == .cd)
+  }
+
+  /// カードに渡す写真。ライブ写真が無い記録は nil（従来どおり表紙）
+  private var selectedPhotoData: Data? {
+    guard photoOptions.count > 1, photoOptions.indices.contains(selectedPhotoIndex) else { return nil }
+    return photoOptions[selectedPhotoIndex]
+  }
 
   private var isLockedPreview: Bool {
     !PurchasesService.shared.isPremium && (cardType == .receipt || cardType == .cd)
@@ -76,6 +91,10 @@ struct ShareSheetView: View {
           cdColorPicker
         }
 
+        if showsPhotoPicker {
+          photoPicker
+        }
+
         Text("where to share?")
           .font(appFont.bold(16))
 
@@ -95,6 +114,17 @@ struct ShareSheetView: View {
       .task {
         resolvedUsername = UserProfileFetching.fetchOrCreateUserProfile(context: viewContext).username
         try? viewContext.save()
+      }
+      .task {
+        let options = ShareCardData.photoOptions(
+          storedCover: record.storedCoverImage?.data,
+          gallery: record.galleryImages.compactMap(\.data)
+        )
+        photoOptions = options
+        guard options.count > 1 else { return }
+        photoThumbnails = await Task.detached(priority: .userInitiated) {
+          options.compactMap { UIImage(data: $0)?.preparingThumbnail(of: CGSize(width: 120, height: 120)) }
+        }.value
       }
       .sheet(isPresented: $showingPaywall) {
         PaywallView()
@@ -149,9 +179,9 @@ struct ShareSheetView: View {
   private func cardView(blurredBackground: Bool) -> some View {
     switch cardType {
     case .ticket:
-      ShareTicketCardView(record: record, showsBlurredBackground: blurredBackground)
+      ShareTicketCardView(record: record, showsBlurredBackground: blurredBackground, photoData: selectedPhotoData)
     case .cd:
-      ShareCDCardView(record: record, textColor: cdTextColor, username: resolvedUsername)
+      ShareCDCardView(record: record, textColor: cdTextColor, username: resolvedUsername, photoData: selectedPhotoData)
     case .receipt:
       ShareReceiptCardView(record: record, username: resolvedUsername)
     }
@@ -225,6 +255,42 @@ struct ShareSheetView: View {
     .buttonStyle(.plain)
   }
 
+  // MARK: - Photo picker
+
+  private var photoPicker: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      Text("カードに載せる写真")
+        .font(appFont.bold(12))
+        .foregroundStyle(Color(white: 0.45))
+
+      EdgeFadingScrollView {
+        HStack(spacing: 10) {
+          ForEach(Array(photoThumbnails.enumerated()), id: \.offset) { index, image in
+            Button {
+              HapticsPreferenceService.shared.impact(.light)
+              withAnimation(.easeInOut(duration: 0.2)) {
+                selectedPhotoIndex = index
+              }
+            } label: {
+              Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 52, height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                  RoundedRectangle(cornerRadius: 10)
+                    .stroke(selectedPhotoIndex == index ? Color(white: 0.2) : Color.clear, lineWidth: 3)
+                )
+                .padding(2)
+            }
+            .buttonStyle(.plain)
+          }
+        }
+      }
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+
   // MARK: - Share actions row
 
   private var actionButtons: some View {
@@ -283,9 +349,9 @@ struct ShareSheetView: View {
   private func currentCardKind(blurredBackground: Bool) -> ShareCardKind {
     switch cardType {
     case .ticket:
-      .ticket(record: record, blurredBackground: blurredBackground)
+      .ticket(record: record, blurredBackground: blurredBackground, photoData: selectedPhotoData)
     case .cd:
-      .cd(record: record, textColor: cdTextColor, username: resolvedUsername)
+      .cd(record: record, textColor: cdTextColor, username: resolvedUsername, photoData: selectedPhotoData)
     case .receipt:
       .receipt(record: record, username: resolvedUsername)
     }

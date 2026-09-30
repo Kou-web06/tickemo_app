@@ -12,6 +12,12 @@ struct NotificationSettingsView: View {
   @State private var beforeLive = LiveNotificationSettings.shared.isEnabled(.beforeLive)
   @State private var onDay = LiveNotificationSettings.shared.isEnabled(.onDay)
   @State private var nextDayReview = LiveNotificationSettings.shared.isEnabled(.nextDayReview)
+  @State private var seatAnnounce = LiveNotificationSettings.shared.isEnabled(.seatAnnounce)
+  @State private var ticketApply = LiveNotificationSettings.shared.isEnabled(.ticketApply)
+  @State private var paymentDue = LiveNotificationSettings.shared.isEnabled(.paymentDue)
+  @State private var showingPaywall = false
+
+  private var isPremium: Bool { PurchasesService.shared.isPremium }
 
   private var isDarkMode: Bool {
     ThemePreferenceService.shared.effectiveIsDark(systemIsDark: systemColorScheme == .dark)
@@ -59,6 +65,9 @@ struct NotificationSettingsView: View {
           .background(palette.cardBackground)
           .clipShape(RoundedRectangle(cornerRadius: 20))
           .shadow(color: palette.sectionShadow.opacity(0.16), radius: 8, x: 0, y: 2)
+
+          ticketScheduleSection
+            .padding(.top, 24)
         }
         .padding(.horizontal, 20)
         .padding(.top, 24)
@@ -77,8 +86,78 @@ struct NotificationSettingsView: View {
         }
       }
     }
-    .presentationDetents([.height(420), .medium])
+    .sheet(isPresented: $showingPaywall) {
+      PaywallView()
+    }
+    // チケットの予定の3項目を足したぶん高さを広げた（元は 420pt）
+    .presentationDetents([.height(680), .large])
     .presentationDragIndicator(.visible)
+  }
+
+  // MARK: - チケットの予定（Plus）
+
+  private var ticketScheduleSection: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      HStack(spacing: 6) {
+        Text("チケットの予定")
+          .font(appFont.bold(13))
+          .foregroundStyle(palette.primaryText)
+        Text("Plus")
+          .font(appFont.bold(10))
+          .foregroundStyle(.white)
+          .padding(.horizontal, 6)
+          .padding(.vertical, 2)
+          .background(Capsule().fill(accent))
+      }
+      .padding(.horizontal, 8)
+      .padding(.bottom, 4)
+
+      Text("チケットの編集画面で入力した日時をもとに通知します。")
+        .font(appFont.regular(12))
+        .foregroundStyle(palette.secondaryText)
+        .padding(.horizontal, 8)
+        .padding(.bottom, 14)
+
+      VStack(spacing: 0) {
+        toggleRow(
+          title: "座席発表",
+          desc: "座席がわかる時刻に通知します",
+          isOn: $seatAnnounce,
+          kind: .seatAnnounce
+        )
+        Rectangle().fill(palette.rowBorder).frame(height: 0.5)
+        toggleRow(
+          title: "チケット申込",
+          desc: "申込の30分前に通知します",
+          isOn: $ticketApply,
+          kind: .ticketApply
+        )
+        Rectangle().fill(palette.rowBorder).frame(height: 0.5)
+        toggleRow(
+          title: "支払い期限",
+          desc: "期限の前日19時と3時間前に通知します",
+          isOn: $paymentDue,
+          kind: .paymentDue
+        )
+      }
+      .disabled(!isPremium)
+      .opacity(isPremium ? 1 : 0.5)
+      .background(palette.cardBackground)
+      .clipShape(RoundedRectangle(cornerRadius: 20))
+      .shadow(color: palette.sectionShadow.opacity(0.16), radius: 8, x: 0, y: 2)
+      .overlay {
+        // Plus でない場合はカード全体を購入画面への入口にする
+        if !isPremium {
+          Button {
+            showingPaywall = true
+          } label: {
+            Color.clear.contentShape(Rectangle())
+          }
+          .buttonStyle(.plain)
+          .accessibilityLabel("Plusでチケットの予定の通知を使う")
+        }
+      }
+    }
   }
 
   private func toggleRow(

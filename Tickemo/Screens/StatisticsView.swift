@@ -156,7 +156,7 @@ struct StatisticsView: View {
   // MARK: - Year chips
 
   private var yearChips: some View {
-    ScrollView(.horizontal, showsIndicators: false) {
+    EdgeFadingScrollView {
       HStack(spacing: 10) {
         yearChip(title: "All-Time", isActive: selectedYear == nil) { selectedYear = nil }
         ForEach(availableYears, id: \.self) { year in
@@ -278,7 +278,7 @@ struct StatisticsView: View {
       if items.isEmpty {
         emptyRow
       } else {
-        ScrollView(.horizontal, showsIndicators: false) {
+        EdgeFadingScrollView {
           HStack(spacing: 12) {
             ForEach(items) { entry in
               NavigationLink(value: ArtistRoute(name: entry.name)) {
@@ -377,7 +377,7 @@ struct StatisticsView: View {
       if items.isEmpty {
         emptyRow
       } else {
-        ScrollView(.horizontal, showsIndicators: false) {
+        EdgeFadingScrollView {
           HStack(alignment: .top, spacing: 24) {
             ForEach(items) { item in
               TopSongCardView(

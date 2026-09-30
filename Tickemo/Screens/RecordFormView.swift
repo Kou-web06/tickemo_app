@@ -20,9 +20,11 @@ private let ticketPricePresets: [Int] = [3000, 5000, 8000, 10000, 15000]
 /// the catalog, no free-typed artist" rule via `hasDictionaryRegistered`.
 /// Sports lives get RN's dual photo treatment: the single cover-image slot
 /// (orderIndex 0) doubles as "Player / Team Photo", just relabeled, and a
-/// separate up-to-6 "Game Photos" gallery (orderIndex 1...6) ports
+/// separate "Game Photos" gallery (orderIndex 1...) ports
 /// `LiveEditScreen.tsx`'s sports-only `imageUrls` grid — both ride the same
 /// `CD_LiveImage`/CloudKit CKAsset sync path, no schema change needed.
+/// RN と違い、この写真欄は全ライブ種別で使える「写真」に広げてある
+/// （ライブ詳細に写真を貼りたいという要望。枚数は LivePhotoGallery）。
 struct RecordFormView: View {
   private let record: CD_ChekiRecord?
 
@@ -50,11 +52,20 @@ struct RecordFormView: View {
   @State private var setlistItems: [SetlistDraftItem]
   @State private var memo: String
   @State private var qrCode: String
+  // チケットの予定（TicketSchedule、Plus 限定）。値があるものだけ入る。
+  // DatePicker は他の日付と同じくフォーム全体の UTC 固定の上で動くので、
+  // ここの Date は日本時間の壁時計を UTC として持っている
+  @State private var ticketSchedules: [TicketScheduleKind: Date]
+  @State private var showingPaywall = false
 
   @State private var selectedPhotoItem: PhotosPickerItem?
   @State private var coverImageData: Data?
-  @State private var selectedGamePhotoItem: PhotosPickerItem?
-  @State private var gamePhotosData: [Data]
+  // ライブ写真（LivePhotoGallery）。元はスポーツの「観戦写真」専用だった
+  @State private var selectedGalleryItems: [PhotosPickerItem] = []
+  @State private var galleryPhotosData: [Data]
+  // 保存のたびに全写真を作り直して iCloud に再アップロードしないよう、
+  // 写真を触ったときだけ書き直す
+  @State private var galleryPhotosChanged = false
   @State private var showingDiscardConfirmation = false
 
   // セットリスト OCR「まとめて追加」の呈示は Form レベルにアンカーする。
@@ -82,11 +93,30 @@ struct RecordFormView: View {
     } ?? [])
     _memo = State(initialValue: record?.memo ?? "")
     _qrCode = State(initialValue: record?.qrCode ?? "")
-    _coverImageData = State(initialValue: record?.coverImageData)
-    _gamePhotosData = State(initialValue: record?.galleryImages.compactMap(\.data) ?? [])
+    var schedules: [TicketScheduleKind: Date] = [:]
+    if let record {
+      for kind in TicketScheduleKind.allCases {
+        if let value = DateFormatting.dateTime(from: TicketSchedule.rawValue(kind, of: record)) {
+          schedules[kind] = value
+        }
+      }
+    }
+    _ticketSchedules = State(initialValue: schedules)
+    _coverImageData = State(initialValue: record?.storedCoverImage?.data)
+    _galleryPhotosData = State(initialValue: record?.galleryImages.compactMap(\.data) ?? [])
   }
 
-  private static let maxGamePhotos = 6
+  private var galleryRemaining: Int {
+    LivePhotoGallery.remaining(
+      currentCount: galleryPhotosData.count,
+      isPremium: PurchasesService.shared.isPremium,
+      liveType: liveType
+    )
+  }
+
+  private var gallerySectionTitle: String {
+    isSportsLive ? "観戦写真" : "写真"
+  }
 
   private static func initialArtistEntries(for record: CD_ChekiRecord?) -> [ArtistEntry] {
     guard let record else { return [ArtistEntry(name: "", imageUrl: nil)] }
@@ -192,9 +222,6 @@ struct RecordFormView: View {
               let keep = artistEntries.first { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty } ?? artistEntries[0]
               artistEntries = [keep]
             }
-            if newValue != .sports {
-              gamePhotosData = []
-            }
           }
           DatePicker("日付", selection: $date, displayedComponents: .date)
         }
@@ -211,7 +238,7 @@ struct RecordFormView: View {
         Section("チケット料金") {
           TextField("金額", text: $ticketPriceText)
             .keyboardType(.numberPad)
-          ScrollView(.horizontal, showsIndicators: false) {
+          EdgeFadingScrollView {
             HStack {
               ForEach(ticketPricePresets, id: \.self) { preset in
                 Button("¥\(preset)") { ticketPriceText = String(preset) }
@@ -225,6 +252,23 @@ struct RecordFormView: View {
         Section("時間") {
           TimeWheelPickerField(label: "開場", value: $startTime)
           TimeWheelPickerField(label: "開演", value: $endTime)
+        }
+        .listRowBackground(rowBg)
+
+        Section {
+          ticketScheduleSection
+        } header: {
+          HStack(spacing: 6) {
+            Text("チケットの予定")
+            Text("Plus")
+              .font(.caption2.weight(.bold))
+              .foregroundStyle(.white)
+              .padding(.horizontal, 6)
+              .padding(.vertical, 1)
+              .background(Capsule().fill(Color(red: 0.604, green: 0.486, blue: 0.973)))
+          }
+        } footer: {
+          Text("入力した日時はカレンダーに表示され、通知でお知らせします。")
         }
         .listRowBackground(rowBg)
 
@@ -263,12 +307,14 @@ struct RecordFormView: View {
         }
         .listRowBackground(rowBg)
 
-        if isSportsLive {
-          Section("観戦写真") {
-            gamePhotosGrid
-          }
-          .listRowBackground(rowBg)
+        Section {
+          galleryPhotosGrid
+        } header: {
+          Text(gallerySectionTitle)
+        } footer: {
+          galleryFooter
         }
+        .listRowBackground(rowBg)
 
         Section {
           TextField("感想", text: $memo, axis: .vertical)
@@ -305,19 +351,27 @@ struct RecordFormView: View {
       } message: {
         Text("変更内容は失われます。")
       }
+      // チケットの予定（Plus）の入口。OCR と同じく Section の外にアンカーする
+      .sheet(isPresented: $showingPaywall) {
+        PaywallView()
+      }
       .onChange(of: selectedPhotoItem) { _, newItem in
         Task {
           guard let newItem, let data = try? await newItem.loadTransferable(type: Data.self) else { return }
           coverImageData = ImageCropping.squareCroppedJPEGData(from: data) ?? data
         }
       }
-      .onChange(of: selectedGamePhotoItem) { _, newItem in
+      .onChange(of: selectedGalleryItems) { _, newItems in
+        guard !newItems.isEmpty else { return }
         Task {
-          guard let newItem, gamePhotosData.count < Self.maxGamePhotos,
-                let data = try? await newItem.loadTransferable(type: Data.self)
-          else { return }
-          gamePhotosData.append(ImageCropping.downsizedJPEGData(from: data) ?? data)
-          selectedGamePhotoItem = nil
+          for item in newItems {
+            guard galleryRemaining > 0,
+                  let data = try? await item.loadTransferable(type: Data.self)
+            else { continue }
+            galleryPhotosData.append(ImageCropping.downsizedJPEGData(from: data) ?? data)
+            galleryPhotosChanged = true
+          }
+          selectedGalleryItems = []
         }
       }
       // OCR「まとめて追加」の呈示系は Form 直付け（Section の外＝安定アンカー）。
@@ -340,6 +394,55 @@ struct RecordFormView: View {
     // "HH:mm" strings edited via TimeWheelPickerField, so they need no such
     // pinning.
     .environment(\.timeZone, DateFormatting.timeZone)
+  }
+
+  // MARK: - Ticket schedule section
+
+  @ViewBuilder
+  private var ticketScheduleSection: some View {
+    if PurchasesService.shared.isPremium {
+      ForEach(TicketScheduleKind.allCases) { kind in
+        Toggle(kind.label, isOn: scheduleEnabledBinding(kind))
+        if let value = ticketSchedules[kind] {
+          // ラベルが長いと「チケット申込の日時」だけ2行に折り返して
+          // 崩れるので、直上のスイッチで種類が分かる前提で短くしている
+          DatePicker(
+            "日時",
+            selection: Binding(get: { value }, set: { ticketSchedules[kind] = $0 }),
+            displayedComponents: [.date, .hourAndMinute]
+          )
+        }
+      }
+    } else {
+      // Plus を解約した後も、入力済みの値は見えるようにしておく（編集と
+      // 通知だけ止める）
+      ForEach(TicketScheduleKind.allCases) { kind in
+        if let value = ticketSchedules[kind] {
+          LabeledContent(kind.label, value: "\(DateFormatting.dottedString(from: value)) \(DateFormatting.timeString(from: value))")
+        }
+      }
+      Button {
+        showingPaywall = true
+      } label: {
+        HugeIconLabel(icon: HugeIcons.squareLock02, size: 15) {
+          Text("Plusで座席発表・チケット申込・支払い期限を登録")
+        }
+      }
+    }
+  }
+
+  private func scheduleEnabledBinding(_ kind: TicketScheduleKind) -> Binding<Bool> {
+    Binding(
+      get: { ticketSchedules[kind] != nil },
+      set: { enabled in
+        ticketSchedules[kind] = enabled ? defaultScheduleDate() : nil
+      }
+    )
+  }
+
+  /// スイッチを入れた直後の初期値。日本時間の今日の 10:00
+  private func defaultScheduleDate() -> Date {
+    TicketSchedule.defaultWallClock(now: Date())
   }
 
   // MARK: - Artist section
@@ -425,11 +528,11 @@ struct RecordFormView: View {
     }
   }
 
-  // MARK: - Game photos (sports lives only, up to 6)
+  // MARK: - Photos (LivePhotoGallery: 無料3枚 / スポーツ無料6枚 / Plus 20枚)
 
-  private var gamePhotosGrid: some View {
+  private var galleryPhotosGrid: some View {
     LazyVGrid(columns: [GridItem(.adaptive(minimum: 84, maximum: 96), spacing: 8)], spacing: 8) {
-      ForEach(Array(gamePhotosData.enumerated()), id: \.offset) { index, data in
+      ForEach(Array(galleryPhotosData.enumerated()), id: \.offset) { index, data in
         if let uiImage = UIImage(data: data) {
           ZStack(alignment: .topTrailing) {
             Image(uiImage: uiImage)
@@ -438,7 +541,8 @@ struct RecordFormView: View {
               .frame(width: 88, height: 88)
               .clipShape(RoundedRectangle(cornerRadius: 8))
             Button {
-              gamePhotosData.remove(at: index)
+              galleryPhotosData.remove(at: index)
+              galleryPhotosChanged = true
             } label: {
               HugeIconView(icon: HugeIcons.cancelCircle, size: 20)
                 .foregroundStyle(.red)
@@ -450,8 +554,12 @@ struct RecordFormView: View {
         }
       }
 
-      if gamePhotosData.count < Self.maxGamePhotos {
-        PhotosPicker(selection: $selectedGamePhotoItem, matching: .images) {
+      if galleryRemaining > 0 {
+        PhotosPicker(
+          selection: $selectedGalleryItems,
+          maxSelectionCount: galleryRemaining,
+          matching: .images
+        ) {
           RoundedRectangle(cornerRadius: 8)
             .strokeBorder(Color.secondary.opacity(0.35), lineWidth: 1)
             .frame(width: 88, height: 88)
@@ -463,6 +571,22 @@ struct RecordFormView: View {
       }
     }
     .padding(.vertical, 4)
+  }
+
+  @ViewBuilder
+  private var galleryFooter: some View {
+    let limit = LivePhotoGallery.limit(isPremium: PurchasesService.shared.isPremium, liveType: liveType)
+    if PurchasesService.shared.isPremium {
+      Text("\(limit)枚まで追加できます。ライブ詳細に表示されます。")
+    } else {
+      VStack(alignment: .leading, spacing: 6) {
+        Text("無料プランは\(limit)枚まで追加できます。ライブ詳細に表示されます。")
+        Button("Plusなら\(LivePhotoGallery.plusLimit)枚まで追加できます") {
+          showingPaywall = true
+        }
+        .font(.footnote.weight(.semibold))
+      }
+    }
   }
 
   // MARK: - Save
@@ -492,8 +616,15 @@ struct RecordFormView: View {
     target.memo = memo.isEmpty ? nil : memo
     target.qrCode = qrCode.isEmpty ? nil : qrCode
 
+    // Plus でない間は編集できないので、既存の値には触らない
+    if PurchasesService.shared.isPremium {
+      for kind in TicketScheduleKind.allCases {
+        TicketSchedule.setRawValue(ticketSchedules[kind].map(DateFormatting.dateTimeString(from:)), kind, of: target)
+      }
+    }
+
     applyCoverImage(to: target)
-    applyGamePhotos(to: target)
+    applyGalleryPhotos(to: target)
 
     try? viewContext.save()
     HapticsPreferenceService.shared.notify(.success)
@@ -555,12 +686,12 @@ struct RecordFormView: View {
   private func applyCoverImage(to target: CD_ChekiRecord) {
     guard let coverImageData else {
       // Explicit removal: drop the existing cover image row, if any.
-      if let existing = target.coverImage {
+      if let existing = target.storedCoverImage {
         viewContext.delete(existing)
       }
       return
     }
-    let image = target.coverImage ?? CD_LiveImage(context: viewContext)
+    let image = target.storedCoverImage ?? CD_LiveImage(context: viewContext)
     if image.id == nil {
       image.id = UUID()
     }
@@ -573,12 +704,12 @@ struct RecordFormView: View {
   // to-many-relationship-as-ordered-list problem: simpler than diffing
   // against the previous set, and correct here because orderIndex is only
   // ever assigned from this array's current order.
-  private func applyGamePhotos(to target: CD_ChekiRecord) {
+  private func applyGalleryPhotos(to target: CD_ChekiRecord) {
+    guard galleryPhotosChanged else { return }
     for existing in target.galleryImages {
       viewContext.delete(existing)
     }
-    guard isSportsLive else { return }
-    for (index, data) in gamePhotosData.enumerated() {
+    for (index, data) in galleryPhotosData.enumerated() {
       let image = CD_LiveImage(context: viewContext)
       image.id = UUID()
       image.orderIndex = Int16(index + 1)

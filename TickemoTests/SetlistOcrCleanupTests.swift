@@ -109,4 +109,33 @@ final class SetlistOcrCleanupTests: XCTestCase {
     XCTAssertEqual(items.map(\.text), ["Idol", "--"])
     XCTAssertEqual(items.map(\.isSuspicious), [false, true])
   }
+
+  // MARK: - SetlistMarkerInsertion
+
+  func testMarkerIsInsertedAfterTheCursorLineWithoutSplittingIt() {
+    // カーソルが「曲A」の途中（1文字目の後）でも、行の末尾に入る
+    let result = SetlistMarkerInsertion.inserting("ENCORE", into: "曲A\n曲B", cursorUTF16: 1)
+    XCTAssertEqual(result.text, "曲A\nENCORE\n曲B")
+    XCTAssertEqual(result.cursorUTF16, ("曲A\nENCORE" as NSString).length)
+  }
+
+  func testRepeatedMarkersStackBelowEachOther() {
+    var state = SetlistMarkerInsertion.inserting("ENCORE", into: "曲A\n曲B", cursorUTF16: 0)
+    state = SetlistMarkerInsertion.inserting("MC", into: state.text, cursorUTF16: state.cursorUTF16)
+    XCTAssertEqual(state.text, "曲A\nENCORE\nMC\n曲B")
+  }
+
+  func testMarkerAtEndAndIntoEmptyText() {
+    XCTAssertEqual(SetlistMarkerInsertion.inserting("MC", into: "曲A", cursorUTF16: 99).text, "曲A\nMC")
+    let empty = SetlistMarkerInsertion.inserting("MC", into: "", cursorUTF16: 0)
+    XCTAssertEqual(empty.text, "MC")
+    XCTAssertEqual(empty.cursorUTF16, 2)
+  }
+
+  func testCursorOffsetsAreUTF16SoEmojiDoNotBreakPositions() {
+    // 絵文字は UTF-16 で2単位。UITextView の selectedRange と同じ数え方
+    let text = "🎸曲\n次"
+    let result = SetlistMarkerInsertion.inserting("MC", into: text, cursorUTF16: 3)
+    XCTAssertEqual(result.text, "🎸曲\nMC\n次")
+  }
 }

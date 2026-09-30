@@ -27,6 +27,14 @@ enum ShareCardData {
   /// System-share caption text. Uses the singular `artist` field (not the
   /// joined multi-artist list shown on the card itself) — matches RN's
   /// handleSystemShare exactly, including the trailing " \n #Tickemo".
+  /// シェア画面の「カードに載せる写真」の候補。表紙（`orderIndex == 0`）が
+  /// あれば先頭、続けてライブ写真。表紙が無い記録は今も写真1枚目が表紙の
+  /// 代わりに使われる（`coverImageData`）ので、写真だけを並べれば重複しない。
+  /// 先頭がカードの初期表示と同じ画像になる。
+  static func photoOptions(storedCover: Data?, gallery: [Data]) -> [Data] {
+    (storedCover.map { [$0] } ?? []) + gallery
+  }
+
   static func systemShareCaptionText(date: String?, artist: String?, liveName: String?) -> String {
     "\(date ?? "") \(artist ?? "") - \(liveName ?? "") \n #Tickemo"
   }

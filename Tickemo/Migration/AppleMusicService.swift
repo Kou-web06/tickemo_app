@@ -201,8 +201,10 @@ final class AppleMusicService {
     }
   }
 
-  private func cacheKey(term: String, limit: Int) -> String {
-    "\(term.trimmingCharacters(in: .whitespaces).lowercased())::\(limit)::\(Self.storefront)::\(preferredLanguageCode())"
+  private func cacheKey(term: String, limit: Int, offset: Int = 0) -> String {
+    let base = "\(term.trimmingCharacters(in: .whitespaces).lowercased())::\(limit)::\(Self.storefront)::\(preferredLanguageCode())"
+    // offset 0 は従来と同じキーのまま（既存のキャッシュをそのまま使える）
+    return offset == 0 ? base : "\(base)::offset\(offset)"
   }
 
   private static let releaseDateFormatter: DateFormatter = {
@@ -212,14 +214,18 @@ final class AppleMusicService {
     return f
   }()
 
-  private func catalogSearchURL(term: String, types: String, limit: Int) -> URL? {
+  private func catalogSearchURL(term: String, types: String, limit: Int, offset: Int = 0) -> URL? {
     var comps = URLComponents(string: "https://api.music.apple.com/v1/catalog/\(Self.storefront)/search")
-    comps?.queryItems = [
+    var items = [
       URLQueryItem(name: "term", value: term),
       URLQueryItem(name: "types", value: types),
       URLQueryItem(name: "l", value: preferredLanguageCode()),
       URLQueryItem(name: "limit", value: "\(limit)"),
     ]
+    if offset > 0 {
+      items.append(URLQueryItem(name: "offset", value: "\(offset)"))
+    }
+    comps?.queryItems = items
     return comps?.url
   }
 
@@ -278,13 +284,15 @@ final class AppleMusicService {
     }
   }
 
-  func searchSongs(term: String, limit: Int = 10) async throws -> [SongResult] {
+  /// `limit` は Apple Music API の上限で1回あたり最大25件。それ以上欲しい
+  /// ときは `offset` をずらして複数回呼ぶ。
+  func searchSongs(term: String, limit: Int = 10, offset: Int = 0) async throws -> [SongResult] {
     guard !term.isEmpty else { return [] }
     await ensureAuthorized()
 
-    let key = cacheKey(term: term, limit: limit)
+    let key = cacheKey(term: term, limit: limit, offset: offset)
     return try await SearchCache.shared.songs(for: key) { [self] in
-      guard let url = catalogSearchURL(term: term, types: "songs", limit: limit) else { return [] }
+      guard let url = catalogSearchURL(term: term, types: "songs", limit: limit, offset: offset) else { return [] }
       let response = try await MusicDataRequest(urlRequest: URLRequest(url: url)).response()
       let decoded = try JSONDecoder().decode(AMSearchResponse.self, from: response.data)
 

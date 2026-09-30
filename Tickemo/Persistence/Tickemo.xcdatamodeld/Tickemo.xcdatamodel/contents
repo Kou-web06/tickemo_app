@@ -14,9 +14,12 @@
         <attribute name="liveName" optional="YES" attributeType="String"/>
         <attribute name="liveType" optional="YES" attributeType="String"/>
         <attribute name="memo" optional="YES" attributeType="String"/>
+        <attribute name="paymentDueAt" optional="YES" attributeType="String"/>
         <attribute name="qrCode" optional="YES" attributeType="String"/>
         <attribute name="seat" optional="YES" attributeType="String"/>
+        <attribute name="seatAnnounceAt" optional="YES" attributeType="String"/>
         <attribute name="startTime" optional="YES" attributeType="String"/>
+        <attribute name="ticketApplyAt" optional="YES" attributeType="String"/>
         <attribute name="ticketPrice" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="venue" optional="YES" attributeType="String"/>
         <attribute name="venueAddress" optional="YES" attributeType="String"/>

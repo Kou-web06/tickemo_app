@@ -112,6 +112,8 @@ enum LiveNotificationService {
     let title: String
     let body: String
     let date: Date
+    /// 同じ種類の通知が1公演に複数ある場合（支払い期限）の識別子の後ろ
+    var identifierSuffix = ""
   }
 
   /// Mirrors RN's `getScheduleTargets`: day-before at 19:00 JST, day-of 15
@@ -151,6 +153,19 @@ enum LiveNotificationService {
       ))
     }
 
+    // チケットの予定（Plus 限定。Plus かどうかの判定は schedule 側）
+    for entry in TicketSchedule.entries(for: record) {
+      for reminder in TicketSchedule.reminders(for: entry, liveName: liveName) {
+        result.append(Target(
+          kind: LiveNotificationSettings.Kind(reminder.kind),
+          title: reminder.title,
+          body: reminder.body,
+          date: reminder.fireDate,
+          identifierSuffix: reminder.suffix
+        ))
+      }
+    }
+
     return result
   }
 
@@ -164,11 +179,15 @@ enum LiveNotificationService {
     let center = UNUserNotificationCenter.current()
     let settings = LiveNotificationSettings.shared
     let now = Date()
+    // Plus を解約したらチケットの予定の通知だけ止める（入力済みの値は残す）。
+    // Plus 状態が変わったときは PurchasesService から作り直しが呼ばれる
+    let isPremium = PurchasesService.shared.isPremium
 
     let allTargets = records
       .flatMap { record in targets(for: record).map { (record, $0) } }
       .filter { $0.1.date > now }
       .filter { settings.isEnabled($0.1.kind) }
+      .filter { isPremium || !$0.1.kind.isPlusOnly }
       .sorted { $0.1.date < $1.1.date }
       .prefix(maxScheduled)
 
@@ -189,7 +208,8 @@ enum LiveNotificationService {
         from: target.date
       )
       let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-      let identifier = "\(record.id?.uuidString ?? UUID().uuidString)_\(target.kind.rawValue)"
+      let suffix = target.identifierSuffix.isEmpty ? "" : "_\(target.identifierSuffix)"
+      let identifier = "\(record.id?.uuidString ?? UUID().uuidString)_\(target.kind.rawValue)\(suffix)"
       center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: trigger))
     }
 
