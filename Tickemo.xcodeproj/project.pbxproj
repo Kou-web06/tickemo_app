@@ -1477,8 +1477,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.90.2;
+				kind = exactVersion;
+				version = 5.103.2;
 			};
 		};
 		E04D034D3042EBE70073058E /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
