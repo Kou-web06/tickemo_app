@@ -10,7 +10,7 @@ enum SeatResolver {
     let trimmed = input.raw.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return .needsPicker }
 
-    // アリーナの細ブロック（B3 など）は常設図に無い
+    // アリーナの細ブロック（B3 など）は常設図に無い（ステップ3まで現状維持）
     if input.tierHint == .arena, input.arenaBlockLabel != nil {
       return .unsupported
     }
@@ -43,6 +43,7 @@ enum SeatResolver {
       return .needsPicker
     }
 
+    // 通路番号は側ヒントより優先（チケットの通路が位置の本情報）
     if let aisle = input.aisle,
        let block = tier.blocks.first(where: { $0.aisle == aisle }) {
       return .resolved(.init(
@@ -53,19 +54,33 @@ enum SeatResolver {
       ))
     }
 
-    // バルコニーは通路番号が無いので側ヒントだけで粗い帯へ
-    if tierHint == .balcony, let side = input.sideHint {
-      if let block = balconyBlock(in: tier, side: side) {
-        return .resolved(.init(
-          layoutId: layout.id,
-          tierId: tier.id,
-          blockId: block.id,
-          input: input
-        ))
-      }
+    // 通路が無いときは側ヒントで粗い帯へ（バルコニー / スタンド）
+    if let side = input.sideHint,
+       let block = coarseBlock(in: tier, side: side, tierHint: tierHint) {
+      return .resolved(.init(
+        layoutId: layout.id,
+        tierId: tier.id,
+        blockId: block.id,
+        input: input
+      ))
     }
 
     return .needsPicker
+  }
+
+  private static func coarseBlock(
+    in tier: VenueTier,
+    side: SeatInput.SideHint,
+    tierHint: SeatInput.TierHint
+  ) -> VenueBlock? {
+    if tierHint == .balcony {
+      return balconyBlock(in: tier, side: side)
+    }
+
+    let matched = blocksMatchingSide(in: tier, side: side)
+    guard !matched.isEmpty else { return nil }
+    // 側の中央付近を代表ブロックにする
+    return matched[matched.count / 2]
   }
 
   private static func balconyBlock(in tier: VenueTier, side: SeatInput.SideHint) -> VenueBlock? {
@@ -76,6 +91,27 @@ enum SeatResolver {
       return tier.blocks.first { $0.id == "balcony-3b" }
     case .home, .center:
       return tier.blocks.first { $0.id == "balcony-home-1b" }
+    }
+  }
+
+  private static func blocksMatchingSide(
+    in tier: VenueTier,
+    side: SeatInput.SideHint
+  ) -> [VenueBlock] {
+    let needles: [String]
+    switch side {
+    case .firstBase:
+      needles = ["1塁"]
+    case .thirdBase:
+      needles = ["3塁"]
+    case .home:
+      needles = ["正面"]
+    case .center:
+      needles = ["中央", "正面"]
+    }
+    return tier.blocks.filter { block in
+      guard let blockSide = block.side else { return false }
+      return needles.contains { blockSide.contains($0) }
     }
   }
 }
