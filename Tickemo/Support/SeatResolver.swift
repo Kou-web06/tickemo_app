@@ -10,21 +10,8 @@ enum SeatResolver {
     let trimmed = input.raw.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return .needsPicker }
 
-    // アリーナの細ブロック（B3 など）は常設図に無い（ステップ3まで現状維持）
-    if input.tierHint == .arena, input.arenaBlockLabel != nil {
-      return .unsupported
-    }
     if input.tierHint == .arena {
-      guard let tier = layout.tier(id: "arena"),
-            let block = tier.blocks.first else {
-        return .needsPicker
-      }
-      return .resolved(.init(
-        layoutId: layout.id,
-        tierId: tier.id,
-        blockId: block.id,
-        input: input
-      ))
+      return resolveArena(input: input, layout: layout)
     }
 
     guard let tierHint = input.tierHint else {
@@ -66,6 +53,34 @@ enum SeatResolver {
     }
 
     return .needsPicker
+  }
+
+  /// 常設図はアリーナ概位置 1 領域のみ。細ブロック表記は概位置へフォールバック。
+  private static func resolveArena(
+    input: SeatInput,
+    layout: VenueLayout
+  ) -> SeatResolution {
+    guard let overview = arenaOverview(in: layout) else {
+      return .needsPicker
+    }
+    let seat = SeatResolution.ResolvedSeat(
+      layoutId: layout.id,
+      tierId: overview.tier.id,
+      blockId: overview.block.id,
+      input: input
+    )
+    if input.arenaBlockLabel != nil {
+      return .approximate(seat)
+    }
+    return .resolved(seat)
+  }
+
+  static func arenaOverview(in layout: VenueLayout) -> (tier: VenueTier, block: VenueBlock)? {
+    guard let tier = layout.tier(id: "arena"),
+          let block = tier.blocks.first else {
+      return nil
+    }
+    return (tier, block)
   }
 
   private static func coarseBlock(

@@ -31,9 +31,11 @@ struct SeatInput: Equatable {
 /// 座席文字列 → レイアウト上の位置。ブロック ID まで（列・番の 3D 座標は将来）。
 enum SeatResolution: Equatable {
   case resolved(ResolvedSeat)
+  /// 常設図では細かく表せないが、概位置ブロックまでは落とせる（例: 公演別アリーナ細ブロック → アリーナ概位置）。
+  case approximate(ResolvedSeat)
   /// 階+通路が取れない、または曖昧でユーザーに選ばせる必要がある。
   case needsPicker
-  /// 現行レイアウトで表現できない（例: 公演別アリーナ細ブロック）。
+  /// 現行レイアウトで表現できない（概位置にも落とせない）。
   case unsupported
 
   /// ブロックまで解決した座席。後で `position3D` を足せるよう分離してある。
