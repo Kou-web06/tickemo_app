@@ -22,6 +22,7 @@ struct DebugToolsView: View {
 
   @State private var showingPaywall = false
   @State private var showingTokyoDomeSeatMap = false
+  @State private var showingTokyoDomeSeatMap3D = false
 
   var body: some View {
     NavigationStack {
@@ -122,6 +123,9 @@ struct DebugToolsView: View {
         Button("東京ドーム座席図（仮）") {
           showingTokyoDomeSeatMap = true
         }
+        Button("東京ドーム座席図 3D（仮）") {
+          showingTokyoDomeSeatMap3D = true
+        }
       }
       .padding()
       .navigationTitle("Debug Tools")
@@ -131,6 +135,9 @@ struct DebugToolsView: View {
       }
       .sheet(isPresented: $showingTokyoDomeSeatMap) {
         TokyoDomeSeatMapView.debugHost(seatRaw: "1階 3塁側 20通路 12列 5番")
+      }
+      .sheet(isPresented: $showingTokyoDomeSeatMap3D) {
+        TokyoDomeSeatMap3DView.debugHost(seatRaw: "1階 3塁側 20通路 12列 5番")
       }
     }
   }

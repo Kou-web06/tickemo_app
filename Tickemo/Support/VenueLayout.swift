@@ -23,7 +23,7 @@ struct VenueLayout: Codable, Equatable, Identifiable {
   }
 }
 
-/// 階・リング。`baseHeight` / `rake` は将来の 3D 用で、2D 描画では使わない。
+/// 階・リング。`baseHeight` / `rake` は 3D 透視（`VenueSeatMap3DProjection`）で高さに使う。2D 描画では使わない。
 struct VenueTier: Codable, Equatable, Identifiable {
   let id: String
   let name: String
