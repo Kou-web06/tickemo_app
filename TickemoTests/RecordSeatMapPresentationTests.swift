@@ -70,7 +70,7 @@ final class RecordSeatMapPresentationTests: XCTestCase {
     XCTAssertTrue(model.statusText.contains("タップ"))
   }
 
-  func testUnsupportedArenaFineBlockStillShowsPickerEncouragement() {
+  func testArenaFineBlockHighlightsApproximateOverview() {
     let model = RecordSeatMapPresentation.make(
       venue: "東京ドーム",
       seat: "アリーナ B3ブロック 10列 15番",
@@ -79,8 +79,29 @@ final class RecordSeatMapPresentationTests: XCTestCase {
     guard let model else {
       return XCTFail("expected model")
     }
-    XCTAssertNil(model.initialBlockId)
-    XCTAssertTrue(model.encouragesPicker)
-    XCTAssertEqual(model.resolution, .unsupported)
+    XCTAssertEqual(model.initialBlockId, "arena-overview")
+    XCTAssertFalse(model.encouragesPicker)
+    XCTAssertTrue(model.statusText.contains("概位置"))
+    XCTAssertTrue(model.statusText.contains("B3"))
+    guard case .approximate = model.resolution else {
+      return XCTFail("expected approximate, got \(model.resolution)")
+    }
+  }
+
+  func testPlainArenaResolvesOverview() {
+    let model = RecordSeatMapPresentation.make(
+      venue: "東京ドーム",
+      seat: "アリーナ 10列 15番",
+      layout: layout
+    )
+    guard let model else {
+      return XCTFail("expected model")
+    }
+    XCTAssertEqual(model.initialBlockId, "arena-overview")
+    XCTAssertFalse(model.encouragesPicker)
+    XCTAssertTrue(model.statusText.contains("推定位置"))
+    guard case .resolved = model.resolution else {
+      return XCTFail("expected resolved overview")
+    }
   }
 }

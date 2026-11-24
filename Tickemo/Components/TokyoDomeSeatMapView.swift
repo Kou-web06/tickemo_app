@@ -306,6 +306,10 @@ private struct TokyoDomeSeatMapDebugHost: View {
             highlighted = seat.blockId
             let name = loaded.block(id: seat.blockId)?.block.name ?? seat.blockId
             resolutionLabel = "解決: \(name)"
+          case .approximate(let seat):
+            highlighted = seat.blockId
+            let name = loaded.block(id: seat.blockId)?.block.name ?? seat.blockId
+            resolutionLabel = "概位置: \(name)"
           case .needsPicker:
             highlighted = nil
             resolutionLabel = "要選択（ブロックをタップ）"

@@ -26,16 +26,16 @@ final class SeatResolverTests: XCTestCase {
     XCTAssertNil(seat.position3D)
   }
 
-  func testArenaFineBlockIsUnsupportedOrNeedsPicker() {
+  func testArenaFineBlockFallsBackToApproximateOverview() throws {
     let raw = "アリーナ B3ブロック 10列 15番"
     let resolution = SeatResolver.resolve(rawSeat: raw, layout: layout)
 
-    switch resolution {
-    case .unsupported, .needsPicker:
-      break
-    case .resolved(let seat):
-      XCTFail("arena fine block must not resolve to a permanent block, got \(seat.blockId)")
+    guard case .approximate(let seat) = resolution else {
+      return XCTFail("expected approximate overview, got \(resolution)")
     }
+    XCTAssertEqual(seat.blockId, "arena-overview")
+    XCTAssertEqual(seat.tierId, "arena")
+    XCTAssertEqual(seat.input.arenaBlockLabel, "B3")
   }
 
   func testBrokenStringNeedsPicker() {
@@ -145,11 +145,22 @@ final class SeatResolverTests: XCTestCase {
     XCTAssertEqual(seat.blockId, "arena-overview")
   }
 
-  func testArenaBlockLabelReversedOrderStillUnsupported() {
+  func testArenaBlockLabelReversedOrderStillApproximate() throws {
     let resolution = SeatResolver.resolve(
       rawSeat: "アリーナ ブロックB3 10列",
       layout: layout
     )
-    XCTAssertEqual(resolution, .unsupported)
+    guard case .approximate(let seat) = resolution else {
+      return XCTFail("expected approximate, got \(resolution)")
+    }
+    XCTAssertEqual(seat.blockId, "arena-overview")
+    XCTAssertEqual(seat.input.arenaBlockLabel, "B3")
+  }
+
+  func testArenaOverviewHelper() throws {
+    let overview = try XCTUnwrap(SeatResolver.arenaOverview(in: layout))
+    XCTAssertEqual(overview.tier.id, "arena")
+    XCTAssertEqual(overview.block.id, "arena-overview")
+    XCTAssertEqual(overview.block.name, "アリーナ（概位置）")
   }
 }

@@ -36,6 +36,16 @@ enum RecordSeatMapPresentation {
         initialBlockId: resolved.blockId,
         encouragesPicker: false
       )
+    case .approximate(let resolved):
+      let name = blockDisplayName(blockId: resolved.blockId, layout: layout)
+      let fine = resolved.input.arenaBlockLabel.map { "（\($0)は公演別細ブロック）" } ?? ""
+      return Model(
+        seatRaw: trimmedSeat,
+        resolution: resolution,
+        statusText: "常設図では細かく表せないため、概位置を表示: \(name)\(fine)",
+        initialBlockId: resolved.blockId,
+        encouragesPicker: false
+      )
     case .needsPicker:
       return Model(
         seatRaw: trimmedSeat,
