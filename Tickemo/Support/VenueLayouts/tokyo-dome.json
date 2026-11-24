@@ -1,0 +1,595 @@
+{
+  "id": "tokyo-dome",
+  "name": "東京ドーム",
+  "coordinateSystem": {
+    "origin": "field-center",
+    "angleZero": "outfield-center (stage side)",
+    "angleDirection": "counterclockwise",
+    "homePlateApproxDegrees": 180,
+    "radiusUnit": "meters",
+    "notes": [
+      "半径・角度は両翼100m・センター122m・グラウンド約13,000㎡からの概算（近似）。",
+      "常設席のみ。公演ごとの仮設アリーナ細分化は含まない。",
+      "スタンド通路の角度配分は等分の仮値（近似）。",
+      "バルコニーは粗い帯分割（近似）。"
+    ]
+  },
+  "tiers": [
+    {
+      "id": "arena",
+      "name": "アリーナ",
+      "baseHeight": 0.0,
+      "rake": 0.0,
+      "innerRadius": 0.0,
+      "outerRadius": 42.0,
+      "blocks": [
+        {
+          "id": "arena-overview",
+          "name": "アリーナ（概位置）",
+          "aisle": null,
+          "side": null,
+          "startAngle": 0.0,
+          "endAngle": 360.0
+        }
+      ]
+    },
+    {
+      "id": "stand1",
+      "name": "1階スタンド",
+      "baseHeight": 1.5,
+      "rake": 0.3,
+      "innerRadius": 45.0,
+      "outerRadius": 68.0,
+      "blocks": [
+        {
+          "id": "stand1-aisle-01",
+          "name": "1階 1塁側 1通路",
+          "aisle": 1,
+          "side": "1塁側",
+          "startAngle": 300.0,
+          "endAngle": 295.0
+        },
+        {
+          "id": "stand1-aisle-02",
+          "name": "1階 1塁側 2通路",
+          "aisle": 2,
+          "side": "1塁側",
+          "startAngle": 295.0,
+          "endAngle": 290.0
+        },
+        {
+          "id": "stand1-aisle-03",
+          "name": "1階 1塁側 3通路",
+          "aisle": 3,
+          "side": "1塁側",
+          "startAngle": 290.0,
+          "endAngle": 285.0
+        },
+        {
+          "id": "stand1-aisle-04",
+          "name": "1階 1塁側 4通路",
+          "aisle": 4,
+          "side": "1塁側",
+          "startAngle": 285.0,
+          "endAngle": 280.0
+        },
+        {
+          "id": "stand1-aisle-05",
+          "name": "1階 1塁側 5通路",
+          "aisle": 5,
+          "side": "1塁側",
+          "startAngle": 280.0,
+          "endAngle": 275.0
+        },
+        {
+          "id": "stand1-aisle-06",
+          "name": "1階 1塁側 6通路",
+          "aisle": 6,
+          "side": "1塁側",
+          "startAngle": 275.0,
+          "endAngle": 270.0
+        },
+        {
+          "id": "stand1-aisle-07",
+          "name": "1階 1塁側 7通路",
+          "aisle": 7,
+          "side": "1塁側",
+          "startAngle": 270.0,
+          "endAngle": 265.0
+        },
+        {
+          "id": "stand1-aisle-08",
+          "name": "1階 1塁側 8通路",
+          "aisle": 8,
+          "side": "1塁側",
+          "startAngle": 265.0,
+          "endAngle": 260.0
+        },
+        {
+          "id": "stand1-aisle-09",
+          "name": "1階 1塁側 9通路",
+          "aisle": 9,
+          "side": "1塁側",
+          "startAngle": 260.0,
+          "endAngle": 255.0
+        },
+        {
+          "id": "stand1-aisle-10",
+          "name": "1階 1塁側 10通路",
+          "aisle": 10,
+          "side": "1塁側",
+          "startAngle": 255.0,
+          "endAngle": 250.0
+        },
+        {
+          "id": "stand1-aisle-11",
+          "name": "1階 1塁側 11通路",
+          "aisle": 11,
+          "side": "1塁側",
+          "startAngle": 250.0,
+          "endAngle": 245.0
+        },
+        {
+          "id": "stand1-aisle-12",
+          "name": "1階 1塁側 12通路",
+          "aisle": 12,
+          "side": "1塁側",
+          "startAngle": 245.0,
+          "endAngle": 240.0
+        },
+        {
+          "id": "stand1-aisle-13",
+          "name": "1階 1塁側 13通路",
+          "aisle": 13,
+          "side": "1塁側",
+          "startAngle": 240.0,
+          "endAngle": 235.0
+        },
+        {
+          "id": "stand1-aisle-14",
+          "name": "1階 1塁側 14通路",
+          "aisle": 14,
+          "side": "1塁側",
+          "startAngle": 235.0,
+          "endAngle": 230.0
+        },
+        {
+          "id": "stand1-aisle-15",
+          "name": "1階 1塁側 15通路",
+          "aisle": 15,
+          "side": "1塁側",
+          "startAngle": 230.0,
+          "endAngle": 225.0
+        },
+        {
+          "id": "stand1-aisle-16",
+          "name": "1階 1塁側 16通路",
+          "aisle": 16,
+          "side": "1塁側",
+          "startAngle": 225.0,
+          "endAngle": 220.0
+        },
+        {
+          "id": "stand1-aisle-17",
+          "name": "1階 1塁側 17通路",
+          "aisle": 17,
+          "side": "1塁側",
+          "startAngle": 220.0,
+          "endAngle": 215.0
+        },
+        {
+          "id": "stand1-aisle-18",
+          "name": "1階 1塁側 18通路",
+          "aisle": 18,
+          "side": "1塁側",
+          "startAngle": 215.0,
+          "endAngle": 210.0
+        },
+        {
+          "id": "stand1-aisle-19",
+          "name": "1階 1塁側 19通路",
+          "aisle": 19,
+          "side": "1塁側",
+          "startAngle": 210.0,
+          "endAngle": 205.0
+        },
+        {
+          "id": "stand1-aisle-20",
+          "name": "1階 1塁側 20通路",
+          "aisle": 20,
+          "side": "1塁側",
+          "startAngle": 205.0,
+          "endAngle": 200.0
+        },
+        {
+          "id": "stand1-aisle-21",
+          "name": "1階 1塁側 21通路",
+          "aisle": 21,
+          "side": "1塁側",
+          "startAngle": 200.0,
+          "endAngle": 195.0
+        },
+        {
+          "id": "stand1-aisle-22",
+          "name": "1階 1塁側 22通路",
+          "aisle": 22,
+          "side": "1塁側",
+          "startAngle": 195.0,
+          "endAngle": 190.0
+        },
+        {
+          "id": "stand1-aisle-23",
+          "name": "1階 正面 23通路",
+          "aisle": 23,
+          "side": "正面",
+          "startAngle": 190.0,
+          "endAngle": 185.0
+        },
+        {
+          "id": "stand1-aisle-24",
+          "name": "1階 正面 24通路",
+          "aisle": 24,
+          "side": "正面",
+          "startAngle": 185.0,
+          "endAngle": 180.0
+        },
+        {
+          "id": "stand1-aisle-25",
+          "name": "1階 正面 25通路",
+          "aisle": 25,
+          "side": "正面",
+          "startAngle": 180.0,
+          "endAngle": 175.0
+        },
+        {
+          "id": "stand1-aisle-26",
+          "name": "1階 正面 26通路",
+          "aisle": 26,
+          "side": "正面",
+          "startAngle": 175.0,
+          "endAngle": 170.0
+        },
+        {
+          "id": "stand1-aisle-27",
+          "name": "1階 3塁側 27通路",
+          "aisle": 27,
+          "side": "3塁側",
+          "startAngle": 170.0,
+          "endAngle": 165.0
+        },
+        {
+          "id": "stand1-aisle-28",
+          "name": "1階 3塁側 28通路",
+          "aisle": 28,
+          "side": "3塁側",
+          "startAngle": 165.0,
+          "endAngle": 160.0
+        },
+        {
+          "id": "stand1-aisle-29",
+          "name": "1階 3塁側 29通路",
+          "aisle": 29,
+          "side": "3塁側",
+          "startAngle": 160.0,
+          "endAngle": 155.0
+        },
+        {
+          "id": "stand1-aisle-30",
+          "name": "1階 3塁側 30通路",
+          "aisle": 30,
+          "side": "3塁側",
+          "startAngle": 155.0,
+          "endAngle": 150.0
+        },
+        {
+          "id": "stand1-aisle-31",
+          "name": "1階 3塁側 31通路",
+          "aisle": 31,
+          "side": "3塁側",
+          "startAngle": 150.0,
+          "endAngle": 145.0
+        },
+        {
+          "id": "stand1-aisle-32",
+          "name": "1階 3塁側 32通路",
+          "aisle": 32,
+          "side": "3塁側",
+          "startAngle": 145.0,
+          "endAngle": 140.0
+        },
+        {
+          "id": "stand1-aisle-33",
+          "name": "1階 3塁側 33通路",
+          "aisle": 33,
+          "side": "3塁側",
+          "startAngle": 140.0,
+          "endAngle": 135.0
+        },
+        {
+          "id": "stand1-aisle-34",
+          "name": "1階 3塁側 34通路",
+          "aisle": 34,
+          "side": "3塁側",
+          "startAngle": 135.0,
+          "endAngle": 130.0
+        },
+        {
+          "id": "stand1-aisle-35",
+          "name": "1階 3塁側 35通路",
+          "aisle": 35,
+          "side": "3塁側",
+          "startAngle": 130.0,
+          "endAngle": 125.0
+        },
+        {
+          "id": "stand1-aisle-36",
+          "name": "1階 3塁側 36通路",
+          "aisle": 36,
+          "side": "3塁側",
+          "startAngle": 125.0,
+          "endAngle": 120.0
+        },
+        {
+          "id": "stand1-aisle-37",
+          "name": "1階 3塁側 37通路",
+          "aisle": 37,
+          "side": "3塁側",
+          "startAngle": 120.0,
+          "endAngle": 115.0
+        },
+        {
+          "id": "stand1-aisle-38",
+          "name": "1階 3塁側 38通路",
+          "aisle": 38,
+          "side": "3塁側",
+          "startAngle": 115.0,
+          "endAngle": 110.0
+        },
+        {
+          "id": "stand1-aisle-39",
+          "name": "1階 3塁側 39通路",
+          "aisle": 39,
+          "side": "3塁側",
+          "startAngle": 110.0,
+          "endAngle": 105.0
+        },
+        {
+          "id": "stand1-aisle-40",
+          "name": "1階 3塁側 40通路",
+          "aisle": 40,
+          "side": "3塁側",
+          "startAngle": 105.0,
+          "endAngle": 100.0
+        },
+        {
+          "id": "stand1-aisle-41",
+          "name": "1階 3塁側 41通路",
+          "aisle": 41,
+          "side": "3塁側",
+          "startAngle": 100.0,
+          "endAngle": 95.0
+        },
+        {
+          "id": "stand1-aisle-42",
+          "name": "1階 3塁側 42通路",
+          "aisle": 42,
+          "side": "3塁側",
+          "startAngle": 95.0,
+          "endAngle": 90.0
+        },
+        {
+          "id": "stand1-aisle-43",
+          "name": "1階 3塁側 43通路",
+          "aisle": 43,
+          "side": "3塁側",
+          "startAngle": 90.0,
+          "endAngle": 85.0
+        },
+        {
+          "id": "stand1-aisle-44",
+          "name": "1階 3塁側 44通路",
+          "aisle": 44,
+          "side": "3塁側",
+          "startAngle": 85.0,
+          "endAngle": 80.0
+        },
+        {
+          "id": "stand1-aisle-45",
+          "name": "1階 3塁側 45通路",
+          "aisle": 45,
+          "side": "3塁側",
+          "startAngle": 80.0,
+          "endAngle": 75.0
+        },
+        {
+          "id": "stand1-aisle-46",
+          "name": "1階 3塁側 46通路",
+          "aisle": 46,
+          "side": "3塁側",
+          "startAngle": 75.0,
+          "endAngle": 70.0
+        },
+        {
+          "id": "stand1-aisle-47",
+          "name": "1階 3塁側 47通路",
+          "aisle": 47,
+          "side": "3塁側",
+          "startAngle": 70.0,
+          "endAngle": 65.0
+        },
+        {
+          "id": "stand1-aisle-48",
+          "name": "1階 3塁側 48通路",
+          "aisle": 48,
+          "side": "3塁側",
+          "startAngle": 65.0,
+          "endAngle": 60.0
+        }
+      ]
+    },
+    {
+      "id": "stand2",
+      "name": "2階スタンド",
+      "baseHeight": 12.0,
+      "rake": 0.35,
+      "innerRadius": 70.0,
+      "outerRadius": 85.0,
+      "blocks": [
+        {
+          "id": "stand2-aisle-01",
+          "name": "2階 1塁側 1通路",
+          "aisle": 1,
+          "side": "1塁側",
+          "startAngle": 300.0,
+          "endAngle": 282.8571
+        },
+        {
+          "id": "stand2-aisle-02",
+          "name": "2階 1塁側 2通路",
+          "aisle": 2,
+          "side": "1塁側",
+          "startAngle": 282.8571,
+          "endAngle": 265.7143
+        },
+        {
+          "id": "stand2-aisle-03",
+          "name": "2階 1塁側 3通路",
+          "aisle": 3,
+          "side": "1塁側",
+          "startAngle": 265.7143,
+          "endAngle": 248.5714
+        },
+        {
+          "id": "stand2-aisle-04",
+          "name": "2階 1塁側 4通路",
+          "aisle": 4,
+          "side": "1塁側",
+          "startAngle": 248.5714,
+          "endAngle": 231.4286
+        },
+        {
+          "id": "stand2-aisle-05",
+          "name": "2階 1塁側 5通路",
+          "aisle": 5,
+          "side": "1塁側",
+          "startAngle": 231.4286,
+          "endAngle": 214.2857
+        },
+        {
+          "id": "stand2-aisle-06",
+          "name": "2階 1塁側 6通路",
+          "aisle": 6,
+          "side": "1塁側",
+          "startAngle": 214.2857,
+          "endAngle": 197.1429
+        },
+        {
+          "id": "stand2-aisle-07",
+          "name": "2階 中央 7通路",
+          "aisle": 7,
+          "side": "中央",
+          "startAngle": 197.1429,
+          "endAngle": 180.0
+        },
+        {
+          "id": "stand2-aisle-08",
+          "name": "2階 中央 8通路",
+          "aisle": 8,
+          "side": "中央",
+          "startAngle": 180.0,
+          "endAngle": 162.8571
+        },
+        {
+          "id": "stand2-aisle-09",
+          "name": "2階 3塁側 9通路",
+          "aisle": 9,
+          "side": "3塁側",
+          "startAngle": 162.8571,
+          "endAngle": 145.7143
+        },
+        {
+          "id": "stand2-aisle-10",
+          "name": "2階 3塁側 10通路",
+          "aisle": 10,
+          "side": "3塁側",
+          "startAngle": 145.7143,
+          "endAngle": 128.5714
+        },
+        {
+          "id": "stand2-aisle-11",
+          "name": "2階 3塁側 11通路",
+          "aisle": 11,
+          "side": "3塁側",
+          "startAngle": 128.5714,
+          "endAngle": 111.4286
+        },
+        {
+          "id": "stand2-aisle-12",
+          "name": "2階 3塁側 12通路",
+          "aisle": 12,
+          "side": "3塁側",
+          "startAngle": 111.4286,
+          "endAngle": 94.2857
+        },
+        {
+          "id": "stand2-aisle-13",
+          "name": "2階 3塁側 13通路",
+          "aisle": 13,
+          "side": "3塁側",
+          "startAngle": 94.2857,
+          "endAngle": 77.1429
+        },
+        {
+          "id": "stand2-aisle-14",
+          "name": "2階 3塁側 14通路",
+          "aisle": 14,
+          "side": "3塁側",
+          "startAngle": 77.1429,
+          "endAngle": 60.0
+        }
+      ]
+    },
+    {
+      "id": "balcony",
+      "name": "バルコニー",
+      "baseHeight": 22.0,
+      "rake": 0.4,
+      "innerRadius": 87.0,
+      "outerRadius": 98.0,
+      "blocks": [
+        {
+          "id": "balcony-1b",
+          "name": "バルコニー 1塁側",
+          "aisle": null,
+          "side": "1塁側",
+          "startAngle": 300.0,
+          "endAngle": 210.0
+        },
+        {
+          "id": "balcony-home-1b",
+          "name": "バルコニー 正面（1塁寄り）",
+          "aisle": null,
+          "side": "正面",
+          "startAngle": 210.0,
+          "endAngle": 180.0
+        },
+        {
+          "id": "balcony-home-3b",
+          "name": "バルコニー 正面（3塁寄り）",
+          "aisle": null,
+          "side": "正面",
+          "startAngle": 180.0,
+          "endAngle": 150.0
+        },
+        {
+          "id": "balcony-3b",
+          "name": "バルコニー 3塁側",
+          "aisle": null,
+          "side": "3塁側",
+          "startAngle": 150.0,
+          "endAngle": 60.0
+        }
+      ]
+    }
+  ]
+}
