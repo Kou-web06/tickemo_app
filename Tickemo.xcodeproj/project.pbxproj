@@ -45,7 +45,6 @@
 		33F12676F5CB54B827FA70FB /* PaywallBannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43A867BF11EF2687DA006A7 /* PaywallBannerView.swift */; };
 		34767819A9A1E4986E2DA3E9 /* SetlistDraftPerformerNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83CD0CE5134EA7D7CDD1F910 /* SetlistDraftPerformerNormalizationTests.swift */; };
 		386FC73CF2FB2109F80F7017 /* ShareTicketCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A17275AD7E103F00E8E3B7B /* ShareTicketCardView.swift */; };
-		3895040B72A7ADC78FE8B82F /* RecordSeatMapSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D191FF250518CB2A6832F40 /* RecordSeatMapSectionView.swift */; };
 		39674FD09084013CE97DA1C7 /* HugeIconPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B49CBA00EEF9075F3EC942 /* HugeIconPathTests.swift */; };
 		3C8DE8B2C9819C9D537BEA93 /* MusicProviderPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C65D25BA2D311326E32BCE /* MusicProviderPreference.swift */; };
 		3D68379DC1810320883F82F4 /* DataMigrationImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE67F87678C16E7016F11D6 /* DataMigrationImporter.swift */; };
@@ -57,7 +56,6 @@
 		4479BC3D12C54FCBEA653D8D /* RecordFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BC4EE21C788953536CB9E74 /* RecordFormView.swift */; };
 		47A1053ADD2828BEB44D464F /* TokyoDomeSeatMap3DView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEA32E3FF6578E9F5A42C9EC /* TokyoDomeSeatMap3DView.swift */; };
 		47D8C4792678470A8E38150A /* EarlyOfferService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FD9F153931A7B6B67A5D6F /* EarlyOfferService.swift */; };
-		4801018C516A6BBB0297CA65 /* RecordSeatMapPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBA3593BA0E16B8087349F /* RecordSeatMapPresentationTests.swift */; };
 		48791F21CDE4C7709A7CACB1 /* ShareBarcodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 689506127814433829517F37 /* ShareBarcodeView.swift */; };
 		4EE2FB6BEFD752624B67382F /* VenueSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48286B05F1D063AE48B1F1FD /* VenueSearchField.swift */; };
 		5537E6A5E456B4B4480D4644 /* TimeWheelPickerField.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B9B148649A239A0A0B4441 /* TimeWheelPickerField.swift */; };
@@ -121,7 +119,6 @@
 		BCCA1F64729550721BDA0C17 /* EdgeFadingScrollView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 628D6B3C2C687243B898F088 /* EdgeFadingScrollView.swift */; };
 		BEE817BE6ACC130361BEE53A /* UserProfileFetching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CFF0E3AA54C736CBE34C4B2 /* UserProfileFetching.swift */; };
 		BEFB60167BDF2062C916F508 /* SetlistOcrCleanup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47957EC4D30003911DDDFB11 /* SetlistOcrCleanup.swift */; };
-		BFB02ACA87B3559327B89FB8 /* TokyoDomeVenueMatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = C12150D5172E6E92D7A2E62E /* TokyoDomeVenueMatching.swift */; };
 		C22ED3FD24771170D57E9BC9 /* LivePhotoGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1C43A47CBDF6F9BDDCDF3A /* LivePhotoGallery.swift */; };
 		C3D5A82856B58EA1471E206A /* UbiquitousItemDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 665AB92795A2F1CF10513CB3 /* UbiquitousItemDownloader.swift */; };
 		C44D18D2FF458852D7256202 /* SetlistPerformersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4791C412825872E2E6C43B9 /* SetlistPerformersTests.swift */; };
@@ -134,7 +131,6 @@
 		D6F2BBC9589FFB56871D854B /* MigrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFE2BC708A1AE0D6D2B6A95E /* MigrationCoordinator.swift */; };
 		D94F7FDF6A4A42DE8DE1F665 /* ImageMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8F4BF360011795CC3D1CE9 /* ImageMigrator.swift */; };
 		D9624378D627865C0BD9B0D1 /* CloudSyncStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7E20CE008AC84CD1A7790F6 /* CloudSyncStatusService.swift */; };
-		DBBDA68A9E2C84C97AC177C8 /* RecordSeatMapPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B6778F7199F628FC5CCB81F /* RecordSeatMapPresentation.swift */; };
 		DC8A3EBD510E47D88561F454 /* StatisticsData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0D55C5C1F41BD095CB31A2 /* StatisticsData.swift */; };
 		DCC4E1C2CB72401B93B0A171 /* CalendarDayEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72645012E927C7402CB88893 /* CalendarDayEventsView.swift */; };
 		DCEF94CDEDCC8C2B0DC1C1DF /* MigrationOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E5A1967DE1A194132F3A61E /* MigrationOverlayView.swift */; };
@@ -273,7 +269,6 @@
 		48286B05F1D063AE48B1F1FD /* VenueSearchField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VenueSearchField.swift; sourceTree = "<group>"; };
 		4A46977CD287EA4809AF52CF /* CalendarEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CalendarEvents.swift; sourceTree = "<group>"; };
 		4AFC27233C7B2540CCA957DB /* MusicKitService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MusicKitService.swift; sourceTree = "<group>"; };
-		4D191FF250518CB2A6832F40 /* RecordSeatMapSectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordSeatMapSectionView.swift; sourceTree = "<group>"; };
 		4F7DA47363E3AD8BE25D238C /* EdgeFade.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EdgeFade.swift; sourceTree = "<group>"; };
 		510FEECDFBC712D8783FFC05 /* SetlistOcrReviewView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistOcrReviewView.swift; sourceTree = "<group>"; };
 		51A40ECAF43E50524930CFF0 /* DuplicateRecordSweeperTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DuplicateRecordSweeperTests.swift; sourceTree = "<group>"; };
@@ -300,7 +295,6 @@
 		7272BF958059D2B824D1A453 /* EarlyOfferServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EarlyOfferServiceTests.swift; sourceTree = "<group>"; };
 		7344C32392056E497011A49C /* JoinedDateFormattingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JoinedDateFormattingTests.swift; sourceTree = "<group>"; };
 		75A497802B9D44B09DD368FD /* LegacyStoreModelsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyStoreModelsTests.swift; sourceTree = "<group>"; };
-		75EBA3593BA0E16B8087349F /* RecordSeatMapPresentationTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordSeatMapPresentationTests.swift; sourceTree = "<group>"; };
 		76A68C7CCB0EDF02E2E53B97 /* VenueSeatMap3DProjection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VenueSeatMap3DProjection.swift; sourceTree = "<group>"; };
 		79EFA474502FB4D79CA516C5 /* ArtistDisplay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistDisplay.swift; sourceTree = "<group>"; };
 		806C526CB9471DC78795071D /* SetlistPerformers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistPerformers.swift; sourceTree = "<group>"; };
@@ -321,7 +315,6 @@
 		98F5292EF133422D67579700 /* ApplePlaylistExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ApplePlaylistExporter.swift; sourceTree = "<group>"; };
 		9A44EAD7E3182AEE71372C12 /* StatisticsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 		9AE2706F569FFE252AC4593D /* CustomToggleSwitch.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CustomToggleSwitch.swift; sourceTree = "<group>"; };
-		9B6778F7199F628FC5CCB81F /* RecordSeatMapPresentation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordSeatMapPresentation.swift; sourceTree = "<group>"; };
 		9C1C43A47CBDF6F9BDDCDF3A /* LivePhotoGallery.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LivePhotoGallery.swift; sourceTree = "<group>"; };
 		9C4874D2D96E89FA289584CF /* ChekiRecordVenue.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChekiRecordVenue.swift; sourceTree = "<group>"; };
 		A0C45BE9B9FDDAE7F4AFF6B2 /* ArtistSearchField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ArtistSearchField.swift; sourceTree = "<group>"; };
@@ -338,7 +331,6 @@
 		B9898BB21AD9937505C78DDA /* LegacyMigrationClaimTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyMigrationClaimTests.swift; sourceTree = "<group>"; };
 		BC5749B839253A3F61FF46E6 /* NextLiveCardDataTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NextLiveCardDataTests.swift; sourceTree = "<group>"; };
 		C0B9B148649A239A0A0B4441 /* TimeWheelPickerField.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimeWheelPickerField.swift; sourceTree = "<group>"; };
-		C12150D5172E6E92D7A2E62E /* TokyoDomeVenueMatching.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TokyoDomeVenueMatching.swift; sourceTree = "<group>"; };
 		C40CE53D60FA2117638BFA16 /* LegacyDataBackup.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LegacyDataBackup.swift; sourceTree = "<group>"; };
 		C9324B078E44A9B195E16FE2 /* VenueMapCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VenueMapCardView.swift; sourceTree = "<group>"; };
 		CA2A44D6699F40241BA25A7E /* SetlistOcrImport.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SetlistOcrImport.swift; sourceTree = "<group>"; };
@@ -513,7 +505,6 @@
 				86B07D6825C3E25E9191C213 /* LivePhotoGalleryTests.swift */,
 				4289B5775DE5E54938D7DDDD /* EdgeFadeTests.swift */,
 				DF5F264209896097BCCBFC73 /* SeatResolverTests.swift */,
-				75EBA3593BA0E16B8087349F /* RecordSeatMapPresentationTests.swift */,
 				261AF53707923C5792C30A36 /* VenueSeatMap3DProjectionTests.swift */,
 			);
 			path = TickemoTests;
@@ -545,7 +536,6 @@
 				0C81B7E85771185381F1E988 /* ArtistNicknameEditor.swift */,
 				628D6B3C2C687243B898F088 /* EdgeFadingScrollView.swift */,
 				40CA4FE447A512A1AA13D2AA /* TokyoDomeSeatMapView.swift */,
-				4D191FF250518CB2A6832F40 /* RecordSeatMapSectionView.swift */,
 				EEA32E3FF6578E9F5A42C9EC /* TokyoDomeSeatMap3DView.swift */,
 			);
 			name = Components;
@@ -761,8 +751,6 @@
 				AE732BB00E29BC5757E1E4C0 /* SeatInputParser.swift */,
 				5BA335542167F4CA0D5D972D /* SeatResolver.swift */,
 				8F15F9FD7FE1298E43186525 /* VenueLayouts */,
-				C12150D5172E6E92D7A2E62E /* TokyoDomeVenueMatching.swift */,
-				9B6778F7199F628FC5CCB81F /* RecordSeatMapPresentation.swift */,
 				76A68C7CCB0EDF02E2E53B97 /* VenueSeatMap3DProjection.swift */,
 			);
 			name = Support;
@@ -951,7 +939,6 @@
 				E3B658D09243CE6DCAD01370 /* LivePhotoGalleryTests.swift in Sources */,
 				A37EA9F1EF997BA2D1C225E1 /* EdgeFadeTests.swift in Sources */,
 				C7597D4CDF092DAC3667FB53 /* SeatResolverTests.swift in Sources */,
-				4801018C516A6BBB0297CA65 /* RecordSeatMapPresentationTests.swift in Sources */,
 				0421D59343867FA7AF44A8AC /* VenueSeatMap3DProjectionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1081,9 +1068,6 @@
 				1DBC7A9F453749ADFD8FAC0A /* SeatInputParser.swift in Sources */,
 				125CA682FDAE08A66B721831 /* SeatResolver.swift in Sources */,
 				5E3AB049CA0604669456706E /* TokyoDomeSeatMapView.swift in Sources */,
-				BFB02ACA87B3559327B89FB8 /* TokyoDomeVenueMatching.swift in Sources */,
-				DBBDA68A9E2C84C97AC177C8 /* RecordSeatMapPresentation.swift in Sources */,
-				3895040B72A7ADC78FE8B82F /* RecordSeatMapSectionView.swift in Sources */,
 				A168976FE259AEAD89E844F5 /* VenueSeatMap3DProjection.swift in Sources */,
 				47A1053ADD2828BEB44D464F /* TokyoDomeSeatMap3DView.swift in Sources */,
 			);

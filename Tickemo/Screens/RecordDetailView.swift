@@ -127,16 +127,6 @@ struct RecordDetailView: View {
               .padding(.top, 60)
           }
 
-          if let seatMap = seatMapPresentation {
-            RecordSeatMapSectionView(
-              layout: seatMap.layout,
-              model: seatMap.model,
-              primaryTextColor: primaryTextColor,
-              secondaryTextColor: secondaryTextColor
-            )
-            .padding(.top, 60)
-          }
-
           if let memo = record.memo, !memo.isEmpty {
             memoSection(memo)
               .padding(.top, 60)
@@ -894,21 +884,6 @@ struct RecordDetailView: View {
         tintColor: dominantColor
       )
     }
-  }
-
-  // MARK: - Seat map (Tokyo Dome)
-
-  /// 東京ドーム系会場かつ座席文字列があるときだけ表示。RecordForm への本設置は別タスク。
-  private var seatMapPresentation: (layout: VenueLayout, model: RecordSeatMapPresentation.Model)? {
-    guard let layout = try? VenueLayout.tokyoDome(),
-          let model = RecordSeatMapPresentation.make(
-            venue: record.venue,
-            seat: record.seat,
-            layout: layout
-          ) else {
-      return nil
-    }
-    return (layout, model)
   }
 
   // MARK: - Memo
